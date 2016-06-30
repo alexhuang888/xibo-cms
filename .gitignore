@@ -12,3 +12,5 @@ custom/
 web/install_log.txt
 web/showinfo.php
 install/install_log.txt
+node_modules/
+web/theme/custom
