@@ -8,3 +8,7 @@ cache/
 web/swagger-ui/
 custom/
 .DS_Store
+.vscode
+web/install_log.txt
+web/showinfo.php
+install/install_log.txt
