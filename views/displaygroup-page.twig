@@ -35,6 +35,9 @@
                                 <th>{% trans "Description" %}</th>
                                 <th>{% trans "Is Dynamic?" %}</th>
                                 <th>{% trans "Criteria" %}</th>
+                                <th>{% trans "parentId" %}</th>
+                                <th>{% trans "childId" %}</th>
+                                <th>{% trans "depth" %}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -51,7 +54,7 @@
 {% block javaScript %}
     <script type="text/javascript">
         var table = $("#displaygroups").DataTable({ "language": dataTablesLanguage,
-            serverSide: true, stateSave: true,
+            "serverSide": true, "stateSave": true,
             "filter": false,
             searchDelay: 3000,
             "order": [[ 0, "asc"]],
@@ -66,6 +69,9 @@
                 { "data": "description" },
                 { "data": "isDynamic", "render": dataTableTickCrossColumn },
                 { "data": "dynamicCriteria" },
+                { "data": "parentId", "visible":true },
+                { "data": "childId", "visible":true },
+                { "data": "depth", "visible":true },
                 {
                     "orderable": false,
                     "data": dataTableButtonsColumn

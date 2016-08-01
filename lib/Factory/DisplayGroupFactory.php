@@ -152,11 +152,18 @@ class DisplayGroupFactory extends BaseFactory
                 `displaygroup`.description,
                 `displaygroup`.isDynamic,
                 `displaygroup`.dynamicCriteria,
-                `displaygroup`.userId
+                `displaygroup`.userId,
+                `lkdgdg`.parentId,
+                `lkdgdg`.childId,
+                `lkdgdg`.depth
         ';
 
         $body = '
               FROM `displaygroup`
+              INNER JOIN (SELECT childId, parentId, max(depth) depth 
+                            FROM lkdgdg  group by childId
+                            ) lkdgdg
+                ON lkdgdg.childId = `displaygroup`.displayGroupId 
         ';
 
         if ($this->getSanitizer()->getInt('mediaId', $filterBy) !== null) {
@@ -242,8 +249,11 @@ class DisplayGroupFactory extends BaseFactory
         if ($filterBy !== null && $this->getSanitizer()->getInt('start', $filterBy) !== null && $this->getSanitizer()->getInt('length', $filterBy) !== null) {
             $limit = ' LIMIT ' . intval($this->getSanitizer()->getInt('start', $filterBy), 0) . ', ' . $this->getSanitizer()->getInt('length', 10, $filterBy);
         }
+        
 
         $sql = $select . $body . $order . $limit;
+
+        //print($sql);
 
         foreach ($this->getStore()->select($sql, $params) as $row) {
             $entries[] = $this->createEmpty()->hydrate($row);

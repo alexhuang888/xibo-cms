@@ -171,12 +171,14 @@ class DisplayGroup extends Base
 
         $displayGroups = $this->displayGroupFactory->query($this->gridRenderSort(), $this->gridRenderFilter($filter));
 
+        // query only get basic properties of an entity 
+
         foreach ($displayGroups as $group) {
             /* @var \Xibo\Entity\DisplayGroup $group */
 
             if ($this->isApi())
                 continue;
-
+            $group->displayGroups = $this->displayGroupFactory->getByParentId($group->displayGroupId);
             $group->includeProperty('buttons');
 
             if ($this->getUser()->checkEditable($group)) {

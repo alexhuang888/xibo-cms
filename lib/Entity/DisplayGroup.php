@@ -28,6 +28,7 @@ use Xibo\Storage\StorageServiceInterface;
 class DisplayGroup implements \JsonSerializable
 {
     use EntityTrait;
+    use AIProfileTrait;
 
     /**
      * @SWG\Property(
@@ -55,7 +56,8 @@ class DisplayGroup implements \JsonSerializable
 
     /**
      * @SWG\Property(
-     *  description="A flag indicating whether this displayGroup is a single display displayGroup",
+     *  description="A flag indicating whether this displayGroup is a single display displayGroup. 
+                        A display is associated with a single-display DG always.",
      * )
      * @var int
      */
@@ -63,7 +65,8 @@ class DisplayGroup implements \JsonSerializable
 
     /**
      * @SWG\Property(
-     *  description="A flag indicating whether this displayGroup is dynamic",
+     *  description="A flag indicating whether this displayGroup is dynamic. Its display members
+                        is defined by dynamicCriteria.",
      * )
      * @var int
      */
@@ -84,10 +87,12 @@ class DisplayGroup implements \JsonSerializable
      * @var int
      */
     public $userId = 0;
-
+    public $parentId = -1;
+    public $childId = -1;
+    public $depth = -1;
     // Child Items the Display Group is linked to
     private $displays = [];
-    private $displayGroups = [];
+    public $displayGroups = [];
     private $layouts = [];
     private $media = [];
     private $permissions = [];
