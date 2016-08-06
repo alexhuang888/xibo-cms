@@ -153,17 +153,18 @@ class DisplayGroupFactory extends BaseFactory
                 `displaygroup`.isDynamic,
                 `displaygroup`.dynamicCriteria,
                 `displaygroup`.userId,
-                `lkdgdg`.parentId,
-                `lkdgdg`.childId,
-                `lkdgdg`.depth
+                `lkdgdgjoin`.parentId,
+                `lkdgdgjoin`.childId,
+                `lkdgdgjoin`.depth,
+                (select count(*) from lkdgdg where lkdgdg.parentId = lkdgdgjoin.childId and depth <> 0) as subdgchildcount
         ';
 
         $body = '
               FROM `displaygroup`
               INNER JOIN (SELECT childId, parentId, max(depth) depth 
-                            FROM lkdgdg  group by childId
-                            ) lkdgdg
-                ON lkdgdg.childId = `displaygroup`.displayGroupId 
+                            FROM lkdgdg where (depth = 0 or depth = 1) group by childId 
+                            ) lkdgdgjoin
+                ON lkdgdgjoin.childId = `displaygroup`.displayGroupId 
         ';
 
         if ($this->getSanitizer()->getInt('mediaId', $filterBy) !== null) {

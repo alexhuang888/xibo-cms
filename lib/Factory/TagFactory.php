@@ -63,12 +63,14 @@ class TagFactory extends BaseFactory
     {
         $tags = array();
 
-        if ($tagString == '') {
+        if ($tagString == '') 
+        {
             return $tags;
         }
 
         // Parse the tag string, create tags
-        foreach(explode(',', $tagString) as $tagName) {
+        foreach(explode(',', $tagString) as $tagName) 
+        {
             $tagName = trim($tagName);
 
             $tags[] = $this->tagFromString($tagName);
@@ -119,10 +121,34 @@ class TagFactory extends BaseFactory
         $tag = $this->createEmpty();
         $tag->tagId = $this->getSanitizer()->int($row['tagId']);
         $tag->tag = $this->getSanitizer()->string($row['tag']);
-
+        $tag->load();
         return $tag;
     }
+    /**
+     * Gets tags for media
+     * @param $mediaId
+     * @return array[Tag]
+     */
+    public function loadByItemId($itemtype, $itemid)
+    {
+        $tags = array();
 
+        $sql = 'SELECT tag.tagId, tag.tag, lklinkedtags.score FROM `tag` INNER JOIN `lklinkedtags` ON lklinkedtags.tagid = tag.tagId WHERE lklinkedtags.itemtype = :itemtype AND lklinkedtags.itemid = :itemid';
+
+        foreach ($this->getStore()->select($sql, array('itemtype' => $itemtype, 'itemid' => $itemid)) as $row) {
+            $tag = $this->createEmpty();
+
+            $tag->UpdateData($this->getSanitizer()->int($row['tagId']),
+                                $this->getSanitizer()->string($row['tag']),
+                                $itemtype,
+                                $itemid,
+                                $this->getSanitizer()->float($row['score']));
+
+            $tags[] = $tag;
+        }
+
+        return $tags;
+    }
     /**
      * Gets tags for a layout
      * @param $layoutId
@@ -130,20 +156,7 @@ class TagFactory extends BaseFactory
      */
     public function loadByLayoutId($layoutId)
     {
-        $tags = array();
-
-        $sql = 'SELECT tag.tagId, tag.tag FROM `tag` INNER JOIN `lktaglayout` ON lktaglayout.tagId = tag.tagId WHERE lktaglayout.layoutId = :layoutId';
-
-        foreach ($this->getStore()->select($sql, array('layoutId' => $layoutId)) as $row) {
-            $tag = $this->createEmpty();
-            $tag->tagId = $this->getSanitizer()->int($row['tagId']);
-            $tag->tag = $this->getSanitizer()->string($row['tag']);
-            $tag->assignLayout($layoutId);
-
-            $tags[] = $tag;
-        }
-
-        return $tags;
+        return loadByItemId(1, $layoutId);
     }
 
     /**
@@ -153,19 +166,6 @@ class TagFactory extends BaseFactory
      */
     public function loadByMediaId($mediaId)
     {
-        $tags = array();
-
-        $sql = 'SELECT tag.tagId, tag.tag FROM `tag` INNER JOIN `lktagmedia` ON lktagmedia.tagId = tag.tagId WHERE lktagmedia.mediaId = :mediaId';
-
-        foreach ($this->getStore()->select($sql, array('mediaId' => $mediaId)) as $row) {
-            $tag = $this->createEmpty();
-            $tag->tagId = $this->getSanitizer()->int($row['tagId']);
-            $tag->tag = $this->getSanitizer()->string($row['tag']);
-            $tag->assignMedia($mediaId);
-
-            $tags[] = $tag;
-        }
-
-        return $tags;
+        return loadByItemId(1, $mediaId);
     }
 }

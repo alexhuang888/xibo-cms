@@ -332,3 +332,9 @@ $app->get('/command/view', '\Xibo\Controller\Command:displayPage')->name('comman
 $app->get('/command/form/add', '\Xibo\Controller\Command:addForm')->name('command.add.form');
 $app->get('/command/form/edit/:id', '\Xibo\Controller\Command:editForm')->name('command.edit.form');
 $app->get('/command/form/delete/:id', '\Xibo\Controller\Command:deleteForm')->name('command.delete.form');
+
+//
+// AI Tags/AIProfile
+
+$app->get('/aitags/form/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTagForm')->name('aitags.edittag.form');
+$app->get('/aitags/form/editprofile/:itemtype/:itemid', '\Xibo\Controller\AITags:editProfileForm')->name('aitags.editprofile.form');

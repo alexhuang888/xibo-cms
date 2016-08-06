@@ -48,6 +48,26 @@ class Tag implements \JsonSerializable
     public $tag;
 
     /**
+    ** score of this Tag
+    **/
+    public $tag_score;
+
+    /**
+    * item type: the item type this tag belong to
+    **/
+    public $itemtype;
+
+    /**
+    ** item id: the id this tag's item
+    */
+    public $itemid;
+
+    /**
+    * all item tuples associated with this tag [string(itemtype, itemid) => tag_score]
+    */
+    public $itemidtuples = [];
+
+    /**
      * @SWG\Property(description="An array of layoutIDs with this Tag")
      * @var int[]
      */
@@ -61,6 +81,8 @@ class Tag implements \JsonSerializable
 
     private $originalLayoutIds = [];
     private $originalMediaIds = [];
+
+    private $originalitemtuples = [];
 
     /**
      * Entity constructor.
@@ -76,17 +98,71 @@ class Tag implements \JsonSerializable
     {
         $this->tagId = null;
     }
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->tagId;
+    }
 
+    /**
+     * @return int
+     */
+    public function getOwnerId()
+    {
+        return $this->getUser()->userId;
+    }
+    public function gettagscore($itemtype, $itemid)
+    {
+        $key = $itemtype . "_" . $itemid;
+
+        if (!array_key_exists($key, $this->itemidtuples))
+            return 0;
+
+        return $this->itemidtuples[$key];    
+    }
+    public function updateData($tagid, $tag, $itemtype, $itemid, $itemscore)
+    {
+        $this->tagId = $tagid;
+        $this->tag = $tag;
+        $this->itemtype = $itemtype;
+        $this->itemid = $itemid;
+        $this->score = $itemscore;
+
+        assignItem($itemtype, $itemid, $itemscore);
+    }
+    /**
+     * Assign item
+     * @param int $itemtype, int $itemid, float $itemscore
+     */
+    public function assignItem($itemtype, $itemid, $itemscore)
+    {
+        $this->load();
+        $newkey = $itemtype . "_" . $itemid;
+
+        if (!array_key_exists($newkey, $this->itemidtuples))
+            $this->itemidtuples[$newkey] = [$itemtype, $itemid, $itemscore];
+    }
+
+    /**
+     * Unassign item
+     * @param int $itemtype, int $itemid, float $itemscore
+     */
+    public function unassignItem($itemtype, $itemid)
+    {
+        $this->load();
+        $newkey = $itemtype . "_" . $itemid;
+        if (array_key_exists($newkey, $this->itemidtuples))
+            unset($this->itemidtuples[$newkey]);
+    }
     /**
      * Assign Layout
      * @param int $layoutId
      */
     public function assignLayout($layoutId)
     {
-        $this->load();
-
-        if (!in_array($layoutId, $this->layoutIds))
-            $this->layoutIds[] = $layoutId;
+        assignItem(1, $layoutId, 1);
     }
 
     /**
@@ -95,9 +171,7 @@ class Tag implements \JsonSerializable
      */
     public function unassignLayout($layoutId)
     {
-        $this->load();
-
-        $this->layoutIds = array_diff($this->layoutIds, [$layoutId]);
+        unassignItem(1, $layoutId);
     }
 
     /**
@@ -106,10 +180,7 @@ class Tag implements \JsonSerializable
      */
     public function assignMedia($mediaId)
     {
-        $this->load();
-
-        if (!in_array($mediaId, $this->mediaIds))
-            $this->mediaIds[] = $mediaId;
+        assignItem(2, $mediaId, 1);
     }
 
     /**
@@ -118,11 +189,57 @@ class Tag implements \JsonSerializable
      */
     public function unassignMedia($mediaId)
     {
-        $this->load();
+        unassignItem(2, $mediaId);
+    }
+    /**
+     * Link all assigned item
+     */
+    private function linkitems()
+    {
+        $itemsToLink = array_diff_key($this->itemtuples, $this->originalitemtuples);
 
-        $this->mediaIds = array_diff($this->mediaIds, [$mediaId]);
+        $this->getLog()->debug('Linking %d item to Tag %s', count($itemsToLink), $this->tag);
+
+        // Layouts that are in layoutIds but not in originalLayoutIds
+        foreach ($itemsToLink as $item) 
+        {
+            $this->getStore()->update('INSERT INTO `lklinkedtags` (tagid, itemtype, itemid, score) VALUES (:tagId, :itemtype, :itemid, :score) ON DUPLICATE KEY UPDATE itemid = itemid and itemtype=itemtype', array(
+                'tagId' => $this->tagId,
+                'itemtype' => $item[0],
+                'itemid' => $item[1],
+                'score' => $item[2]
+            ));
+        }
     }
 
+        /**
+     * Unlink all assigned items
+     */
+    private function unlinkItems()
+    {
+        // Layouts that are in the originalLayoutIds but not in the current layoutIds
+        $itemsToUnlink = array_diff_key($this->originalitemtuples, $this->itemtuples);
+
+        $this->getLog()->debug('Unlinking %d items from Tag %s', count($itemsToUnlink), $this->tag);
+
+        if (count($itemsToUnlink) <= 0)
+            return;
+
+        // Unlink any layouts that are NOT in the collection
+        $params = ['tagId' => $this->tagId];
+
+        $sql = 'DELETE FROM `lklinkedtags` WHERE tagId = :tagId AND layoutId IN (0';
+
+        $i = 0;
+        foreach ($itemsToUnlink as $item) 
+        {
+            $params = ['tagId' => $this->tagId, 'itemtype' => $item[0], 'itemid' => $item[1], 'score' => $item[2]];
+
+            $sql = 'DELETE FROM `lklinkedtags` WHERE tagId = :tagId AND itemtype = :itemtype AND itemid = :itemid';
+
+            $this->getStore()->update($sql, $params);
+        }
+    }
     /**
      * Load
      */
@@ -131,19 +248,16 @@ class Tag implements \JsonSerializable
         if ($this->tagId == null || $this->loaded)
             return;
 
-        $this->layoutIds = [];
-        foreach ($this->getStore()->select('SELECT layoutId FROM `lktaglayout` WHERE tagId = :tagId', ['tagId' => $this->tagId]) as $row) {
-            $this->layoutIds[] = $row['layoutId'];
-        }
-
-        $this->mediaIds = [];
-        foreach ($this->getStore()->select('SELECT mediaId FROM `lktagmedia` WHERE tagId = :tagId', ['tagId' => $this->tagId]) as $row) {
-            $this->mediaIds[] = $row['mediaId'];
+        $this->itemidtuples = [];
+        foreach ($this->getStore()->select('SELECT itemtype, itemid, score FROM `lklinkedtags` WHERE tagid = :tagid', ['tagid' => $this->tagId]) as $row) 
+        {
+            //$this->layoutIds[] = $row['layoutId'];
+            $newkey = $row['itemtype'] . "_" . $row['itemid'];
+            $this->itemidtuples[$newkey] = $row['score'];
         }
 
         // Set the originals
-        $this->originalLayoutIds = $this->layoutIds;
-        $this->originalMediaIds = $this->mediaIds;
+        $this->originalitemtuples = $this->itemidtuples;
 
         $this->loaded = true;
     }
@@ -158,8 +272,7 @@ class Tag implements \JsonSerializable
             $this->add();
 
         // Manage the links to layouts and media
-        $this->linkLayouts();
-        $this->linkMedia();
+        $this->linkitems();
         $this->removeAssignments();
 
         $this->getLog()->debug('Saving Tag: %s, %d', $this->tag, $this->tagId);
@@ -170,8 +283,7 @@ class Tag implements \JsonSerializable
      */
     public function removeAssignments()
     {
-        $this->unlinkLayouts();
-        $this->unlinkMedia();
+        $this->unlinkItems();
     }
 
     /**
@@ -220,7 +332,7 @@ class Tag implements \JsonSerializable
         $sql = 'DELETE FROM `lktaglayout` WHERE tagId = :tagId AND layoutId IN (0';
 
         $i = 0;
-        foreach ($layoutsToUnlink as $layoutId) {
+        foreach ($layoutsToUnlink as $layoutId) {checkEditable
             $i++;
             $sql .= ',:layoutId' . $i;
             $params['layoutId' . $i] = $layoutId;

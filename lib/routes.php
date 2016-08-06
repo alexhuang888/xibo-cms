@@ -417,3 +417,10 @@ $app->get('/command', '\Xibo\Controller\Command:grid')->name('command.search');
 $app->post('/command', '\Xibo\Controller\Command:add')->name('command.add');
 $app->put('/command/:id', '\Xibo\Controller\Command:edit')->name('command.edit');
 $app->delete('/command/:id', '\Xibo\Controller\Command:delete')->name('command.delete');
+
+
+//
+// AI Tags/AIProfile
+
+$app->put('/aitags/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTags')->name('aitags.edittag');
+$app->put('/aitags/editprofile/:itemtype/:itemid', '\Xibo\Controller\AITags:editProfile')->name('aitags.editprofile');

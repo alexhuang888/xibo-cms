@@ -922,6 +922,28 @@ class State extends Middleware
                 $container->userFactory
             );
         });
+
+        $app->container->singleton('\Xibo\Controller\AITags', function($container) {
+            return new \Xibo\Controller\AITags(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->playerActionService,
+                $container->displayFactory,
+                $container->displayGroupFactory,
+                $container->layoutFactory,
+                $container->moduleFactory,
+                $container->mediaFactory,
+                $container->commandFactory,
+                $container->scheduleFactory,
+                $container->tagFactory,
+                $container
+            );
+        });
     }
 
     /**
@@ -1076,7 +1098,7 @@ class State extends Middleware
                 $container->logService,
                 $container->sanitizerService,
                 $container->configService,
-                $container->commandFactory
+                $container->commandFactoryitemCreatorFactory
             );
         });
 
@@ -1364,6 +1386,18 @@ class State extends Middleware
                 $container->store,
                 $container->logService,
                 $container->sanitizerService
+            );
+        });
+
+        $container->singleton('itemCreatorFactory', function($container) {
+            return new \Xibo\Factory\ItemCreatorFactory(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService,
+                $container->user,
+                $container->userFactory,
+                $container->permissionFactory,
+                $container
             );
         });
     }

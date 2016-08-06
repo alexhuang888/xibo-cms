@@ -17,4 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Xibo.  If not, see <http://www.gnu.org/licenses/>.
  */ 
- 
+/* these are for DG sub-group hierarchy tree view control */ 
+td.details-control {
+    background: url('../img/icons/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('../img/icons/details_close.png') no-repeat center center;
+}
