@@ -24,8 +24,8 @@ use Xibo\Service\ConfigService;
 DEFINE('XIBO', true);
 define('PROJECT_ROOT', realpath(__DIR__ . '/../..'));
 
-error_reporting(0);
-ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('display_errors', E_ALL);
 
 require PROJECT_ROOT . '/vendor/autoload.php';
 
@@ -45,7 +45,7 @@ $logger = new \Xibo\Helper\AccessibleMonologWriter(array(
 ), false);
 
 $app = new \RKA\Slim(array(
-    'debug' => false,
+    'debug' => true,
     'log.writer' => $logger
 ));
 $app->setName('api');
@@ -77,6 +77,8 @@ require PROJECT_ROOT . '/lib/routes.php';
 
 $app->get('/', '\Xibo\Controller\Login:About');
 $app->post('/library/mcaas/:id', '\Xibo\Controller\Library:mcaas');
+
+print $url = $app->urlFor('aitags.profiletextextractor');
 
 // Run app
 $app->run();

@@ -312,7 +312,11 @@ var loadTimeLineCallback = function(dialog) {
     $(".libraryUploadForm").click(libraryUploadClick);
 };
 
-
+function XiboPlaylistSaveAITags(formUrl) 
+{
+    bootbox.hideAll();
+    XiboFormRender(formUrl);
+};
 var XiboTimelineSaveOrder = function(timelineDiv) {
 
     var url = $("#" + timelineDiv).data().orderUrl;

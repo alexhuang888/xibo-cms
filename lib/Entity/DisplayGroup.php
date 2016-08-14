@@ -30,9 +30,14 @@ class DisplayGroup implements \JsonSerializable
     use EntityTrait;
     use AIProfileTrait;
 
-    public static function getItemID() {
+    public static function ItemType() {
         return \ITID_DISPLAYGROUP;
     }
+
+    public function getItemType() 
+    {
+        return \ITID_DISPLAY;
+    }    
     /**
      * @SWG\Property(
      *  description="The displayGroup Id"
@@ -181,7 +186,14 @@ class DisplayGroup implements \JsonSerializable
         $this->scheduleFactory = $scheduleFactory;
         return $this;
     }
-
+    public function setChildObjectDependenciesFromContainer($container)
+    {
+        $this->displayFactory = $container->displayFactory;
+        $this->layoutFactory = $container->layoutFactory;
+        $this->mediaFactory = $container->mediaFactory;
+        $this->scheduleFactory = $container->scheduleFactory;
+        return $this;
+    }
     /**
      * @return int
      */
@@ -328,7 +340,7 @@ class DisplayGroup implements \JsonSerializable
      * @param Layout $layout
      */
     public function assignLayout($layout)
-    {
+    {    
         $this->load();
 
         if (!in_array($layout, $this->layouts)) {
@@ -355,7 +367,24 @@ class DisplayGroup implements \JsonSerializable
             return $a->getId() - $b->getId();
         });
     }
+    // 
+	public function getchilditems($container)
+	{
+		// return arary of tuples [itemtype, itemid];
+        $this->setChildObjectDependenciesFromContainer($container);
+		$this->load();
+        $retarray = array();
 
+        foreach ($this->displayGroups as $displaygroup)
+        {
+            $retarray[] = [DISPLAYGROUP::ItemType(), $displaygroup->getId()];
+        }
+        foreach ($this->displays as $display)
+        {
+            $retarray[] = [DISPLAY::ItemType(), $display->getId()];
+        }
+        return $retarray;
+	}
     /**
      * Load the contents for this display group
      */

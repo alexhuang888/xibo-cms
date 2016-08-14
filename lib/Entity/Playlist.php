@@ -30,6 +30,7 @@ use Xibo\Factory\WidgetFactory;
 use Xibo\Service\DateServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Playlist
@@ -40,7 +41,12 @@ use Xibo\Storage\StorageServiceInterface;
 class Playlist implements \JsonSerializable
 {
     use EntityTrait;
-
+    public static function ItemType() {
+        return \ITID_PLAYLIST;
+    }
+    public function getItemType() {
+        return \ITID_PLAYLIST;
+    }    
     /**
      * @SWG\Property(description="The ID of this Playlist")
      * @var int
@@ -108,6 +114,11 @@ class Playlist implements \JsonSerializable
      * @var RegionFactory
      */
     private $regionFactory;
+
+    // if this playlist is allowed to assign media by matching ai tags?
+    public $isaitagmatchable;
+
+    public $lastaitagsmatchedDT;
 
     /**
      * Entity constructor.

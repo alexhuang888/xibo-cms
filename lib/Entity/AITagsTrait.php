@@ -38,9 +38,6 @@ function to calculate tags similarities
 
 for an ai-tag, it includes tag-name and score
 */
-	// mongodb store interface
-	private $mongostore;
-
 	// tags created for ai comparison purpose
 	// tags has score keyname => [score=>scorevalue]
 	private $ai_tags = [];
@@ -53,6 +50,7 @@ for an ai-tag, it includes tag-name and score
 	// do I need guid of every object?
 	// guid is a string here.
 	private $entityguid;
+
 
 	function self_create_entity_guid()
 	{

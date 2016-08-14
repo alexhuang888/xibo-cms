@@ -325,7 +325,7 @@ $app->get('/stats/form/export', '\Xibo\Controller\Stats:exportForm')->name('stat
 $app->get('/audit/view', '\Xibo\Controller\AuditLog:displayPage')->name('auditLog.view');
 $app->get('/audit/form/export', '\Xibo\Controller\AuditLog:exportForm')->name('auditLog.export.form');
 
-//
+//aitags.edittag.form
 // Commands
 //
 $app->get('/command/view', '\Xibo\Controller\Command:displayPage')->name('command.view');
@@ -337,4 +337,4 @@ $app->get('/command/form/delete/:id', '\Xibo\Controller\Command:deleteForm')->na
 // AI Tags/AIProfile
 
 $app->get('/aitags/form/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTagForm')->name('aitags.edittag.form');
-$app->get('/aitags/form/editprofile/:itemtype/:itemid', '\Xibo\Controller\AITags:editProfileForm')->name('aitags.editprofile.form');
+$app->get('/aitags/form/mediatagretrieve/:itemtype/:itemid', '\Xibo\Controller\AITags:retrieveMediaTagForm')->name('aitags.mediatagretrieve.form');

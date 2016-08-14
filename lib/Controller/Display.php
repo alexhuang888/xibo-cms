@@ -406,6 +406,12 @@ class Display extends Base
                     'url' => $this->urlFor('display.edit.form', ['id' => $display->displayId]),
                     'text' => __('Edit')
                 );
+                // Edit AI Tags
+                $display->buttons[] = array(
+                    'id' => 'display_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Display::ItemType(), 'itemid' => $display->displayId]),
+                    'text' => __('Edit AI Tags')
+                );
             }
 
             // Delete
@@ -886,6 +892,8 @@ class Display extends Base
 
             if (!$this->getUser()->checkEditable($displayGroup))
                 throw new AccessDeniedException(__('Access Denied to DisplayGroup'));
+
+            $displayGroup->setChildObjectDependencies($this->displayFactory, $this->layoutFactory, $this->mediaFactory, $this->scheduleFactory);
 
             $displayGroup->assignDisplay($display);
             $displayGroup->save(['validate' => false]);

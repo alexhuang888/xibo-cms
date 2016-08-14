@@ -45,6 +45,9 @@ class ApplicationState
     public $recordsTotal;
     public $recordsFiltered;
 
+    public $itemid;
+    public $itemtype;
+
     public function __construct()
     {
         // Assume success
@@ -110,6 +113,8 @@ class ApplicationState
         $response['extra'] = $this->extra;
         $response['data'] = $this->data;
 
+        $response['itemtype'] = $this->itemtype;
+        $response['itemid'] = $this->itemid;
         return json_encode($response);
     }
 

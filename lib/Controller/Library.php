@@ -357,6 +357,13 @@ class Library extends Base
                     'url' => $this->urlFor('library.edit.form', ['id' => $media->mediaId]),
                     'text' => __('Edit')
                 );
+
+                // Edit AI Tags
+                $media->buttons[] = array(
+                    'id' => 'content_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
+                    'text' => __('Edit AI Tags')
+                );                
             }
 
             if ($user->checkDeleteable($media)) {

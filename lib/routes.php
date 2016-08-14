@@ -44,7 +44,7 @@ defined('XIBO') or die('Sorry, you are not allowed to directly access this page.
  *      url="http://www.gnu.org/licenses/"
  *  ),
  *  @SWG\Contact(
- *      email="info@xibo.org.uk"
+ *      email="info@xibhttps://dallas143.arvixeshared.com:2096/cpsess5845302385/webmail/paper_lantern/index.html?login=1&post_login=69850105216927o.org.uk"
  *  )
  * )
  *
@@ -99,7 +99,7 @@ $app->delete('/notification/:id', '\Xibo\Controller\Notification:delete')->name(
  * Layouts
  * @SWG\Tag(
  *  name="layout",
- *  description="Layouts"
+ *  description="Layouts"https://dallas143.arvixeshared.com:2096/cpsess5845302385/webmail/paper_lantern/index.html?login=1&post_login=69850105216927
  * )
  */
 $app->get('/layout', '\Xibo\Controller\Layout:grid')->name('layout.search');
@@ -140,6 +140,8 @@ $app->delete('/playlist/:id', '\Xibo\Controller\Playlist:delete')->name('playlis
 $app->get('/playlist/widget', '\Xibo\Controller\Playlist:widgetGrid')->name('playlist.widget.search');
 $app->post('/playlist/order/:id', '\Xibo\Controller\Playlist:order')->name('playlist.order');
 $app->post('/playlist/library/assign/:id', '\Xibo\Controller\Playlist:libraryAssign')->name('playlist.library.assign');
+
+
 // Widget Modules
 $app->post('/playlist/widget/:type/:id', '\Xibo\Controller\Module:addWidget')->name('module.widget.add');
 $app->put('/playlist/widget/:id', '\Xibo\Controller\Module:editWidget')->name('module.widget.edit');
@@ -310,7 +312,7 @@ $app->delete('/log', '\Xibo\Controller\Logging:truncate')->name('log.truncate');
  * @SWG\Tag(
  *  name="user",
  *  description="Users"
- * )
+ * )r
  */
 $app->get('/user/me', '\Xibo\Controller\User:myDetails')->name('user.me');
 $app->get('/user', '\Xibo\Controller\User:grid')->name('user.search');
@@ -318,7 +320,7 @@ $app->post('/user', '\Xibo\Controller\User:add')->name('user.add');
 $app->put('/user/password/change', '\Xibo\Controller\User:changePassword')->name('user.change.password');
 $app->put('/user/:id', '\Xibo\Controller\User:edit')->name('user.edit');
 $app->delete('/user/:id', '\Xibo\Controller\User:delete')->name('user.delete');
-// permissions
+// pe127.0.0.1 - - [08/Aug/2016:13:04:50 -0700] "GET /api/aitagsprofiletextextractor HTTP/1.1" 500 206 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:48.0) Gecko/20100101 Firefox/48.0"rmissions
 $app->get('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissionsGrid')->name('user.permissions');
 $app->post('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissions');
 // preferences
@@ -423,4 +425,5 @@ $app->delete('/command/:id', '\Xibo\Controller\Command:delete')->name('command.d
 // AI Tags/AIProfile
 
 $app->put('/aitags/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTags')->name('aitags.edittag');
-$app->put('/aitags/editprofile/:itemtype/:itemid', '\Xibo\Controller\AITags:editProfile')->name('aitags.editprofile');
+$app->post('/aitags/profiletextextractor', '\Xibo\Controller\AITags:profiletextextractor')->name('aitags.profiletextextractor');
+//$app->post('/playlist/order/:id', '\Xibo\Controller\Playlist:order')->name('playlist.order');

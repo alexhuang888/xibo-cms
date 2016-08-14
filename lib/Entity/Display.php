@@ -36,6 +36,7 @@ use Xibo\Service\LogServiceInterface;
 use Xibo\Service\PlayerActionServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
 use Xibo\XMR\CollectNowAction;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Display
@@ -48,6 +49,15 @@ class Display
     private $_config;
     use EntityTrait;
 
+    public static function ItemType() 
+    {
+        return \ITID_DISPLAY;
+    }
+
+    public function getItemType() 
+    {
+        return \ITID_DISPLAY;
+    }
     /**
      * @SWG\Property(description="The ID of this Display")
      * @var int

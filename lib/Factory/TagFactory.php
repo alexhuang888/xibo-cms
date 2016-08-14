@@ -24,6 +24,8 @@ namespace Xibo\Factory;
 
 
 use Xibo\Entity\Tag;
+use Xibo\Entity\Layout;
+use Xibo\Entity\Media;
 use Xibo\Exception\NotFoundException;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Service\SanitizerServiceInterface;
@@ -142,7 +144,7 @@ class TagFactory extends BaseFactory
                                 $this->getSanitizer()->string($row['tag']),
                                 $itemtype,
                                 $itemid,
-                                $this->getSanitizer()->float($row['score']));
+                                $this->getSanitizer()->double($row['score']));
 
             $tags[] = $tag;
         }
@@ -156,7 +158,7 @@ class TagFactory extends BaseFactory
      */
     public function loadByLayoutId($layoutId)
     {
-        return loadByItemId(1, $layoutId);
+        return $this->loadByItemId(Layout::ItemType(), $layoutId);
     }
 
     /**
@@ -166,6 +168,6 @@ class TagFactory extends BaseFactory
      */
     public function loadByMediaId($mediaId)
     {
-        return loadByItemId(1, $mediaId);
+        return $this->loadByItemId(Media::ItemType(), $mediaId);
     }
 }

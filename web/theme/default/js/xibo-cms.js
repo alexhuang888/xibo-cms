@@ -537,17 +537,23 @@ function XiboFormRender(formUrl, data) {
 
                             extrabutton.click(function(e) {
                                 e.preventDefault();
-
+                                console.log(value);
+                                console.log(lastForm);
+                                console.log(timelineForm);
                                 if ($(this).hasClass("save-button"))
                                     $(this).append(' <span class="saving fa fa-cog fa-spin"></span>');
 
-                                if (value.indexOf("DialogClose") > -1 && (lastForm.indexOf("playlist/widget/form") > -1 || lastForm.indexOf("playlist/form/library/assign") > -1) && timelineForm != null) {
+                                if (value.indexOf("DialogClose") > -1 && (lastForm.indexOf("/aitags/form/edittags") > -1 || lastForm.indexOf("playlist/widget/form") > -1 || lastForm.indexOf("playlist/form/library/assign") > -1) && timelineForm != null) {
                                     // Close button
+                                    console.log('Close');
                                     // We might want to go back to the prior form
                                     XiboFormRender(timelineForm.url, timelineForm.value);
                                 }
                                 else
+                                {
+                                    console.log(value);
                                     eval(value);
+                                }
 
                                 return false;
                             });
@@ -958,7 +964,7 @@ function XiboSubmitResponse(response, form) {
                 XiboFormRender($(form).data().nextFormUrl.replace(":id", response.id));
             }
             // Back to the timeline form
-            else if ((lastForm != undefined && (lastForm.indexOf("playlist/widget/form") > -1 || lastForm.indexOf("playlist/form/library/assign") > -1)) && timelineForm != null) {
+            else if ((lastForm != undefined && (lastForm.indexOf("/aitags/form/edittags") > -1 || lastForm.indexOf("playlist/widget/form") > -1 || lastForm.indexOf("playlist/form/library/assign") > -1)) && timelineForm != null) {
                 // Close button
                 // We might want to go back to the prior form
                 XiboFormRender(timelineForm.url, timelineForm.value);
@@ -1087,6 +1093,12 @@ function XiboSwapDialog(formUrl) {
     bootbox.hideAll();
     XiboFormRender(formUrl);
 }
+
+function XiboPlaylistSaveAITags(formUrl) 
+{
+    bootbox.hideAll();
+    XiboFormRender(formUrl);
+};
 
 function XiboRefreshAllGrids() {
     // We should refresh the grids (this is a global refresh)

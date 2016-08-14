@@ -38,6 +38,7 @@ use Xibo\Factory\WidgetFactory;
 use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Media
@@ -48,7 +49,14 @@ use Xibo\Storage\StorageServiceInterface;
 class Media implements \JsonSerializable
 {
     use EntityTrait;
+    
+    public static function ItemType() {
+        return \ITID_MEDIA;
+    }
 
+    public function getItemType() {
+        return \ITID_MEDIA;
+    }    
     /**
      * @SWG\Property(description="The Media ID")
      * @var int

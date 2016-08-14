@@ -213,7 +213,7 @@ class Base
     }
 
     /**
-     * Get Config
+     * Get Configfalse
      * @return ConfigService
      */
     public function getConfig()

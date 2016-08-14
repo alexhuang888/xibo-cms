@@ -113,6 +113,7 @@ class Tag implements \JsonSerializable
     {
         return $this->getUser()->userId;
     }
+
     public function gettagscore($itemtype, $itemid)
     {
         $key = $itemtype . "_" . $itemid;
@@ -122,6 +123,7 @@ class Tag implements \JsonSerializable
 
         return $this->itemidtuples[$key];    
     }
+
     public function updateData($tagid, $tag, $itemtype, $itemid, $itemscore)
     {
         $this->tagId = $tagid;
@@ -130,7 +132,7 @@ class Tag implements \JsonSerializable
         $this->itemid = $itemid;
         $this->score = $itemscore;
 
-        assignItem($itemtype, $itemid, $itemscore);
+        $this->assignItem($itemtype, $itemid, $itemscore);
     }
     /**
      * Assign item
@@ -196,7 +198,7 @@ class Tag implements \JsonSerializable
      */
     private function linkitems()
     {
-        $itemsToLink = array_diff_key($this->itemtuples, $this->originalitemtuples);
+        $itemsToLink = array_diff_key($this->itemidtuples, $this->originalitemtuples);
 
         $this->getLog()->debug('Linking %d item to Tag %s', count($itemsToLink), $this->tag);
 
@@ -218,7 +220,7 @@ class Tag implements \JsonSerializable
     private function unlinkItems()
     {
         // Layouts that are in the originalLayoutIds but not in the current layoutIds
-        $itemsToUnlink = array_diff_key($this->originalitemtuples, $this->itemtuples);
+        $itemsToUnlink = array_diff_key($this->originalitemtuples, $this->itemidtuples);
 
         $this->getLog()->debug('Unlinking %d items from Tag %s', count($itemsToUnlink), $this->tag);
 
@@ -226,16 +228,12 @@ class Tag implements \JsonSerializable
             return;
 
         // Unlink any layouts that are NOT in the collection
-        $params = ['tagId' => $this->tagId];
-
-        $sql = 'DELETE FROM `lklinkedtags` WHERE tagId = :tagId AND layoutId IN (0';
 
         $i = 0;
+        $sql = 'DELETE FROM `lklinkedtags` WHERE tagid = :tagId AND itemtype = :itemtype AND itemid = :itemid';
         foreach ($itemsToUnlink as $item) 
         {
-            $params = ['tagId' => $this->tagId, 'itemtype' => $item[0], 'itemid' => $item[1], 'score' => $item[2]];
-
-            $sql = 'DELETE FROM `lklinkedtags` WHERE tagId = :tagId AND itemtype = :itemtype AND itemid = :itemid';
+            $params = ['tagId' => $this->tagId, 'itemtype' => $item[0], 'itemid' => $item[1]];       
 
             $this->getStore()->update($sql, $params);
         }
@@ -251,9 +249,8 @@ class Tag implements \JsonSerializable
         $this->itemidtuples = [];
         foreach ($this->getStore()->select('SELECT itemtype, itemid, score FROM `lklinkedtags` WHERE tagid = :tagid', ['tagid' => $this->tagId]) as $row) 
         {
-            //$this->layoutIds[] = $row['layoutId'];
             $newkey = $row['itemtype'] . "_" . $row['itemid'];
-            $this->itemidtuples[$newkey] = $row['score'];
+            $this->itemidtuples[$newkey] = [$row['itemtype'], $row['itemid'], $row['score']];
         }
 
         // Set the originals
@@ -332,7 +329,7 @@ class Tag implements \JsonSerializable
         $sql = 'DELETE FROM `lktaglayout` WHERE tagId = :tagId AND layoutId IN (0';
 
         $i = 0;
-        foreach ($layoutsToUnlink as $layoutId) {checkEditable
+        foreach ($layoutsToUnlink as $layoutId) {
             $i++;
             $sql .= ',:layoutId' . $i;
             $params['layoutId' . $i] = $layoutId;

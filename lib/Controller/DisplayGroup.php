@@ -137,7 +137,7 @@ class DisplayGroup extends Base
      *  operationId="displayGroupSearch",
      *  @SWG\Parameter(
      *      name="displayGroupId",
-     *      in="formData",
+     *      in="fordisplayPagemData",
      *      description="Filter by DisplayGroup Id",
      *      type="integer",
      *      required=false
@@ -152,7 +152,7 @@ class DisplayGroup extends Base
      *  @SWG\Response(
      *      response=200,
      *      description="a successful response",
-     *      @SWG\Schema(
+     *      @SWG\Schema(getItemType
      *          type="array",
      *          @SWG\Items(ref="#/definitions/DisplayGroup")
      *      ),
@@ -208,7 +208,7 @@ class DisplayGroup extends Base
                 // Edit AI Tags
                 $group->buttons[] = array(
                     'id' => 'displaygroup_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\DisplayGroup::getItemID(), 'itemid' => $group->displayGroupId]),
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\DisplayGroup::ItemType(), 'itemid' => $group->displayGroupId]),
                     'text' => __('Edit AI Tags')
                 );
             }

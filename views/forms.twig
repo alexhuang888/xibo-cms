@@ -79,11 +79,12 @@
     </div>
 {% endmacro %}
 
-{% macro textarea(name, title, value, helpText, groupClass, validation, rows) %}
+{% macro textarea(name, title, value, helpText, groupClass, validation, rows, accessKey) %}
     <div class="form-group {{ groupClass }}">
-        <div class="col-sm-12">
-            <span class="help-block">{{ helpText }}</span>
+        <label class="col-sm-2 control-label" for="{{ name }}" accesskey="{{ accessKey }}">{{ title }}</label>
+        <div class="col-sm-10">
             <textarea class="form-control" name="{{ name }}" id="{{ name }}" rows="{{ rows }}" {{ validation }}>{{ value }}</textarea>
+            <span class="help-block">{{ helpText }}</span>
         </div>
     </div>
 {% endmacro %}
