@@ -163,6 +163,8 @@ abstract class ModuleWidget implements ModuleInterface
     protected $displayGroupFactory;
     /** @var  tagFactory */
     protected $tagFactory;
+
+    protected $aitagshelper;
     /**
      * ModuleWidget constructor.
      * @param Slim $app
@@ -205,11 +207,12 @@ abstract class ModuleWidget implements ModuleInterface
      * @param WidgetFactory $widgetFactory
      * @param DisplayGroupFactory $displayGroupFactory
      */
-    public function setChildObjectDependencies($layoutFactory, $widgetFactory, $displayGroupFactory)
+    public function setChildObjectDependencies($layoutFactory, $widgetFactory, $displayGroupFactory, $aitagshelper)
     {
         $this->layoutFactory = $layoutFactory;
         $this->widgetFactory = $widgetFactory;
         $this->displayGroupFactory = $displayGroupFactory;
+        $this->aitagshelper = $aitagshelper;
     }
 
     /**
