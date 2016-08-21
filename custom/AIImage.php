@@ -110,7 +110,7 @@ class AIImage extends \Xibo\Widget\Image
      * @param Media $media
      * @param string $filePath: file path in temp folder.
      */
-    public function preProcess($media, $filePath) 
+    public function preProcessXXX($media, $filePath) 
     {
         // here, we would like to send this media file to google cloud vision to get smart Tag
         // first, make sure it is an image type (or it is already?)
@@ -153,5 +153,25 @@ class AIImage extends \Xibo\Widget\Image
             }
         }
 
-    }      
+    }     
+
+    /**
+     * Pre-process
+     *  this is run before the media item is saved
+     * @param Media $media
+     * @param string $filePath: file path in temp folder.
+     */
+    public function preProcess($media, $filePath) 
+    {
+        return $this->aitagshelper->mediasmarttagextractorProc($media, $filePath);
+        //return $this->aitagshelper->processnewmedia($this->getUser()->getId(), $media->getItemType(),
+          //                                          $media->getId(), $filePath);
+    }     
+
+    public function postProcess($media)
+    {
+        $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
+
+        return $this->aitagshelper->processnewmedia($this->getUser()->getId(), $media, $filePath);        
+    }    
 }
