@@ -944,6 +944,7 @@ class State extends Middleware
                 $container
             );
         });
+        
     }
 
     /**
@@ -1169,7 +1170,8 @@ class State extends Middleware
                 $container->dataSetColumnFactory,
                 $container->transitionFactory,
                 $container->displayFactory,
-                $container->commandFactory
+                $container->commandFactory,
+                $container->tagFactory
             );
         });
 
@@ -1400,5 +1402,25 @@ class State extends Middleware
                 $container
             );
         });
+
+        $container->singleton('aitagshelper', function($container) {
+            return new \Xibo\Custom\AITagsHelper(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService,
+                $container->user,
+                $container->userFactory,
+                $container->permissionFactory,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->tagFactory,
+                $container->playlistFactory,
+                $container->regionFactory,
+                $container->widgetFactory,
+                $container->mediaFactory,
+                $container->moduleFactory
+            );
+        });        
     }
 }

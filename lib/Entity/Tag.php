@@ -92,6 +92,7 @@ class Tag implements \JsonSerializable
     public function __construct($store, $log)
     {
         $this->setCommonDependencies($store, $log);
+        $this->tag_score = 1.0;
     }
 
     public function __clone()
@@ -164,7 +165,7 @@ class Tag implements \JsonSerializable
      */
     public function assignLayout($layoutId)
     {
-        assignItem(1, $layoutId, 1);
+        $this->assignItem(\ITID_LAYOUT, $layoutId, 1);
     }
 
     /**
@@ -173,7 +174,7 @@ class Tag implements \JsonSerializable
      */
     public function unassignLayout($layoutId)
     {
-        unassignItem(1, $layoutId);
+        $this->unassignItem(\ITID_LAYOUT, $layoutId);
     }
 
     /**
@@ -182,7 +183,7 @@ class Tag implements \JsonSerializable
      */
     public function assignMedia($mediaId)
     {
-        assignItem(2, $mediaId, 1);
+        $this->assignItem(\ITID_MEDIA, $mediaId, 1);
     }
 
     /**
@@ -191,7 +192,7 @@ class Tag implements \JsonSerializable
      */
     public function unassignMedia($mediaId)
     {
-        unassignItem(2, $mediaId);
+        $this->unassignItem(\ITID_MEDIA, $mediaId);
     }
     /**
      * Link all assigned item

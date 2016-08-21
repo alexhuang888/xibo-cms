@@ -405,4 +405,18 @@ class Playlist implements \JsonSerializable
 
         return ($results[0]['qty'] > 0);
     }
+
+    /**
+     * Has media
+     * @return bool
+     */
+    public function hasMedias($mediaId)
+    {
+        $results = $this->getStore()->select('SELECT COUNT(*) AS qty 
+                                    FROM `lkwidgetmedia` 
+                                    WHERE lkwidgetmedia = :mediaid AND lkwidgetmedia.widgetId in (SELECT widget.widgetId from widget WHERE playlistId = :playlistId) ', 
+                                    ['playlistId' => $this->playlistId, 'mediaid' => $mediaId]);
+
+        return ($results[0]['qty'] > 0);
+    }    
 }

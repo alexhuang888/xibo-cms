@@ -90,6 +90,10 @@ class ModuleFactory extends BaseFactory
     protected $commandFactory;
 
     /**
+     * @var TagFactory
+     */
+    protected $tagFactory;
+    /**
      * Construct a factory
      * @param StorageServiceInterface $store
      * @param LogServiceInterface $log
@@ -107,7 +111,7 @@ class ModuleFactory extends BaseFactory
      * @param DisplayFactory $displayFactory
      * @param CommandFactory $commandFactory
      */
-    public function __construct($store, $log, $sanitizerService, $user, $userFactory, $moduleService, $widgetFactory, $regionFactory, $playlistFactory, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory)
+    public function __construct($store, $log, $sanitizerService, $user, $userFactory, $moduleService, $widgetFactory, $regionFactory, $playlistFactory, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         $this->setCommonDependencies($store, $log, $sanitizerService);
         $this->setAclDependencies($user, $userFactory);
@@ -122,6 +126,7 @@ class ModuleFactory extends BaseFactory
         $this->transitionFactory = $transitionFactory;
         $this->displayFactory = $displayFactory;
         $this->commandFactory = $commandFactory;
+        $this->tagFactory = $tagFactory;
     }
 
     /**
@@ -155,7 +160,8 @@ class ModuleFactory extends BaseFactory
             $this->dataSetColumnFactory,
             $this->transitionFactory,
             $this->displayFactory,
-            $this->commandFactory
+            $this->commandFactory,
+            $this->tagFactory
         );
     }
 
@@ -175,7 +181,8 @@ class ModuleFactory extends BaseFactory
             $this->dataSetColumnFactory,
             $this->transitionFactory,
             $this->displayFactory,
-            $this->commandFactory
+            $this->commandFactory,
+            $this->tagFactory
         );
     }
 
@@ -194,7 +201,8 @@ class ModuleFactory extends BaseFactory
             $this->dataSetColumnFactory,
             $this->transitionFactory,
             $this->displayFactory,
-            $this->commandFactory
+            $this->commandFactory,
+            $this->tagFactory
         );
     }
 
@@ -225,7 +233,8 @@ class ModuleFactory extends BaseFactory
             $this->dataSetColumnFactory,
             $this->transitionFactory,
             $this->displayFactory,
-            $this->commandFactory
+            $this->commandFactory,
+            $this->tagFactory
         );
         $object->setWidget($widget);
 

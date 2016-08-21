@@ -147,7 +147,13 @@ class PlaylistFactory extends BaseFactory
             $body .= ' AND playlistId = :playlistId ';
             $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', $filterBy);
         }
-
+        if (DBVERSION >= 210)
+        {
+            if ($this->getSanitizer()->getInt('isaitagmatchable', $filterBy) != 0) {
+                $body .= ' AND isaitagmatchable = :isaitagmatchable ';
+                $params['isaitagmatchable'] = 1;
+            }
+        }
         // Sorting?
         $order = '';
         if (is_array($sortOrder))

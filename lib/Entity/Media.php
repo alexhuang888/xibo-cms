@@ -193,6 +193,7 @@ class Media implements \JsonSerializable
     private $layoutBackgroundImages = [];
     private $permissions = [];
 
+    public $isaitagsgenerated;
     /**
      * @var ConfigServiceInterface
      */
@@ -426,6 +427,9 @@ class Media implements \JsonSerializable
      */
     public function load($options = [])
     {
+        if ($this->loaded == true)
+            return;
+
         $options = array_merge([
             'deleting' => false,
             'fullInfo' => false
@@ -660,6 +664,7 @@ class Media implements \JsonSerializable
                 userId = :userId,
                 released = :released,
                 apiRef = :apiRef
+                isaitagsgenerated = :isaitagsgenerated
            WHERE mediaId = :mediaId
         ', [
             'name' => $this->name,
@@ -674,7 +679,8 @@ class Media implements \JsonSerializable
             'userId' => $this->ownerId,
             'released' => $this->released,
             'apiRef' => $this->apiRef,
-            'mediaId' => $this->mediaId
+            'mediaId' => $this->mediaId,
+            'isaitagsgenerated' => $this->isaitagsgenerated
         ]);
     }
 

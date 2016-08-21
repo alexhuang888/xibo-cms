@@ -161,7 +161,8 @@ abstract class ModuleWidget implements ModuleInterface
 
     /** @var  DisplayGroupFactory */
     protected $displayGroupFactory;
-
+    /** @var  tagFactory */
+    protected $tagFactory;
     /**
      * ModuleWidget constructor.
      * @param Slim $app
@@ -178,7 +179,7 @@ abstract class ModuleWidget implements ModuleInterface
      * @param DisplayFactory $displayFactory
      * @param CommandFactory $commandFactory
      */
-    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory)
+    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         $this->app = $app;
         $this->store = $store;
@@ -194,7 +195,7 @@ abstract class ModuleWidget implements ModuleInterface
         $this->transitionFactory = $transitionFactory;
         $this->displayFactory = $displayFactory;
         $this->commandFactory = $commandFactory;
-
+        $this->tagFactory = $tagFactory;
         $this->init();
     }
 
@@ -1019,7 +1020,7 @@ abstract class ModuleWidget implements ModuleInterface
 
     /**
      * Post-processing
-     *  this is run after the media item has been created and before it is saved.
+     *  this is run after the media item has been created and  saved.
      * @param Media $media
      */
     public function postProcess($media)

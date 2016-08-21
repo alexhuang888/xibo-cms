@@ -78,7 +78,5 @@ require PROJECT_ROOT . '/lib/routes.php';
 $app->get('/', '\Xibo\Controller\Login:About');
 $app->post('/library/mcaas/:id', '\Xibo\Controller\Library:mcaas');
 
-print $url = $app->urlFor('aitags.profiletextextractor');
-
 // Run app
 $app->run();

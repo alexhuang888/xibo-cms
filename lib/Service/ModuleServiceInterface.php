@@ -49,7 +49,7 @@ interface ModuleServiceInterface
      * @param CommandFactory $commandFactory
      * @return ModuleWidget
      */
-    public function get($module, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory);
+    public function get($module, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory);
     /**
      * @param string $className
      * @param MediaFactory $mediaFactory
@@ -60,5 +60,5 @@ interface ModuleServiceInterface
      * @param CommandFactory $commandFactory
      * @return ModuleWidget
      */
-    public function getByClass($className, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory);
+    public function getByClass($className, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory);
 }

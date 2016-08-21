@@ -320,7 +320,7 @@ $app->post('/user', '\Xibo\Controller\User:add')->name('user.add');
 $app->put('/user/password/change', '\Xibo\Controller\User:changePassword')->name('user.change.password');
 $app->put('/user/:id', '\Xibo\Controller\User:edit')->name('user.edit');
 $app->delete('/user/:id', '\Xibo\Controller\User:delete')->name('user.delete');
-// pe127.0.0.1 - - [08/Aug/2016:13:04:50 -0700] "GET /api/aitagsprofiletextextractor HTTP/1.1" 500 206 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:48.0) Gecko/20100101 Firefox/48.0"rmissions
+// permission
 $app->get('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissionsGrid')->name('user.permissions');
 $app->post('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissions');
 // preferences
@@ -426,4 +426,3 @@ $app->delete('/command/:id', '\Xibo\Controller\Command:delete')->name('command.d
 
 $app->put('/aitags/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTags')->name('aitags.edittag');
 $app->post('/aitags/profiletextextractor', '\Xibo\Controller\AITags:profiletextextractor')->name('aitags.profiletextextractor');
-//$app->post('/playlist/order/:id', '\Xibo\Controller\Playlist:order')->name('playlist.order');
