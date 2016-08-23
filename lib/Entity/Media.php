@@ -193,7 +193,7 @@ class Media implements \JsonSerializable
     private $layoutBackgroundImages = [];
     private $permissions = [];
 
-    public $isaitagsgenerated;
+    public $isaitagsgenerated = false;
     /**
      * @var ConfigServiceInterface
      */
@@ -663,7 +663,7 @@ class Media implements \JsonSerializable
                 isEdited = :isEdited,
                 userId = :userId,
                 released = :released,
-                apiRef = :apiRef
+                apiRef = :apiRef,
                 isaitagsgenerated = :isaitagsgenerated
            WHERE mediaId = :mediaId
         ', [

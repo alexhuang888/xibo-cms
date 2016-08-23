@@ -61,26 +61,29 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
 
     public function matchtagsscore($tags1, $tags2)
     {
+        $url = 'http://localhost:35370/tagsmatch/n_similarity';
         $ch = curl_init();
-        //$cfile = curl_file_create($filePath, mime_content_type($filePath), 'mediafile');
-        $data1 = array('ws1' => $tags1, 'ws2' => $tags2);
-        $data = array('json' => $data1);
-        curl_setopt($ch, CURLOPT_URL, 'http://localhost:35370/tagsmatch/n_similarity');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        //CURLOPT_SAFE_UPLOAD defaulted to true in 5.6.0
-        //So next line is required as of php >= 5.6.0
-        //curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+
+        $result = "{'result': [100, 0]}";
         try {
+            $data1 = json_encode(array('ws1' => $tags1, 'ws2' => $tags2));
+            $data = array('json' => urlencode($data1));
+            
+            curl_setopt($ch, CURLOPT_URL, $url);
+            //curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POST, sizeof($data));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);            
             $result = curl_exec($ch);
         } catch (Exception $e)
         {
             $result = "{'result': [100, 0]}";
         }
+        curl_close($ch);  
         // HERE, we should have tags from google service, update them to this media
         $data = json_decode($result, true);
-        if (array_key_exists('result', $data))
+        if ($data != null && array_key_exists('result', $data))
         {
             if ($data['result'][0] == 0)
             {
@@ -98,8 +101,6 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
         if ($media->getItemType() != \Xibo\Entity\Media::ItemType())
             return;
 
-        //$media = $this->mediaFactory->getById($itemid);
-
         if ($media->isaitagsgenerated == false || $media->getId() == null)
         {
             // generate ai tags first
@@ -107,6 +108,12 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
             $media->save();
         }
         $mediatags = $this->tagFactory->loadByItemId($media->getItemType(), $media->getId());
+        $mediatagstrings = array();
+        foreach ($mediatags as $mediatag)
+        {
+            if (empty($mediatag->tag) == false)
+                $mediatagstrings[] = $mediatag->tag;
+        }
         $module = $this->moduleFactory->getByExtension(strtolower(substr(strrchr($media->fileName, '.'), 1)));
         $module = $this->moduleFactory->create($module->type);
         // then, for all playlist, check if it is ok to insert this media
@@ -116,23 +123,29 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
 
         foreach ($allpl as $thispl)
         {
-            // get tags of Playlist
-            $pltags = $this->tagFactory->loadByItemId($thispl->getItemType(), $thispl->getId());
-
             // check if this media is there alrady?
             if ($thispl->hasMedias($media->getId()) == false)
             {
+                // get tags of Playlist
+                $pltags = $this->tagFactory->loadByItemId($thispl->getItemType(), $thispl->getId());
+                $pltagstrings = array();
+
                 // match $pltags and $mediatags
                 // if score > 0.5, put media to $thispl
+                foreach ($pltags as $pltag)
+                {
+                    if (empty($pltag->tag) == false)
+                        $pltagstrings[] = $pltag->tag;
+                }
+                $matchscore = $this->matchtagsscore($pltagstrings, $mediatagstrings);
 
-                $matchscore = $this->matchtagsscore($pltags, $mediatags);
                 if ($matchscore >= 0.5)
                 {
                     // add media back to pl
-                    $thispl->setChildObjectDependencies($regionFactory);
+                    $thispl->setChildObjectDependencies($this->regionFactory);
 
                     // Create a Widget and add it to our region
-                    $widget = $this->widgetFactory->create($userId, $playlist->playlistId, $module->getModuleType(), $media->duration);
+                    $widget = $this->widgetFactory->create($userId, $thispl->playlistId, $module->getModuleType(), $media->duration);
 
                     // Assign the widget to the module
                     $module->setWidget($widget);
@@ -157,56 +170,53 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     public function profiletextextractor()
     {
         $url = 'http://localhost:35360/profileaitags/profiletextextractor';
-        $data = json_encode(array('profiletext' => urlencode($_POST['profiletext']), 'withScore' => $_POST['withScore']));
         $ch = curl_init($url);
-        //curl_setopt($ch, CURLOPT_URL, $url);
-
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        //curl_setopt($ch, CURLOPT_POST, 1);
-        //CURLOPT_SAFE_UPLOAD defaulted to true in 5.6.0
-        //So next line is required as of php >= 5.6.0
-        //curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-                        'Content-Type: application/json',                                                                                
-                        'Content-Length: ' . strlen($data))                                                                       
-                    ); 
-        $result = array();
+ 
+        $result = "{'result': 100}";
         try {
+            $data = json_encode(array('profiletext' => urlencode($_POST['profiletext']), 'withScore' => $_POST['withScore']));
+            
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+                            'Content-Type: application/json',                                                                                
+                            'Content-Length: ' . strlen($data))                                                                       
+                        );            
             $result = curl_exec($ch);
         } catch (Exception $e)
         {
             $result = "{'result': 100}";
         }
+        curl_close($ch);  
         return $result;       
     } 
     public function mediasmarttagextractorProc($media, $filePath) 
     {
         // here, we would like to send this media file to google cloud vision to get smart Tag
         // first, make sure it is an image type (or it is already?)
-        //$filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
         $ch = curl_init();
-        $cfile = curl_file_create($filePath,mime_content_type($filePath), 'mediafile');
-        $data = array('cmdtype'=> '4:10 6:10', 'filename' => $media->fileName, 'mediafile' => $cfile);
-        curl_setopt($ch, CURLOPT_URL, 'http://localhost:35360/profileaitags/mediasmarttagretriever');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        //CURLOPT_SAFE_UPLOAD defaulted to true in 5.6.0
-        //So next line is required as of php >= 5.6.0
-        curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $result = array();
+        $result = "{'result': 100}";
         try {
+            $cfile = curl_file_create($filePath,mime_content_type($filePath), 'mediafile');
+            $data = array('cmdtype'=> '4:10 6:10', 'filename' => $media->fileName, 'mediafile' => $cfile);
+            curl_setopt($ch, CURLOPT_URL, 'http://localhost:35360/profileaitags/mediasmarttagretriever');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            //CURLOPT_SAFE_UPLOAD defaulted to true in 5.6.0
+            //So next line is required as of php >= 5.6.0
+            curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);            
             $result = curl_exec($ch);
         } catch (Exception $e)
         {
             $result = "{'result': 100}";
         }
+        curl_close($ch);  
         // HERE, we should have tags from google service, update them to this media
         $data = json_decode($result, true);
-        if (array_key_exists('result', $data))
+        if ($data != null && array_key_exists('result', $data))
         {
             if ($data['result'] == 0 && array_key_exists('tags', $data) && array_key_exists('tagsscore', $data))
             {
@@ -216,9 +226,7 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
                 {
                     $newtag = $this->tagFactory->tagFromString($gtag);
                     $newtag->tag_score = $data['tagsscore'][$idx];
-                    //$newtag->assignItem($media->getItemType(), $media->getId(), $data['tagsscore'][$idx]);
 
-                    //$newtag->save();
                     $media->assignTag($newtag);
                     $idx++;
                 }
@@ -229,4 +237,39 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
         return $data;        
     } 
    
+    public function processaitagsmediaqueue()
+    {
+        // get all entry from mediaaitagsprocessqueue
+
+        // for every entry, call function to make it
+        $sql = 'SELECT itemtype, itemid, userid, queueid FROM mediaaitagsprocessqueue where itemtype = :itemtype ';
+        $params = [];
+        $params['itemtype'] = \Xibo\Entity\Media::ItemType();
+        $processqid = [];
+
+        foreach ($this->getStore()->select($sql, $params) as $row) 
+        {
+           // now I have $row['itemtype']
+           // find media first
+           $media = $this->mediaFactory->getById($row['itemid']);
+           $filePath = $this->configService->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
+
+           $this->processnewmedia($row['userid'], $media, $filePath);
+           $processqid[] = $row['queueid'];
+        }
+
+        if (count($processqid) > 0)
+        {
+            $sql = 'DELETE FROM mediaaitagsprocessqueue WHERE queueid IN ( 0 ';
+
+            foreach ($processqid as $qid)
+            {
+                $sql .= ',';
+                $sql .= $qid;
+            }
+
+            $sql .= ' )';
+            $this->getStore()->update($sql, []);
+        }
+    }
 }

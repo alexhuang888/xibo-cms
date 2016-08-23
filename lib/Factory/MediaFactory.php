@@ -319,7 +319,11 @@ class MediaFactory extends BaseFactory
                `media`.apiRef,
             ';
         }
-
+        if (DBVERSION >= 210) {
+            $select .= '
+               `media`.isaitagsgenerated,
+            ';
+        }
         //$select .= " (SELECT GROUP_CONCAT(DISTINCT tag) FROM tag INNER JOIN lktagmedia ON lktagmedia.tagId = tag.tagId WHERE lktagmedia.mediaId = media.mediaID GROUP BY lktagmedia.mediaId) AS tags, ";
         $select .= " (SELECT GROUP_CONCAT(DISTINCT tag) FROM tag INNER JOIN lklinkedtags ON lklinkedtags.tagId = tag.tagId WHERE lklinkedtags.itemtype = :itemtype AND lklinkedtags.itemid = media.mediaID GROUP BY lklinkedtags.itemid) AS tags, ";
         $select .= "        `user`.UserName AS owner, ";

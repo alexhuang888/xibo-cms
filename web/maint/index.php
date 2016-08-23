@@ -93,7 +93,7 @@ $app->notFound(function () use ($app) {
 
 // All routes
 $app->get('/', '\Xibo\Controller\Maintenance:run');
-
+$app->get('/processmediaaitags', '\Xibo\Controller\Maintenance:processmediaaitagsqueue');
 // Run app
 $app->run();
 

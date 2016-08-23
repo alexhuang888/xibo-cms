@@ -640,7 +640,8 @@ class State extends Middleware
                 $container->upgradeFactory,
                 $container->mediaFactory,
                 $container->notificationFactory,
-                $container->userNotificationFactory
+                $container->userNotificationFactory,
+                $container->aitagshelper
             );
         });
 

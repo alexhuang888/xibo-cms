@@ -163,15 +163,27 @@ class AIImage extends \Xibo\Widget\Image
      */
     public function preProcess($media, $filePath) 
     {
-        return $this->aitagshelper->mediasmarttagextractorProc($media, $filePath);
-        //return $this->aitagshelper->processnewmedia($this->getUser()->getId(), $media->getItemType(),
-          //                                          $media->getId(), $filePath);
+        // we'd like to push it to maintain stage
+        //return $this->aitagshelper->mediasmarttagextractorProc($media, $filePath);
+        return;
     }     
 
     public function postProcess($media)
     {
+        // we'd like to push it to maintain stage
+
         $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
 
-        return $this->aitagshelper->processnewmedia($this->getUser()->getId(), $media, $filePath);        
+        //return $this->aitagshelper->processnewmedia($this->getUser()->getId(), $media, $filePath);
+
+        $sql = "INSERT INTO mediaaitagsprocessqueue (itemtype, itemid, userid) VALUES (:itemtype, :itemid, :userid) ";
+
+        $params = [];
+
+        $params['itemtype'] = \Xibo\Entity\Media::ItemType();
+        $params['itemid'] = $media->getId();
+        $params['userid'] = $this->getUser()->getId();
+
+        $this->getStore()->insert($sql, $params);        
     }    
 }
