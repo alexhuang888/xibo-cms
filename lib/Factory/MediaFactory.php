@@ -292,7 +292,7 @@ class MediaFactory extends BaseFactory
     {
         if ($sortOrder === null)
             $sortOrder = ['name'];
-
+        $BodyRemoveItemTypeFilter = true;
         $entries = array();
 
         $params = array();
@@ -488,6 +488,7 @@ class MediaFactory extends BaseFactory
             {
                 $body .= "WHERE lklinkedtags.itemtype = :itemtype ";
             }
+            $BodyRemoveItemTypeFilter = false;
             $body .= " ) ";
         }
 
@@ -517,8 +518,10 @@ class MediaFactory extends BaseFactory
         // Paging
         if ($limit != '' && count($entries) > 0) {
             unset($params['entity']);
+            if ($BodyRemoveItemTypeFilter)
+                unset($params['itemtype']);
             $results = $this->getStore()->select('SELECT COUNT(*) AS total ' . $body, $params);
-            $this->_countLast = intval($results[0]['total']);
+            $this->itemtype_countLast = intval($results[0]['total']);
         }
 
         return $entries;

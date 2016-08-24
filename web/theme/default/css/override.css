@@ -25,3 +25,48 @@ td.details-control {
 tr.shown td.details-control {
     background: url('../img/icons/details_close.png') no-repeat center center;
 }
+
+.nav > li > a > img {
+  width: 20px;
+  height: 20px;
+  margin-top: 0px;
+  border-radius: 2px;
+}
+
+.xibo-logo {
+    height: 40px;
+    margin-left: 0px;
+    margin-top: -10px;
+}
+
+@media only screen and (min-width:561px){
+  #page-wrapper.active {
+    padding-left: 0px;
+  }
+}
+@media only screen and (max-width:560px){
+  #page-wrapper.active {
+    padding-left: 0px;
+  }
+}
+
+.page-content {
+    margin-top: 70px;
+}
+@media (max-width: 767px)
+{
+.navbar-nav > li
+{
+    margin-left: 20px;
+}
+
+.navbar-nav > li > a
+{
+    margin-left: 20px;
+}
+
+.navbar-nav .open .dropdown-menu > li > a
+{
+    margin-left: 30px;
+}
+}

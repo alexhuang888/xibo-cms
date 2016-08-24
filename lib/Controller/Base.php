@@ -393,9 +393,16 @@ class Base
 
         $order = array_map(function ($element) use ($columns) {
             return ((isset($columns[$element['column']]['name']) && 
-                    $columns[$element['column']]['name'] != '') ? '`' . $columns[$element['column']]['name'] . '`' : '`' . $columns[$element['column']]['data'] . '`') . (($element['dir'] == 'desc') ? ' DESC' : '');
+                    $columns[$element['column']]['name'] != '') ? 
+                        '`' . $columns[$element['column']]['name'] . '`' : 
+                        '`' . $columns[$element['column']]['data'] . '`') . 
+                            (($element['dir'] == 'desc') ? ' DESC' : '');
         }, $app->request()->get('order', array()));
-
+        if (sizeof($order) == 1)
+        {
+            if ($order[0] == "``")
+                unset($order[0]);
+        }
         return $order;
     }
 

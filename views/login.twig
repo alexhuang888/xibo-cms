@@ -51,7 +51,7 @@
         <form id="login-form" class="form-signin text-center" action="{{ urlFor("login") }}" method="post">
             <input name="priorRoute" type="hidden" value="{{ flash.priorRoute }}" />
             <input type="hidden" name="{{ csrfKey }}" value="{{ csrfToken }}" />
-            <p><a href="{{ theme.getThemeConfig("theme_url") }}"><img src="{{ theme.uri("img/xibologo.png") }}"></a></p>
+            <p><a href="{{ theme.getThemeConfig("theme_url") }}"><img src="{{ theme.uri("img/logo.svg") }}"></a></p>
 
             <p>{% trans "Please provide your credentials" %}</p>
 

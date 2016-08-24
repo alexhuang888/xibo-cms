@@ -2,7 +2,6 @@
 
 {% block content %}
     <div id="page-wrapper" class="active">
-    <!--
         <div class="collapse navbar-collapse" id="navbar-collapse-1">
             <div id="sidebar-wrapper">
                 <ul class="sidebar">
@@ -118,222 +117,21 @@
                 </ul>
                 
                 <div class="sidebar-footer">
-                
+                <!--
                     <div class="col-sm-6">
                         <a class="XiboFormButton" href="{{ urlFor("about") }}" title="{% trans "About the CMS" %}">{% trans "About" %}</a>
                     </div>
                     <div class="col-sm-6">
                         <a href="{{ settings.HELP_BASE }}" target="_blank" title="{% trans "Open the Manual in a new Window" %}">{% trans "Manual" %}</a>
                     </div>
-  
+                    -->  
                 </div>
               
             </div>
         </div>
-    -->
-        <nav class=" header navbar navbar-default navbar-fixed-top">
-        <div class="container-fluid">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <!-- Home button or logo -->
-                <a class="navbar-brand" href="{{ urlFor("home") }}"><img class="xibo-logo" src="{{ theme.uri("img/logo.svg") }}" alt="{% trans "Home" %}"></a>
-            </div> <!-- navbar-header -->
 
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <!-- Schedule link -->
-                    {% if currentUser.routeViewable("/schedule") %}
-                    <li><a href="{{ urlFor("schedule.view") }}">{% trans "Schedule" %}</a></li>
-                    {% endif %}
-
-                    <!-- Design dropdown -->
-                    {% if currentUser.routeViewable("/campaign") or currentUser.routeViewable("/layout") or currentUser.routeViewable("/template") or currentUser.routeViewable("/resolution") %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Design" %} <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                {% if currentUser.routeViewable("/campaign") %}
-                                <li ><a href="{{ urlFor("campaign.view") }}">{% trans "Campaigns" %}</a></li>
-                                {% endif %}
-
-                                {% if currentUser.routeViewable("/layout") %}
-                                <li ><a href="{{ urlFor("layout.view") }}">{% trans "Layouts" %}</a></li>
-                                {% endif %}
-
-                                {% if currentUser.routeViewable("/template") %}
-                                <li ><a href="{{ urlFor("template.view") }}">{% trans "Templates" %}</a></li>
-                                {% endif %}
-
-                                {% if currentUser.routeViewable("/resolution") %}
-                                <li ><a href="{{ urlFor("resolution.view") }}">{% trans "Resolutions" %}</a></li>
-                                {% endif %}
-                            </ul>
-                        </li>                        
-                    {% endif %}
-                    <!-- Media dropdown -->
-                    {% if currentUser.routeViewable("/library") or currentUser.routeViewable("/dataset") %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Library" %} <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                            {% if currentUser.routeViewable("/library") %}
-                            <li ><a href="{{ urlFor("library.view") }}">{% trans "Media" %}</a></li>
-                            {% endif %}
-
-                            {% if currentUser.routeViewable("/dataset") %}
-                            <li ><a href="{{ urlFor("dataSet.view") }}">{% trans "DataSets" %}</a></li>
-                            {% endif %}
-                            </ul>
-                        </li>                             
-                    {% endif %}
-                    {% if currentUser.routeViewable("/display") or currentUser.routeViewable("/displaygroup") or currentUser.routeViewable("/stats") or currentUser.routeViewable("/displayprofile") %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Displays" %}<span class="caret"></span></a>
-                            <ul class="dropdown-menu">                        
-                        {% if currentUser.routeViewable("/display") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("display.view") }}">{% trans "Displays" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/displaygroup") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("displayGroup.view") }}">{% trans "Display Groups" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/stats") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("stats.view") }}">{% trans "Statistics" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/displayprofile") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("displayProfile.view") }}">{% trans "Display Settings" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/command") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("command.view") }}">{% trans "Commands" %}</a></li>
-                        {% endif %}
-                            </ul>
-                        </li>                         
-                    {% endif %}
-
-                    {% if currentUser.routeViewable("/user") or currentUser.routeViewable("/usergroup") or currentUser.routeViewable("/admin") or currentUser.routeViewable("/application") or currentUser.routeViewable("/module") or currentUser.routeViewable("/transition") %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Administration" %}<span class="caret"></span></a>
-                            <ul class="dropdown-menu">                        
-                        {% if currentUser.routeViewable("/user") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("user.view") }}">{% trans "Users" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/group") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("group.view") }}">{% trans "User Groups" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/admin") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("admin.view") }}">{% trans "Settings" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/application") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("application.view") }}">{% trans "Applications" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/module") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("module.view") }}">{% trans "Modules" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/transition") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("transition.view") }}">{% trans "Transitions" %}</a></li>
-                        {% endif %}
-                            </ul>
-                        </li>                         
-                    {% endif %}
-
-                    {% if currentUser.routeViewable("/log") or currentUser.routeViewable("/sessions") or currentUser.routeViewable("/auditlog") or currentUser.routeViewable("/fault") or currentUser.routeViewable("/help") %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Advanced" %}<span class="caret"></span></a>
-                            <ul class="dropdown-menu">                        
-                        {% if currentUser.routeViewable("/log") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("log.view") }}">{% trans "Log" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/sessions") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("sessions.view") }}">{% trans "Sessions" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/auditlog") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("auditLog.view") }}">{% trans "Audit Trail" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/fault") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("fault.view") }}">{% trans "Report Fault" %}</a></li>
-                        {% endif %}
-
-                        {% if currentUser.routeViewable("/help") %}
-                        <li class="sidebar-list"><a href="{{ urlFor("help.view") }}">{% trans "Help Links" %}</a></li>
-                        {% endif %}
-                            </ul>
-                        </li>                         
-                    {% endif %}
-                </ul>
-                                                     
-                <ul class="nav navbar-nav navbar-right">
-                
-                    {% if currentUser.routeViewable("/drawer") %}
-                            <li class="item dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    <i class="fa fa-bell"></i> {% if notificationCount > 0 %}<span class="badge red">{{ notificationCount }}</span>{% endif %}
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-right notification-drawer">
-                                    <li class="dropdown-header">{% trans "Notifications" %}<br/>
-
-                                    </li>
-                                    {% if notifications|length > 0 %}
-                                    <li class="divider"></li>
-                                    {% endif %}
-                                    {% for notification in notifications %}
-                                    <li>
-                                        <div class="notification">
-                                            {% if notification.notificationId %}
-                                            <a class="XiboFormButton" href="{{ urlFor("notification.show", {id: notification.notificationId}) }}"><span class="{% if notification.read %}notification-unread{% else %}notification-read{% endif %}">{{ notification.subject }} - <span class="notification-date">{{ notification.releaseDt }}</span></span></a>
-                                            {% else %}
-                                            <span class="fa fa-exclamation-circle"></span> {{ notification.subject }} - <span class="notification-date">{{ notification.releaseDt }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                    {% endfor %}
-
-                                    {% if currentUser.routeViewable("/notification") %}
-                                    <li class="divider"></li>
-
-                                    <li><a href="{{ urlFor("notification.view") }}">{% trans "Notification Centre" %}</a></li>
-                                    {% endif %}
-                                </ul>
-                            </li>
-                        {% endif %}
-                    <li class="user item dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                            <img src="{{ theme.uri("img/avatar.jpg") }}" />
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li class="dropdown-header">{{ currentUser.userName }}<br/>
-                                <div id="XiboClock">{{ clock }}</div>
-                            </li>
-                            <li class="divider"></li>
-                            <li><a class="XiboFormButton" href="{{ urlFor("user.change.password.form") }}" title="{% trans "Change Password" %}">{% trans "Change Password" %}</a></li>
-                            <li><a href="{{ urlFor("welcome.wizard") }}">{% trans "Reshow welcome" %}</a></li>
-                            <li><a class="XiboHelpButton" href="{{ help.page }}">{% trans "Help" %}</a></li>
-                            <li class="divider"></li>
-                            <li><a title="Logout" href="{{ urlFor("logout") }}">{% trans "Logout" %}</a></li>
-                        </ul>
-                    </li>                          
-                </ul>
-            </div><!-- /.navbar-collapse -->
-        </div><!-- /.container-fluid -->
-        </nav>
-        
         <div id="content-wrapper">
             <div class="page-content">
-            <!--
                 <div class="row header">
                     <div class="col-sm-12">
                         <div class="meta pull-left">
@@ -399,7 +197,6 @@
                         {% endif %}
                     </div>
                 </div>
-                -->
                 <div class="row">
                     <div class="col-sm-12">
                         {% block actionMenu %}{% endblock %}

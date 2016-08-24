@@ -44,7 +44,7 @@ defined('XIBO') or die('Sorry, you are not allowed to directly access this page.
  *      url="http://www.gnu.org/licenses/"
  *  ),
  *  @SWG\Contact(
- *      email="info@xibhttps://dallas143.arvixeshared.com:2096/cpsess5845302385/webmail/paper_lantern/index.html?login=1&post_login=69850105216927o.org.uk"
+ *      email="info@xibo.org.uk"
  *  )
  * )
  *
@@ -99,7 +99,7 @@ $app->delete('/notification/:id', '\Xibo\Controller\Notification:delete')->name(
  * Layouts
  * @SWG\Tag(
  *  name="layout",
- *  description="Layouts"https://dallas143.arvixeshared.com:2096/cpsess5845302385/webmail/paper_lantern/index.html?login=1&post_login=69850105216927
+ *  description="Layouts"
  * )
  */
 $app->get('/layout', '\Xibo\Controller\Layout:grid')->name('layout.search');
