@@ -725,7 +725,12 @@ class Layout extends Base
                     'url' => $this->urlFor('layout.edit.form', ['id' => $layout->layoutId]),
                     'text' => __('Edit')
                 );
-
+                // Edit AI Tags
+                $group->buttons[] = array(
+                    'id' => 'layout_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Layout::ItemType(), 'itemid' => $layout->layoutId]),
+                    'text' => __('Edit AI Tags')
+                );
                 // Copy Button
                 $layout->buttons[] = array(
                     'id' => 'layout_button_copy',

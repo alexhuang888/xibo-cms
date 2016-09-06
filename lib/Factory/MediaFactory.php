@@ -521,7 +521,7 @@ class MediaFactory extends BaseFactory
             if ($BodyRemoveItemTypeFilter)
                 unset($params['itemtype']);
             $results = $this->getStore()->select('SELECT COUNT(*) AS total ' . $body, $params);
-            $this->itemtype_countLast = intval($results[0]['total']);
+            $this->_countLast = intval($results[0]['total']);
         }
 
         return $entries;

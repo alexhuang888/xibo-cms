@@ -161,10 +161,16 @@ abstract class ModuleWidget implements ModuleInterface
 
     /** @var  DisplayGroupFactory */
     protected $displayGroupFactory;
+
     /** @var  tagFactory */
     protected $tagFactory;
 
+    /** @var  aitagshelper */
     protected $aitagshelper;
+
+    // attributes this module has
+    protected $moduleAttributes;
+
     /**
      * ModuleWidget constructor.
      * @param Slim $app
@@ -1048,4 +1054,59 @@ abstract class ModuleWidget implements ModuleInterface
     {
         return $this->statusMessage;
     }
+
+    public function getMediaAttributes($attrOpt, $media)
+    {
+        // by $attrOpt, try to get attributes of the media
+        //
+        $retdata = ['result' => 200];
+
+        //if (hasAttributes($attrOpt))
+        {
+            if ($this->getConfig() != null)
+            {
+                $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
+            }
+            if (($attrOpt & MAID_SMARTTAGS) != 0 && $this->getSetting('aitags', 0) == 1)
+            {
+                // extract smart tags
+                if ($this->aitagshelper != null && $this->getConfig() != null)
+                {
+                    return $this->getMediaSmartTag($media, $filePath);
+                }
+            }
+
+            if (($attrOpt & MAID_LOCATION) != 0 && $this->getSetting('location', 0) == 1)
+            {
+                return $this->getLocation($media, $filePath);
+            }   
+            if (($attrOpt & MAID_EXIF) != 0 && $this->getSetting('exif', 0) == 1)
+            {
+                return $this->getExif($media, $filePath);
+            }                       
+        }
+        return $retdata;
+    }
+    
+    public function getMediaSmartTag($media, $filePath)
+    {
+        if ($this->getSetting('aitags', 0) == 1)
+        {
+            if ($this->aitagshelper != null)
+            {
+                return $this->aitagshelper->mediasmarttagextractorToStringArray($filePath);
+            }
+        }
+        return ['result' => 100];
+    }
+
+    public function getLocation($media, $filePath)
+    {
+        return ['result' => 100];
+    }
+    
+    public function getExif($media, $filePath)
+    {
+        return ['result' => 100];
+    }    
 }

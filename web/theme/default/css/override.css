@@ -55,18 +55,22 @@ tr.shown td.details-control {
 }
 @media (max-width: 767px)
 {
-.navbar-nav > li
-{
-    margin-left: 20px;
-}
+    .navbar-nav > li
+    {
+        margin-left: 20px;
+    }
 
-.navbar-nav > li > a
-{
-    margin-left: 20px;
-}
+    .navbar-nav > li > a
+    {
+        margin-left: 20px;
+    }
 
-.navbar-nav .open .dropdown-menu > li > a
-{
-    margin-left: 30px;
+    .navbar-nav .open .dropdown-menu > li > a
+    {
+        margin-left: 30px;
+    }
 }
+#CalendarContainer {
+    /* make sure we have week number displayed */
+    padding-left: 60px;
 }

@@ -301,6 +301,15 @@ class LayoutFactory extends BaseFactory
     }
 
     /**
+     * Get by Playlist Id
+     * @param int $playlistId
+     * @return array[layout]
+     */
+    public function getByPlaylistId($playlistId)
+    {
+        return $this->query(null, ['disableUserCheck' => 1, 'playlistId' => $playlistId]);
+    }
+    /**
      * Load a layout by its XLF
      * @param string $layoutXlf
      * @param Layout[Optional] $layout
@@ -981,6 +990,19 @@ class LayoutFactory extends BaseFactory
             $params['mediaId'] = $this->getSanitizer()->getInt('mediaId', 0, $filterBy);
         }
 
+        // PlaylistID
+        if ($this->getSanitizer()->getInt('playlistId', 0, $filterBy) != 0) {
+            $body .= ' AND layout.layoutId IN (
+                SELECT DISTINCT `region`.layoutId
+                  FROM `lkregionplaylist`
+                    INNER JOIN `region`
+                    ON `region`.regionId = `lkregionplaylist`.regionId
+                 WHERE `lkregionplaylist`.playlistId = :playlistId
+                )
+            ';
+
+            $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', 0, $filterBy);
+        }
         // Sorting?
         $order = '';
         if (is_array($sortOrder))

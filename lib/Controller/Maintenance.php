@@ -108,7 +108,9 @@ class Maintenance extends Base
 
     public function processmediaaitagsqueue()
     {
-        $this->aitagsHelper->processaitagsmediaqueue();
+        // Always start a transaction
+        $this->store->getConnection()->beginTransaction();        
+        return $this->aitagsHelper->processaitagsmediaqueue();
     }
     public function run()
     {

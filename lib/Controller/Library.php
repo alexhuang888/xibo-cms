@@ -367,7 +367,7 @@ class Library extends Base
                 // Edit AI Tags
                 $media->buttons[] = array(
                     'id' => 'content_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
+                    'url' => $this->urlFor('aitags.mediatagretrieve.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
                     'text' => __('Edit AI Tags')
                 );                
             }

@@ -68,8 +68,14 @@ class ItemCreatorFactory extends BaseFactory
         if ($itemtype == \Xibo\Entity\Playlist::ItemType()) // Playlist 
         {
             return $this->container->playlistFactory->getById($itemid);
-        }                
-    }
-
-    
+        }   
+        if ($itemtype == \Xibo\Entity\Campaign::ItemType()) // Campaign 
+        {
+            return $this->container->campaignFactory->getById($itemid);
+        }  
+        if ($itemtype == \Xibo\Entity\Layout::ItemType()) // Layout 
+        {
+            return $this->container->layoutFactory->getById($itemid);
+        }                                          
+    }   
 }

@@ -426,3 +426,4 @@ $app->delete('/command/:id', '\Xibo\Controller\Command:delete')->name('command.d
 
 $app->put('/aitags/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTags')->name('aitags.edittag');
 $app->post('/aitags/profiletextextractor', '\Xibo\Controller\AITags:profiletextextractor')->name('aitags.profiletextextractor');
+$app->post('/aitags/mediasmarttagextractor', '\Xibo\Controller\AITags:mediasmarttagextractor')->name('aitags.mediasmarttagextractor');
