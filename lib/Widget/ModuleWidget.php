@@ -22,6 +22,7 @@ namespace Xibo\Widget;
 
 use Slim\Slim;
 use Stash\Interfaces\PoolInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Xibo\Entity\Media;
 use Xibo\Entity\User;
 use Xibo\Exception\ControllerNotImplemented;
@@ -36,11 +37,9 @@ use Xibo\Factory\MediaFactory;
 use Xibo\Factory\ModuleFactory;
 use Xibo\Factory\TransitionFactory;
 use Xibo\Factory\WidgetFactory;
-use Xibo\Service\ConfigService;
 use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\DateServiceInterface;
 use Xibo\Service\FactoryServiceInterface;
-use Xibo\Service\LogService;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Service\SanitizerServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
@@ -123,6 +122,9 @@ abstract class ModuleWidget implements ModuleInterface
      */
     private $sanitizerService;
 
+    /** @var  EventDispatcherInterface */
+    private $dispatcher;
+
     /**
      * @var MediaFactory
      */
@@ -180,6 +182,7 @@ abstract class ModuleWidget implements ModuleInterface
      * @param ConfigServiceInterface $config
      * @param DateServiceInterface $date
      * @param SanitizerServiceInterface $sanitizer
+     * @param EventDispatcherInterface $dispatcher
      * @param MediaFactory $mediaFactory
      * @param DataSetFactory $dataSetFactory
      * @param DataSetColumnFactory $dataSetColumnFactory
@@ -187,7 +190,7 @@ abstract class ModuleWidget implements ModuleInterface
      * @param DisplayFactory $displayFactory
      * @param CommandFactory $commandFactory
      */
-    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
+    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $dispatcher, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         $this->app = $app;
         $this->store = $store;
@@ -196,6 +199,7 @@ abstract class ModuleWidget implements ModuleInterface
         $this->configService = $config;
         $this->dateService = $date;
         $this->sanitizerService = $sanitizer;
+        $this->dispatcher = $dispatcher;
 
         $this->mediaFactory = $mediaFactory;
         $this->dataSetFactory = $dataSetFactory;
@@ -253,7 +257,7 @@ abstract class ModuleWidget implements ModuleInterface
 
     /**
      * Get Log
-     * @return LogService
+     * @return LogServiceInterface
      */
     protected function getLog()
     {
@@ -262,7 +266,7 @@ abstract class ModuleWidget implements ModuleInterface
 
     /**
      * Get Config
-     * @return ConfigService
+     * @return ConfigServiceInterface
      */
     public function getConfig()
     {
@@ -285,6 +289,14 @@ abstract class ModuleWidget implements ModuleInterface
     protected function getSanitizer()
     {
         return $this->sanitizerService;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getDispatcher()
+    {
+        return $this->dispatcher;
     }
 
     //
