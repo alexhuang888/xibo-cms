@@ -20,7 +20,9 @@
 {% block formButtons %}
     {% trans "Help" %}, XiboHelpRender("{{ help }}")
     {% trans "Close" %}, XiboDialogClose()
+    {% trans "Edit AI Tags" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")
     {% trans "Switch to Timeline" %}, XiboSwapDialog("{{ urlFor("region.timeline.form", {id: region.regionId}) }}?view=timeline")
+
 {% endblock %}
 
 {% block callBack %}timelineGridCallback{% endblock %}
@@ -54,7 +56,8 @@
                         </div>
                     </div>
                     <div class="XiboData">
-                        <table id="timelineWidgets" class="table table-striped" data-region-id="{{ region.regionId }}">
+                        <table id="timelineWidgets" class="table table-striped" data-region-id="{{ region.regionId }}"
+                                >
                             <thead>
                             <tr>
                                 <th>{% trans "Order" %}</th>

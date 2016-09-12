@@ -36,6 +36,7 @@ use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\DateServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Layout
@@ -46,7 +47,14 @@ use Xibo\Storage\StorageServiceInterface;
 class Layout implements \JsonSerializable
 {
     use EntityTrait;
+    
+    public static function ItemType() {
+        return \ITID_LAYOUT;
+    }
 
+    public function getItemType() {
+        return \ITID_LAYOUT;
+    }
     /**
      * @SWG\Property(
      *  description="The layoutId"
@@ -82,7 +90,7 @@ class Layout implements \JsonSerializable
     /**
      * @var int
      * @SWG\Property(
-     *  description="The XLF schema version"
+     *  description="The XLF schema version"getItemType
      * )
      */
     public $schemaVersion;

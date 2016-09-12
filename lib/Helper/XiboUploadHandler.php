@@ -60,7 +60,8 @@ class XiboUploadHandler extends BlueImpUploadHandler
             // Guess the type
             $module = $controller->getModuleFactory()->getByExtension(strtolower(substr(strrchr($fileName, '.'), 1)));
             $module = $controller->getModuleFactory()->create($module->type);
-
+            $module->setChildObjectDependencies($controller->getLayoutFactory(), $controller->getWidgetFactory(), $controller->getDisplayGroupFactory(), $controller->getAITagsHelper());
+            $module->setUser($controller->getUser());
             $controller->getLog()->debug('Module Type = %s, Name = ', $module->getModuleType(), $module->getModuleName());
 
             // Do we need to run any pre-processing on the file?

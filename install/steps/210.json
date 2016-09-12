@@ -1,0 +1,18 @@
+{
+  "dbVersion": 210,
+  "appVersion": "2.0.0-beta",
+  "steps": [
+    {
+      "step": "Add the isaitagmatchable to the playlist Table",
+      "action": "ALTER TABLE `playlist` ADD isaitagmatchable BOOLEAN NULL;"
+    },
+    {
+      "step": "Add the isaitagsgenerated to the media Table",
+      "action": "ALTER TABLE `media` ADD isaitagsgenerated BOOLEAN NULL;"
+    },
+    {
+      "step": "lklinkedtags Table",
+      "action": "CREATE TABLE IF NOT EXISTS `lklinkedtags` (`itemtype` int(11) NOT NULL, `itemid` int(11) NOT NULL, `tagid` int(11) NOT NULL, `score` float NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    }
+  ]
+}

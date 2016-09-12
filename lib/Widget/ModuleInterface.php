@@ -23,6 +23,11 @@ namespace Xibo\Widget;
 
 use Xibo\Factory\ModuleFactory;
 
+define("MAID_SMARTTAGS", 0x1);
+define("MAID_LOCATION", 0x2);
+define("MAID_EXIF", 0x4);
+
+
 /**
  * Interface ModuleInterface
  * @package Xibo\Widget
@@ -61,4 +66,17 @@ interface ModuleInterface
     public function installModule();
 
     public function settings();
+
+    //public function hasAttributes($checkOpt);
+
+    // tags, location, exif
+    // all data are in array in format of
+    // ['result': ret_code, 'data1': ....']
+    // for tags:
+    //      ['result': ret_code, 'tags': [tag string elements], 'tagsscore': [tags score elements]]
+    // for location:
+    //      ['result': ret_code, 'location': [lat, long]]
+    // for exif:
+    //      ['result': ret_code, "exif_tag_name": [exif-values], ....]
+    //public function getMediaAttributes($attrOpt, $media);
 }

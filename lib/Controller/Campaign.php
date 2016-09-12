@@ -173,6 +173,13 @@ class Campaign extends Base
                     'url' => $this->urlFor('campaign.edit.form', ['id' => $campaign->campaignId]),
                     'text' => __('Edit')
                 );
+
+                // Edit AI Tags
+                $group->buttons[] = array(
+                    'id' => 'layout_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Campaign::ItemType(), 'itemid' => $campaign->campaignId]),
+                    'text' => __('Edit AI Tags')
+                );                
             }
 
             if ($this->getUser()->checkDeleteable($campaign)) {

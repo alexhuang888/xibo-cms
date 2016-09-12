@@ -4,5 +4,6 @@
     "buttons": {% filter json_encode|raw %}{% block formButtons %}{% endblock %}{% endfilter %},
     "fieldActions": {% filter json_encode|raw %}{% block formFieldActions %}{% endblock %}{% endfilter %},
     "callBack": {% filter json_encode|raw %}{% block callBack %}{% endblock %}{% endfilter %},
-    "extra": {% block extra %}[]{% endblock %}
+    "extra": {% block extra %}[]{% endblock %},
+    "aitagextra": {% filter json_encode|raw %}{% block aitagextra %}[]{% endblock %}{% endfilter %}
 }

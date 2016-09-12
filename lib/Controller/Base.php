@@ -377,6 +377,7 @@ class Base
 
     /**
      * Set the sort order
+     * alex_todo: got to change this when the first column is not orderable and no data
      * @return array
      */
     protected function gridRenderSort()
@@ -389,9 +390,17 @@ class Base
             return null;
 
         $order = array_map(function ($element) use ($columns) {
-            return ((isset($columns[$element['column']]['name']) && $columns[$element['column']]['name'] != '') ? '`' . $columns[$element['column']]['name'] . '`' : '`' . $columns[$element['column']]['data'] . '`') . (($element['dir'] == 'desc') ? ' DESC' : '');
+            return ((isset($columns[$element['column']]['name']) && 
+                    $columns[$element['column']]['name'] != '') ? 
+                        '`' . $columns[$element['column']]['name'] . '`' : 
+                        '`' . $columns[$element['column']]['data'] . '`') . 
+                            (($element['dir'] == 'desc') ? ' DESC' : '');
         }, $app->request()->get('order', array()));
-
+        if (sizeof($order) == 1)
+        {
+            if ($order[0] == "``")
+                unset($order[0]);
+        }
         return $order;
     }
 

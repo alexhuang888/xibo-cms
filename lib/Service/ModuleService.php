@@ -76,9 +76,9 @@ class ModuleService implements ModuleServiceInterface
     /**
      * @inheritdoc
      */
-    public function get($module, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory)
+    public function get($module, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
-        $object = $this->getByClass($module->class, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory);
+        $object = $this->getByClass($module->class, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory);
 
         $object->setModule($module);
 
@@ -88,7 +88,7 @@ class ModuleService implements ModuleServiceInterface
     /**
      * @inheritdoc
      */
-    public function getByClass($className, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory)
+    public function getByClass($className, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         if (!\class_exists($className))
             throw new NotFoundException(__('Class %s not found', $className));
@@ -108,7 +108,8 @@ class ModuleService implements ModuleServiceInterface
             $dataSetColumnFactory,
             $transitionFactory,
             $displayFactory,
-            $commandFactory
+            $commandFactory,
+            $tagFactory
         );
 
         return $object;

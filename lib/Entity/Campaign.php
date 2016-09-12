@@ -29,6 +29,7 @@ use Xibo\Factory\PermissionFactory;
 use Xibo\Factory\ScheduleFactory;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Campaign
@@ -40,6 +41,13 @@ class Campaign implements \JsonSerializable
 {
     use EntityTrait;
 
+    public static function ItemType() {
+        return \ITID_CAMPAIGN;
+    }
+
+        public function getItemType() {
+        return \ITID_CAMPAIGN;
+    }
     /**
      * @SWG\Property(description="The Campaign Id")
      * @var int

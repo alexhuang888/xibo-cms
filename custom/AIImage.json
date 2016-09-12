@@ -1,0 +1,7 @@
+{
+  "title": "AI Image",
+  "author": "Alex Huang",
+  "description": "AI Image Module Description",
+  "name": "AIImage",
+  "class": "Xibo\\Custom\\AIImage"
+}

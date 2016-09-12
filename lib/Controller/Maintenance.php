@@ -68,6 +68,7 @@ class Maintenance extends Base
     /** @var  UserNotificationFactory */
     private $userNotificationFactory;
 
+    private $aitagsHelper;
     /**
      * Set common dependencies.
      * @param LogServiceInterface $log
@@ -88,7 +89,7 @@ class Maintenance extends Base
      * @param NotificationFactory $notificationFactory
      * @param UserNotificationFactory $userNotificationFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $userGroupFactory, $layoutFactory, $displayFactory, $upgradeFactory, $mediaFactory, $notificationFactory, $userNotificationFactory)
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $userGroupFactory, $layoutFactory, $displayFactory, $upgradeFactory, $mediaFactory, $notificationFactory, $userNotificationFactory, $aitagsHelper)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -102,9 +103,15 @@ class Maintenance extends Base
         $this->mediaFactory = $mediaFactory;
         $this->notificationFactory = $notificationFactory;
         $this->userNotificationFactory = $userNotificationFactory;
+        $this->aitagsHelper = $aitagsHelper;
     }
 
-
+    public function processmediaaitagsqueue()
+    {
+        // Always start a transaction
+        $this->store->getConnection()->beginTransaction();        
+        return $this->aitagsHelper->processaitagsmediaqueue();
+    }
     public function run()
     {
         // Always start a transaction

@@ -18,7 +18,7 @@ use Xibo\Factory\PermissionFactory;
 use Xibo\Factory\ScheduleFactory;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
-
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 /**
  * Class DisplayGroup
  * @package Xibo\Entity
@@ -30,6 +30,14 @@ class DisplayGroup implements \JsonSerializable
     use EntityTrait;
     use AIProfileTrait;
 
+    public static function ItemType() {
+        return \ITID_DISPLAYGROUP;
+    }
+
+    public function getItemType() 
+    {
+        return \ITID_DISPLAY;
+    }    
     /**
      * @SWG\Property(
      *  description="The displayGroup Id"
@@ -87,9 +95,13 @@ class DisplayGroup implements \JsonSerializable
      * @var int
      */
     public $userId = 0;
-    public $parentId = -1;
-    public $childId = -1;
-    public $depth = -1;
+    /** [alex] these new members are for table display purpose. **/
+    public $parentId = -1;  // parent ID
+    public $childId = -1;   // this DG's ID
+    public $depth = -1;     // the depth to parent
+    public $subdgchildcount = 0;    // all sub-dg counts to this DG (recursively)
+    // end of new members
+
     // Child Items the Display Group is linked to
     private $displays = [];
     public $displayGroups = [];
@@ -174,7 +186,14 @@ class DisplayGroup implements \JsonSerializable
         $this->scheduleFactory = $scheduleFactory;
         return $this;
     }
-
+    public function setChildObjectDependenciesFromContainer($container)
+    {
+        $this->displayFactory = $container->displayFactory;
+        $this->layoutFactory = $container->layoutFactory;
+        $this->mediaFactory = $container->mediaFactory;
+        $this->scheduleFactory = $container->scheduleFactory;
+        return $this;
+    }
     /**
      * @return int
      */
@@ -200,7 +219,7 @@ class DisplayGroup implements \JsonSerializable
         $this->collectRequired = $collectRequired;
     }
 
-    /**
+    /**false
      * Set the Owner of this Group
      * @param Display $display
      */
@@ -321,7 +340,7 @@ class DisplayGroup implements \JsonSerializable
      * @param Layout $layout
      */
     public function assignLayout($layout)
-    {
+    {    
         $this->load();
 
         if (!in_array($layout, $this->layouts)) {
@@ -348,7 +367,24 @@ class DisplayGroup implements \JsonSerializable
             return $a->getId() - $b->getId();
         });
     }
+    // 
+	public function getchilditems($container)
+	{
+		// return arary of tuples [itemtype, itemid];
+        $this->setChildObjectDependenciesFromContainer($container);
+		$this->load();
+        $retarray = array();
 
+        foreach ($this->displayGroups as $displaygroup)
+        {
+            $retarray[] = [DISPLAYGROUP::ItemType(), $displaygroup->getId()];
+        }
+        foreach ($this->displays as $display)
+        {
+            $retarray[] = [DISPLAY::ItemType(), $display->getId()];
+        }
+        return $retarray;
+	}
     /**
      * Load the contents for this display group
      */

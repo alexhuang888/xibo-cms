@@ -1,0 +1,169 @@
+{#
+/*
+ * Yi Systems, Inc.
+ * Copyright (C) 2016 Yi Systems, Inc.
+ * (${FILE_NAME})
+ */
+
+#}
+
+{% extends "form-base.twig" %}
+{% import "forms.twig" as forms %}
+
+{% block formTitle %}
+    {% trans "Edit Media AI Tags" %}
+{% endblock %}
+
+{% block formButtons %}
+    {% trans "Help" %}, XiboHelpRender("{{ help }}")
+    {% trans "Close" %}, XiboDialogClose()
+    {% trans "Save" %}, $("#aitagsEditForm").submit()
+{% endblock %}
+
+{% block callBack %}{% endblock %}
+
+{% block aitagextra %}
+
+{% endblock %}
+
+{% block formHtml %}
+    {% set originaltagcontrolid = 'itemtags' %}
+    {% set profiletagcontrolid = 'profiletags' %}
+    <div class="row">
+        <div class="col-md-12">
+            <form id="aitagsEditForm" class="XiboForm form-horizontal" 
+                    method="put" action="{{ urlFor("aitags.edittag", {"itemtype": itemtype, "itemid": itemid}) }}" >
+                {% set title %}{% trans "Tags" %}{% endset %}
+                {% set helpText %}{% trans "Tag this media. Comma Separated." %}{% endset %}
+                {{ forms.input(originaltagcontrolid, title,  aitagscvs , helpText) }}
+
+                {% set title %}{% trans "Update AI tags to all its child items?" %}{% endset %}
+                {% set helpText %}{% trans "Note: It will only be updated in items you have permission to edit." %}{% endset %}
+                {% if settings.AITAGS_UPDATEALLCHILDITEMS_CHECKB == "Checked" %}
+                    {% set checked = 1 %}
+                {% endif %}
+                {{ forms.checkbox("updateInChildItems", title, checked, helpText) }}
+
+                {% set title %}{% trans "Schedule to match playlists with this media?" %}{% endset %}
+                {% set helpText %}{% trans "Note: It will only be updated in playlist you have permission to edit." %}{% endset %}
+
+                {{ forms.checkbox("schedulemediaplaylistqueue", title, 1, helpText) }}
+
+                {% set title %}{% trans "Show AI Profile" %}{% endset %}
+                {{ forms.button(title, 'button', null, null, "editAIProfile") }}
+
+                <div id="inputtagByProfile" style="display: none;">
+                    <p>{% trans "Click 'Analyze' to get smart tags of this media. 'Override' to reset media's tag. 'Update' to add new tags to media." %}</p>
+                    
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            
+                            <button id="analyzeaiProfile" class="btn btn-default" type="button">Analyze</button>
+                            <button id="overrideCurrentTags" class="btn btn-default" type="button">Override</button>
+                            <button id="updateCurrentTags" class="btn btn-default" type="button">Update</button>
+                            
+                        </div>
+                    </div>
+                    {% set title %}{% trans "New Tags" %}{% endset %}
+                    {% set helpText %}{% trans "New tags from input profile text." %}{% endset %}
+                    {{ forms.input(profiletagcontrolid, title, null, helpText) }}
+
+                    
+                </div>
+                <script type="text/javascript">
+                    $('#{{originaltagcontrolid}}').tagEditor({
+                        delimiter: ',', /* comma */
+                        placeholder: '{% trans "Edit tags here..." %}'
+                        });
+                    $('#{{profiletagcontrolid}}').tagEditor({
+                        delimiter: ',', /* comma */
+                        placeholder: '{% trans "Edit tags here..." %}'
+                        });
+
+                    $("#editAIProfile").click(function()
+                        {
+                            $("#inputtagByProfile").toggle();
+                            if ($("#inputtagByProfile").is(":visible"))
+                            {
+                                $("#editAIProfile").text("{% trans "Hide AI Profile" %}");
+                            }
+                            else
+                            {
+                                $("#editAIProfile").text("{% trans "Show AI Profile" %}");
+                            }
+
+                        });
+                    $("#analyzeaiProfile").click(function()
+                    {
+                        //here, we got to get data from screen input, then ajax to my word2abstraction service
+                        // then input back to new_tag input
+                        //console.log($('#aiprofiletext').val());
+                        $.ajax( {
+                            url: "{{ urlFor('aitags.mediasmarttagextractor') }}",
+                            type: 'POST',
+                            data: {itemtype: {{ itemtype }}, itemid: {{ itemid }}},
+                            datatype: 'json',
+                            success:function(data, textStatus, jqXHR) 
+                            {
+                                // note: from xibo api/web route, data is object
+                                //console.log(data.data['result']);
+                                var json = data.data;//$.parseJSON(data.aitagresult);
+                                var retcode = json['result'];
+
+                                console.log('aiprofile retcode=' + retcode);
+                                if (retcode == 0)
+                                {
+                                    var newtags = json['tags'];
+                                    var score = json['tagsscore'];                                    
+                                    var tags = $('#{{profiletagcontrolid}}').tagEditor('getTags')[0].tags;
+                                    for (i = 0; i < tags.length; i++) 
+                                    { 
+                                        $('#{{profiletagcontrolid}}').tagEditor('removeTag', tags[i]); 
+                                    }
+                                    $.each(newtags, function(i, item) {
+                                            console.log('kf[' + i + ']=' + newtags[i]);
+                                            $('#{{profiletagcontrolid}}').tagEditor('addTag', newtags[i]);
+                                        });
+                                };
+                            },
+                            error: function (jqXHR, textStatus, errorThrown)
+                            {
+                                console.log(textStatus);
+                            }
+                        });
+                    });
+
+                    $("#overrideCurrentTags").click(function()
+                    {
+                        //alert("The overrideCurrentTags was clicked.");
+                        var tags = $('#{{originaltagcontrolid}}').tagEditor('getTags')[0].tags;
+                        for (i = 0; i < tags.length; i++) 
+                        { 
+                            $('#{{originaltagcontrolid}}').tagEditor('removeTag', tags[i]); 
+                        }
+                        console.log($('#{{profiletagcontrolid}}').tagEditor('getTags')[0].tags);
+
+                        var tags = $('#{{profiletagcontrolid}}').tagEditor('getTags')[0].tags;
+
+                        for (i = 0; i < tags.length; i++) 
+                        { 
+                            $('#{{originaltagcontrolid}}').tagEditor('addTag', tags[i]); 
+                        }
+                    });
+
+                    $("#updateCurrentTags").click(function()
+                    {
+                        //alert("The updateCurrentTags was clicked.");
+                        var tags = $('#{{profiletagcontrolid}}').tagEditor('getTags')[0].tags;
+
+                        for (i = 0; i < tags.length; i++) 
+                        { 
+                            $('#{{originaltagcontrolid}}').tagEditor('addTag', tags[i]); 
+                        }
+                    });
+                </script>  
+            </form>
+        </div>
+    </div>
+{% endblock %}
+  

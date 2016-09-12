@@ -292,7 +292,7 @@ class MediaFactory extends BaseFactory
     {
         if ($sortOrder === null)
             $sortOrder = ['name'];
-
+        $BodyRemoveItemTypeFilter = true;
         $entries = array();
 
         $params = array();
@@ -319,8 +319,13 @@ class MediaFactory extends BaseFactory
                `media`.apiRef,
             ';
         }
-
-        $select .= " (SELECT GROUP_CONCAT(DISTINCT tag) FROM tag INNER JOIN lktagmedia ON lktagmedia.tagId = tag.tagId WHERE lktagmedia.mediaId = media.mediaID GROUP BY lktagmedia.mediaId) AS tags, ";
+        if (DBVERSION >= 210) {
+            $select .= '
+               `media`.isaitagsgenerated,
+            ';
+        }
+        //$select .= " (SELECT GROUP_CONCAT(DISTINCT tag) FROM tag INNER JOIN lktagmedia ON lktagmedia.tagId = tag.tagId WHERE lktagmedia.mediaId = media.mediaID GROUP BY lktagmedia.mediaId) AS tags, ";
+        $select .= " (SELECT GROUP_CONCAT(DISTINCT tag) FROM tag INNER JOIN lklinkedtags ON lklinkedtags.tagId = tag.tagId WHERE lklinkedtags.itemtype = :itemtype AND lklinkedtags.itemid = media.mediaID GROUP BY lklinkedtags.itemid) AS tags, ";
         $select .= "        `user`.UserName AS owner, ";
         $select .= "     (SELECT GROUP_CONCAT(DISTINCT `group`.group)
                               FROM `permission`
@@ -333,6 +338,8 @@ class MediaFactory extends BaseFactory
                                 AND view = 1
                             ) AS groupsWithPermissions, ";
         $params['entity'] = 'Xibo\\Entity\\Media';
+        $params['itemtype'] = Media::ItemType();
+        //$params['itemid'] = 'Xibo\\Entity\\Media';
 
         $select .= "   media.originalFileName AS fileName ";
 
@@ -457,23 +464,31 @@ class MediaFactory extends BaseFactory
         // Tags
         if ($this->getSanitizer()->getString('tags', $filterBy) != '') {
             $body .= " AND `media`.mediaId IN (
-                SELECT `lktagmedia`.mediaId
+                SELECT `lklinkedtags`.itemid
                   FROM tag
-                    INNER JOIN `lktagmedia`
-                    ON `lktagmedia`.tagId = tag.tagId
+                    INNER JOIN `lklinkedtags`
+                    ON `lklinkedtags`.tagid = tag.tagId
                 ";
             $i = 0;
             foreach (explode(',', $this->getSanitizer()->getString('tags', $filterBy)) as $tag) {
                 $i++;
 
                 if ($i == 1)
-                    $body .= " WHERE tag LIKE :tags$i ";
+                    $body .= " WHERE ( tag LIKE :tags$i ";
                 else
                     $body .= " OR tag LIKE :tags$i ";
 
                 $params['tags' . $i] =  '%' . $tag . '%';
             }
-
+            if ($i > 0)
+            {
+                $body.= " ) AND lklinkedtags.itemtype = :itemtype ";
+            }
+            else
+            {
+                $body .= "WHERE lklinkedtags.itemtype = :itemtype ";
+            }
+            $BodyRemoveItemTypeFilter = false;
             $body .= " ) ";
         }
 
@@ -519,6 +534,8 @@ class MediaFactory extends BaseFactory
         // Paging
         if ($limit != '' && count($entries) > 0) {
             unset($params['entity']);
+            if ($BodyRemoveItemTypeFilter)
+                unset($params['itemtype']);
             $results = $this->getStore()->select('SELECT COUNT(*) AS total ' . $body, $params);
             $this->_countLast = intval($results[0]['total']);
         }

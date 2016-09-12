@@ -23,6 +23,7 @@
         <link href="{{ theme.uri("libraries/jquery/jquery-ui/css/ui-lightness/jquery-ui-1.10.2.custom.min.css") }}" rel="stylesheet">
         <link href="{{ theme.uri("libraries/jquery-file-upload/css/jquery.fileupload.css") }}" rel="stylesheet">
         <link href="{{ theme.uri("libraries/jquery-file-upload/css/jquery.fileupload-ui.css") }}" rel="stylesheet">
+        <link href="{{ theme.uri("libraries/jquery-tagEditor/jquery.tag-editor.css") }}" rel="stylesheet">
         <link href="{{ theme.uri("libraries/toastr/toastr.min.css") }}" rel="stylesheet">
         <link href="{{ theme.uri("css/dashboard.css") }}" rel="stylesheet" media="screen">
         <link href="{{ theme.uri("css/timeline.css") }}" rel="stylesheet" media="screen">
@@ -83,6 +84,8 @@
         <script src="{{ theme.uri("libraries/jquery-file-upload/js/jquery.fileupload-image.js") }}"></script>
         <script src="{{ theme.uri("libraries/jquery-file-upload/js/jquery.fileupload-video.js") }}"></script>
         <script src="{{ theme.uri("libraries/jquery-file-upload/js/jquery.fileupload-audio.js") }}"></script>
+        <script src="{{ theme.uri("libraries/caret/jquery.caret.js") }}"></script>        
+        <script src="{{ theme.uri("libraries/jquery-tagEditor/jquery.tag-editor.min.js") }}"></script>
         <script src="{{ theme.uri("libraries/jquery-message-queuing/jquery.ba-jqmq.min.js") }}"></script>
         <script src="{{ theme.uri("libraries/jquery-throttle-debounce/jquery.ba-throttle-debounce.min.js") }}"></script>
         <script src="{{ theme.uri("libraries/toastr/toastr.min.js") }}"></script>
@@ -127,6 +130,7 @@
             var dateFormat = "{{ settings.DATE_FORMAT }}";
             var jsDateFormat = "{{ settings.DATE_FORMAT_JS }}";
             var bootstrapDateFormat = "{{ settings.DATE_FORMAT_BOOTSTRAP }}";
+            var bootstrapDateFormatDateOnly = "{{ settings.DATE_FORMAT_BOOTSTRAP_DATEONLY }}";
             var calendarType = "{{ settings.CALENDAR_TYPE }}";
             var clockUrl = "{{ urlFor("clock") }}";
             var calendarLanguage = "{{ translate.calendarLanguage }}";

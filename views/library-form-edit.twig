@@ -38,7 +38,7 @@
 
                     {% set title %}{% trans "Tags" %}{% endset %}
                     {% set helpText %}{% trans "Tag this media. Comma Separated." %}{% endset %}
-                    {{ forms.input("tags", title, media.tags, helpText) }}
+                    {{ forms.input("mediatags", title, media.tags, helpText) }}
 
                     {% set title %}{% trans "Retire this media?" %}{% endset %}
                     {% set helpText %}{% trans "Retired media remains on existing Layouts but is not available to assign to new Layouts." %}{% endset %}
@@ -55,7 +55,15 @@
                     {% set message %}{% trans "Sorry, Fonts do not have any editable properties." %}{% endset %}
                     {{ forms.message(message) }}
                 {% endif %}
+
             </form>
+            <script type="text/javascript">
+                $("#mediatags").tagEditor({
+                    delimiter: ',', /* comma */
+                    placeholder: '{% trans "Edit tags here..." %}'
+                    });
+            </script>             
         </div>
+                       
     </div>
 {% endblock %}

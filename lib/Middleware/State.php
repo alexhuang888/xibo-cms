@@ -440,6 +440,19 @@ class State extends Middleware
             );
         });
 
+        $app->container->singleton('\Xibo\Controller\DayPart', function($container) {
+            return new \Xibo\Controller\DayPart(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->dayPartFactory
+            );
+        });
+
         $app->container->singleton('\Xibo\Controller\Display', function($container) {
             return new \Xibo\Controller\Display(
                 $container->logService,
@@ -596,7 +609,8 @@ class State extends Middleware
                 $container->userGroupFactory,
                 $container->displayGroupFactory,
                 $container->regionFactory,
-                $container->dataSetFactory
+                $container->dataSetFactory,
+                $container->aitagshelper
             );
         });
 
@@ -647,7 +661,8 @@ class State extends Middleware
                 $container->upgradeFactory,
                 $container->mediaFactory,
                 $container->notificationFactory,
-                $container->userNotificationFactory
+                $container->userNotificationFactory,
+                $container->aitagshelper
             );
         });
 
@@ -786,7 +801,8 @@ class State extends Middleware
                 $container->commandFactory,
                 $container->displayFactory,
                 $container->layoutFactory,
-                $container->mediaFactory
+                $container->mediaFactory,
+                $container->dayPartFactory
             );
         });
 
@@ -930,6 +946,29 @@ class State extends Middleware
                 $container->userFactory
             );
         });
+
+        $app->container->singleton('\Xibo\Controller\AITags', function($container) {
+            return new \Xibo\Controller\AITags(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->playerActionService,
+                $container->displayFactory,
+                $container->displayGroupFactory,
+                $container->layoutFactory,
+                $container->moduleFactory,
+                $container->mediaFactory,
+                $container->commandFactory,
+                $container->scheduleFactory,
+                $container->tagFactory,
+                $container
+            );
+        });
+        
     }
 
     /**
@@ -1041,6 +1080,17 @@ class State extends Middleware
                 $container->store,
                 $container->logService,
                 $container->sanitizerService
+            );
+        });
+
+        $container->singleton('dayPartFactory', function($container) {
+            return new \Xibo\Factory\DayPartFactory(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService,
+                $container->user,
+                $container->userFactory,
+                $container->scheduleFactory
             );
         });
 
@@ -1156,7 +1206,8 @@ class State extends Middleware
                 $container->dataSetColumnFactory,
                 $container->transitionFactory,
                 $container->displayFactory,
-                $container->commandFactory
+                $container->commandFactory,
+                $container->tagFactory
             );
         });
 
@@ -1375,5 +1426,37 @@ class State extends Middleware
                 $container->sanitizerService
             );
         });
+
+        $container->singleton('itemCreatorFactory', function($container) {
+            return new \Xibo\Factory\ItemCreatorFactory(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService,
+                $container->user,
+                $container->userFactory,
+                $container->permissionFactory,
+                $container
+            );
+        });
+
+        $container->singleton('aitagshelper', function($container) {
+            return new \Xibo\Custom\AITagsHelper(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService,
+                $container->user,
+                $container->userFactory,
+                $container->permissionFactory,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->tagFactory,
+                $container->playlistFactory,
+                $container->regionFactory,
+                $container->widgetFactory,
+                $container->mediaFactory,
+                $container->moduleFactory
+            );
+        });        
     }
 }

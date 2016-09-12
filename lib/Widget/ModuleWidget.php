@@ -164,6 +164,15 @@ abstract class ModuleWidget implements ModuleInterface
     /** @var  DisplayGroupFactory */
     protected $displayGroupFactory;
 
+    /** @var  tagFactory */
+    protected $tagFactory;
+
+    /** @var  aitagshelper */
+    protected $aitagshelper;
+
+    // attributes this module has
+    protected $moduleAttributes;
+
     /**
      * ModuleWidget constructor.
      * @param Slim $app
@@ -181,7 +190,7 @@ abstract class ModuleWidget implements ModuleInterface
      * @param DisplayFactory $displayFactory
      * @param CommandFactory $commandFactory
      */
-    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $dispatcher, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory)
+    public function __construct($app, $store, $pool, $log, $config, $date, $sanitizer, $dispatcher, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         $this->app = $app;
         $this->store = $store;
@@ -198,7 +207,7 @@ abstract class ModuleWidget implements ModuleInterface
         $this->transitionFactory = $transitionFactory;
         $this->displayFactory = $displayFactory;
         $this->commandFactory = $commandFactory;
-
+        $this->tagFactory = $tagFactory;
         $this->init();
     }
 
@@ -208,11 +217,12 @@ abstract class ModuleWidget implements ModuleInterface
      * @param WidgetFactory $widgetFactory
      * @param DisplayGroupFactory $displayGroupFactory
      */
-    public function setChildObjectDependencies($layoutFactory, $widgetFactory, $displayGroupFactory)
+    public function setChildObjectDependencies($layoutFactory, $widgetFactory, $displayGroupFactory, $aitagshelper)
     {
         $this->layoutFactory = $layoutFactory;
         $this->widgetFactory = $widgetFactory;
         $this->displayGroupFactory = $displayGroupFactory;
+        $this->aitagshelper = $aitagshelper;
     }
 
     /**
@@ -1031,7 +1041,7 @@ abstract class ModuleWidget implements ModuleInterface
 
     /**
      * Post-processing
-     *  this is run after the media item has been created and before it is saved.
+     *  this is run after the media item has been created and  saved.
      * @param Media $media
      */
     public function postProcess($media)
@@ -1056,4 +1066,59 @@ abstract class ModuleWidget implements ModuleInterface
     {
         return $this->statusMessage;
     }
+
+    public function getMediaAttributes($attrOpt, $media)
+    {
+        // by $attrOpt, try to get attributes of the media
+        //
+        $retdata = ['result' => 200];
+
+        //if (hasAttributes($attrOpt))
+        {
+            if ($this->getConfig() != null)
+            {
+                $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
+            }
+            if (($attrOpt & MAID_SMARTTAGS) != 0 && $this->getSetting('aitags', 0) == 1)
+            {
+                // extract smart tags
+                if ($this->aitagshelper != null && $this->getConfig() != null)
+                {
+                    return $this->getMediaSmartTag($media, $filePath);
+                }
+            }
+
+            if (($attrOpt & MAID_LOCATION) != 0 && $this->getSetting('location', 0) == 1)
+            {
+                return $this->getLocation($media, $filePath);
+            }   
+            if (($attrOpt & MAID_EXIF) != 0 && $this->getSetting('exif', 0) == 1)
+            {
+                return $this->getExif($media, $filePath);
+            }                       
+        }
+        return $retdata;
+    }
+    
+    public function getMediaSmartTag($media, $filePath)
+    {
+        if ($this->getSetting('aitags', 0) == 1)
+        {
+            if ($this->aitagshelper != null)
+            {
+                return $this->aitagshelper->mediasmarttagextractorToStringArray($filePath);
+            }
+        }
+        return ['result' => 100];
+    }
+
+    public function getLocation($media, $filePath)
+    {
+        return ['result' => 100];
+    }
+    
+    public function getExif($media, $filePath)
+    {
+        return ['result' => 100];
+    }    
 }

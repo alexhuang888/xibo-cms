@@ -30,6 +30,7 @@ use Xibo\Factory\WidgetFactory;
 use Xibo\Service\DateServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Playlist
@@ -40,7 +41,12 @@ use Xibo\Storage\StorageServiceInterface;
 class Playlist implements \JsonSerializable
 {
     use EntityTrait;
-
+    public static function ItemType() {
+        return \ITID_PLAYLIST;
+    }
+    public function getItemType() {
+        return \ITID_PLAYLIST;
+    }    
     /**
      * @SWG\Property(description="The ID of this Playlist")
      * @var int
@@ -108,6 +114,11 @@ class Playlist implements \JsonSerializable
      * @var RegionFactory
      */
     private $regionFactory;
+
+    // if this playlist is allowed to assign media by matching ai tags?
+    public $isaitagmatchable;
+
+    public $lastaitagsmatchedDT;
 
     /**
      * Entity constructor.
@@ -394,4 +405,18 @@ class Playlist implements \JsonSerializable
 
         return ($results[0]['qty'] > 0);
     }
+
+    /**
+     * Has media
+     * @return bool
+     */
+    public function hasMedias($mediaId)
+    {
+        $results = $this->getStore()->select('SELECT COUNT(*) AS qty 
+                                    FROM `lkwidgetmedia` 
+                                    WHERE lkwidgetmedia.mediaId = :mediaid AND lkwidgetmedia.widgetId in (SELECT widget.widgetId from widget WHERE playlistId = :playlistId) ', 
+                                    ['playlistId' => $this->playlistId, 'mediaid' => $mediaId]);
+
+        return ($results[0]['qty'] > 0);
+    }    
 }

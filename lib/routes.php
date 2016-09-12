@@ -140,6 +140,8 @@ $app->delete('/playlist/:id', '\Xibo\Controller\Playlist:delete')->name('playlis
 $app->get('/playlist/widget', '\Xibo\Controller\Playlist:widgetGrid')->name('playlist.widget.search');
 $app->post('/playlist/order/:id', '\Xibo\Controller\Playlist:order')->name('playlist.order');
 $app->post('/playlist/library/assign/:id', '\Xibo\Controller\Playlist:libraryAssign')->name('playlist.library.assign');
+
+
 // Widget Modules
 $app->post('/playlist/widget/:type/:id', '\Xibo\Controller\Module:addWidget')->name('module.widget.add');
 $app->put('/playlist/widget/:id', '\Xibo\Controller\Module:editWidget')->name('module.widget.edit');
@@ -198,8 +200,8 @@ $app->get('/library', '\Xibo\Controller\Library:grid')->name('library.search');
 $app->get('/library/download/:id(/:type)', '\Xibo\Controller\Library:download')->name('library.download');
 $app->post('/library', '\Xibo\Controller\Library:add')->name('library.add');
 $app->put('/library/:id', '\Xibo\Controller\Library:edit')->name('library.edit');
-$app->delete('/library/:id', '\Xibo\Controller\Library:delete')->name('library.delete');
 $app->delete('/library/tidy', '\Xibo\Controller\Library:tidy')->name('library.tidy');
+$app->delete('/library/:id', '\Xibo\Controller\Library:delete')->name('library.delete');
 // Tagging
 $app->post('/library/:id/tag', '\Xibo\Controller\Library:tag')->name('library.tag');
 $app->delete('/library/:id/untag', '\Xibo\Controller\Library:untag')->name('library.untag');
@@ -310,7 +312,7 @@ $app->delete('/log', '\Xibo\Controller\Logging:truncate')->name('log.truncate');
  * @SWG\Tag(
  *  name="user",
  *  description="Users"
- * )
+ * )r
  */
 $app->get('/user/me', '\Xibo\Controller\User:myDetails')->name('user.me');
 $app->get('/user', '\Xibo\Controller\User:grid')->name('user.search');
@@ -318,7 +320,7 @@ $app->post('/user', '\Xibo\Controller\User:add')->name('user.add');
 $app->put('/user/password/change', '\Xibo\Controller\User:changePassword')->name('user.change.password');
 $app->put('/user/:id', '\Xibo\Controller\User:edit')->name('user.edit');
 $app->delete('/user/:id', '\Xibo\Controller\User:delete')->name('user.delete');
-// permissions
+// permission
 $app->get('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissionsGrid')->name('user.permissions');
 $app->post('/user/permissions/:entity/:id', '\Xibo\Controller\User:permissions');
 // preferences
@@ -417,3 +419,22 @@ $app->get('/command', '\Xibo\Controller\Command:grid')->name('command.search');
 $app->post('/command', '\Xibo\Controller\Command:add')->name('command.add');
 $app->put('/command/:id', '\Xibo\Controller\Command:edit')->name('command.edit');
 $app->delete('/command/:id', '\Xibo\Controller\Command:delete')->name('command.delete');
+
+//
+// AI Tags/AIProfile
+
+$app->put('/aitags/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTags')->name('aitags.edittag');
+$app->post('/aitags/profiletextextractor', '\Xibo\Controller\AITags:profiletextextractor')->name('aitags.profiletextextractor');
+$app->post('/aitags/mediasmarttagextractor', '\Xibo\Controller\AITags:mediasmarttagextractor')->name('aitags.mediasmarttagextractor');
+
+/**
+ * Dayparts
+ * @SWG\Tag(
+ *  name="daypart",
+ *  description="Dayparting"
+ * )
+ */
+$app->get('/daypart', '\Xibo\Controller\DayPart:grid')->name('daypart.search');
+$app->post('/daypart', '\Xibo\Controller\DayPart:add')->name('daypart.add');
+$app->put('/daypart/:id', '\Xibo\Controller\DayPart:edit')->name('daypart.edit');
+$app->delete('/daypart/:id', '\Xibo\Controller\DayPart:delete')->name('daypart.delete');

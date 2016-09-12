@@ -114,6 +114,7 @@ class Library extends Base
     /** @var  DataSetFactory */
     private $dataSetFactory;
 
+    private $aitagshelper;
     /**
      * Set common dependencies.
      * @param LogServiceInterface $log
@@ -138,7 +139,7 @@ class Library extends Base
      * @param RegionFactory $regionFactory
      * @param DataSetFactory $dataSetFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $moduleFactory, $tagFactory, $mediaFactory, $widgetFactory, $permissionFactory, $layoutFactory, $playlistFactory, $userGroupFactory, $displayGroupFactory, $regionFactory, $dataSetFactory)
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $moduleFactory, $tagFactory, $mediaFactory, $widgetFactory, $permissionFactory, $layoutFactory, $playlistFactory, $userGroupFactory, $displayGroupFactory, $regionFactory,                                  $dataSetFactory, $aitagshelper)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -156,8 +157,13 @@ class Library extends Base
         $this->displayGroupFactory = $displayGroupFactory;
         $this->regionFactory = $regionFactory;
         $this->dataSetFactory = $dataSetFactory;
+        $this->aitagshelper = $aitagshelper;
     }
 
+    public function getAITagsHelper()
+    {
+        return $this->aitagshelper;
+    }
     /**
      * Get Module Factory
      * @return ModuleFactory
@@ -373,6 +379,13 @@ class Library extends Base
                     'url' => $this->urlFor('library.edit.form', ['id' => $media->mediaId]),
                     'text' => __('Edit')
                 );
+
+                // Edit AI Tags
+                $media->buttons[] = array(
+                    'id' => 'content_button_editaitag',
+                    'url' => $this->urlFor('aitags.mediatagretrieve.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
+                    'text' => __('Edit AI Tags')
+                );                
             }
 
             if ($user->checkDeleteable($media)) {

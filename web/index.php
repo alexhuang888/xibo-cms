@@ -52,7 +52,7 @@ $logger = new \Xibo\Helper\AccessibleMonologWriter(array(
 
 // Slim Application
 $app = new \RKA\Slim(array(
-    'debug' => false,
+    'debug' => true,
     'log.writer' => $logger
 ));
 $app->setName('web');

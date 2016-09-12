@@ -38,6 +38,7 @@ use Xibo\Factory\WidgetFactory;
 use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+require_once PROJECT_ROOT . '/lib/Helper/ItemIDDef.php';
 
 /**
  * Class Media
@@ -48,7 +49,14 @@ use Xibo\Storage\StorageServiceInterface;
 class Media implements \JsonSerializable
 {
     use EntityTrait;
+    
+    public static function ItemType() {
+        return \ITID_MEDIA;
+    }
 
+    public function getItemType() {
+        return \ITID_MEDIA;
+    }    
     /**
      * @SWG\Property(description="The Media ID")
      * @var int
@@ -185,6 +193,7 @@ class Media implements \JsonSerializable
     private $layoutBackgroundImages = [];
     private $permissions = [];
 
+    public $isaitagsgenerated = false;
     /**
      * @var ConfigServiceInterface
      */
@@ -418,6 +427,9 @@ class Media implements \JsonSerializable
      */
     public function load($options = [])
     {
+        if ($this->loaded == true)
+            return;
+
         $options = array_merge([
             'deleting' => false,
             'fullInfo' => false
@@ -651,7 +663,8 @@ class Media implements \JsonSerializable
                 isEdited = :isEdited,
                 userId = :userId,
                 released = :released,
-                apiRef = :apiRef
+                apiRef = :apiRef,
+                isaitagsgenerated = :isaitagsgenerated
            WHERE mediaId = :mediaId
         ', [
             'name' => $this->name,
@@ -666,7 +679,8 @@ class Media implements \JsonSerializable
             'userId' => $this->ownerId,
             'released' => $this->released,
             'apiRef' => $this->apiRef,
-            'mediaId' => $this->mediaId
+            'mediaId' => $this->mediaId,
+            'isaitagsgenerated' => $this->isaitagsgenerated
         ]);
     }
 
