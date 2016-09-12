@@ -46,6 +46,8 @@
 
     </style>
 </head>
+{% set t_username %}{% trans "Username" %}{% endset %}
+{% set t_password %}{% trans "Password" %}{% endset %}
 <body>
     <div class="container">
         <form id="login-form" class="form-signin text-center" action="{{ urlFor("login") }}" method="post">
@@ -54,10 +56,14 @@
             <p><a href="{{ theme.getThemeConfig("theme_url") }}"><img src="{{ theme.uri("img/logo.svg") }}"></a></p>
 
             <p>{% trans "Please provide your credentials" %}</p>
+            <div>
+            <input id="username" class="form-control input-block-level" name="username" type="text" placeholder="{{ t_username }}" autofocus>
+            </div>
+            
+            <div>
 
-            <input id="username" class="form-control input-block-level" name="username" type="text" placeholder="{% trans "User" %}" autofocus>
-            <input id="password" class="form-control input-block-level" name="password" type="password" placeholder="{% trans "Password" %}">
-
+            <input id="password" class="form-control input-block-level" name="password" type="password" placeholder="{{ t_password }}">
+            </div>
             {% if flash.login_message %}
             <div class="alert alert-danger">{{ flash.login_message }}</div>
             {% endif %}
