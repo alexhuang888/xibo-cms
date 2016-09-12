@@ -339,3 +339,9 @@ $app->get('/command/form/delete/:id', '\Xibo\Controller\Command:deleteForm')->na
 
 $app->get('/aitags/form/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTagForm')->name('aitags.edittag.form');
 $app->get('/aitags/form/mediatagretrieve/:itemtype/:itemid', '\Xibo\Controller\AITags:retrieveMediaTagForm')->name('aitags.mediatagretrieve.form');
+// Daypart
+//
+$app->get('/daypart/view', '\Xibo\Controller\DayPart:displayPage')->name('daypart.view');
+$app->get('/daypart/form/add', '\Xibo\Controller\DayPart:addForm')->name('daypart.add.form');
+$app->get('/daypart/form/edit/:id', '\Xibo\Controller\DayPart:editForm')->name('daypart.edit.form');
+$app->get('/daypart/form/delete/:id', '\Xibo\Controller\DayPart:deleteForm')->name('daypart.delete.form');
