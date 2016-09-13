@@ -736,7 +736,8 @@ class State extends Middleware
                 $container->transitionFactory,
                 $container->widgetFactory,
                 $container->moduleFactory,
-                $container->userGroupFactory
+                $container->userGroupFactory,
+                $container->tagFactory
             );
         });
 
@@ -1246,7 +1247,8 @@ class State extends Middleware
                 $container->sanitizerService,
                 $container->date,
                 $container->permissionFactory,
-                $container->widgetFactory
+                $container->widgetFactory,
+                $container->tagFactory
             );
         });
 

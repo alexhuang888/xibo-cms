@@ -72,6 +72,10 @@ class Playlist extends Base
     private $userGroupFactory;
 
     /**
+     * @var tagFactory
+     */
+    private $tagFactory;
+    /**
      * Set common dependencies.
      * @param LogServiceInterface $log
      * @param SanitizerServiceInterface $sanitizerService
@@ -90,7 +94,8 @@ class Playlist extends Base
      * @param UserGroupFactory $userGroupFactory
      */
     public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $playlistFactory, $regionFactory, $mediaFactory, $permissionFactory,
-        $transitionFactory, $widgetFactory, $moduleFactory, $userGroupFactory)
+                                $transitionFactory, $widgetFactory, $moduleFactory, $userGroupFactory,
+                                $tagFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -102,17 +107,135 @@ class Playlist extends Base
         $this->widgetFactory = $widgetFactory;
         $this->moduleFactory = $moduleFactory;
         $this->userGroupFactory = $userGroupFactory;
+        $this->tagFactory = $tagFactory;
+    }
+    /**
+     * Include display page template page based on sub page selected
+     */
+    function playlistPage()
+    {
+        // Call to render the template
+        $this->getState()->template = 'playlist-page';
+        $this->getState()->setData([
+            'playlists' => $this->playlistFactory->query()
+        ]);
+    }
+    public function addForm()
+    {
+        $this->getState()->template = 'playlist-form-add';
+        $this->getState()->setData([
+            'help' => $this->getHelp()->link('Playlist', 'Add')
+        ]);
     }
 
+    /**
+     * Edit playlist
+     * @param int $playlistId
+     */
+    public function editForm($playlistId)
+    {
+        $playlist = $this->playlistFactory->getById($playlistId);
+
+        if ($playlist->getOwnerId() != $this->getUser()->userId && $this->getUser()->userTypeId != 1)
+            throw new AccessDeniedException();
+
+        $this->getState()->template = 'playlist-form-grid';
+        $this->getState()->setData([
+            'playlist' => $playlist
+        ]);
+    }    
+    /**
+     * Delete form
+     * @param int $playlistId
+     */
+    function deleteForm($playlistId)
+    {
+        $playlist = $this->playlistFactory->getById($playlistId);
+
+        if (!$this->getUser()->checkDeleteable($playlist))
+            throw new AccessDeniedException();
+
+        $this->getState()->template = 'playlist-form-delete';
+        $this->getState()->setData([
+            'playlist' => $playlist,
+            'help' => $this->getHelp()->link('Playlist', 'Delete')
+        ]);
+    }    
     /**
      * Search
      */
     public function grid()
     {
         $this->getState()->template = 'grid';
+        $embed = ($this->getSanitizer()->getString('embed') != null) ? explode(',', $this->getSanitizer()->getString('embed')) : [];
 
         $playlists = [];
+        $filter = [
+            'tags' => $this->getSanitizer()->getString('tags'),
+            'name' => $this->getSanitizer()->getString('name')
+                    ];
+        $playlists = $this->playlistFactory->query($this->gridRenderSort(), $this->gridRenderFilter($filter));
 
+        foreach ($playlists as $playlist) 
+        {
+            /* @var \Xibo\Entity\Playlist $playlist */
+            // Populate the status message
+            if ($this->isApi())
+                continue;
+
+            $playlist->includeProperty('buttons');
+
+            if ($this->getUser()->checkEditable($playlist)) {
+
+                // Edit Button
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_edit',
+                    'url' => $this->urlFor('playlist.edit.form', ['id' => $playlist->getId()]),
+                    'text' => __('Edit')
+                );
+                // Edit AI Tags
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
+                    'text' => __('Edit AI Tags')
+                );
+                // Copy Button
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_copy',
+                    'url' => $this->urlFor('playlist.copy.form', ['id' => $playlist->getId()]),
+                    'text' => __('Copy')
+                );
+                // Extra buttons if have delete permissions
+                if ($this->getUser()->checkDeleteable($playlist)) {
+                    // Delete Button
+                    $playlist->buttons[] = array(
+                        'id' => 'playlist_button_delete',
+                        'url' => $this->urlFor('playlist.delete.form', ['id' => $playlist->getId()]),
+                        'text' => __('Delete'),
+                        'multi-select' => true,
+                        'dataAttributes' => array(
+                            array('name' => 'commit-url', 'value' => $this->urlFor('playlist.delete', ['id' => $playlist->getId()])),
+                            array('name' => 'commit-method', 'value' => 'delete'),
+                            array('name' => 'id', 'value' => 'playlist_button_delete'),
+                            array('name' => 'text', 'value' => __('Delete')),
+                            array('name' => 'rowtitle', 'value' => $playlist->name)
+                        )
+                    );
+                }
+
+                // Extra buttons if we have modify permissions
+                if ($this->getUser()->checkPermissionsModifyable($playlist)) {
+                    // Permissions button
+                    $playlist->buttons[] = array(
+                        'id' => 'playlist_button_permissions',
+                        'url' => $this->urlFor('user.permissions.form', ['entity' => 'Playlist', 'id' => $playlist->getId()]),
+                        'text' => __('Permissions')
+                    );
+                }
+            }                                            
+        }
+        // Store the table rows
+        $this->getState()->recordsTotal = $this->playlistFactory->countLast();
         $this->getState()->setData($playlists);
     }
 
@@ -123,6 +246,9 @@ class Playlist extends Base
     {
         $playlist = $this->playlistFactory->createEmpty();
         $playlist->name = $this->getSanitizer()->getString('name');
+        $playlist->description = $this->getSanitizer()->getString('description');
+        $playlist->isaitagmatchable = $this->getSanitizer()->getCheckbox('isaitagmatchable');
+        $playlist->tags = $this->tagFactory->tagsFromString($this->getSanitizer()->getString('tags'));
         $playlist->save();
 
         // Assign to a region?
@@ -182,6 +308,10 @@ class Playlist extends Base
             throw new AccessDeniedException();
 
         $playlist->name = $this->getSanitizer()->getString('name');
+        $playlist->description = $this->getSanitizer()->getString('description');
+        $playlist->isaitagmatchable = $this->getSanitizer()->getCheckbox('isaitagmatchable');
+        $playlist->replaceTags($this->tagFactory->tagsFromString($this->getSanitizer()->getString('tags')));
+
         $playlist->setChildObjectDependencies($this->regionFactory);
         $playlist->save();
 
@@ -218,7 +348,43 @@ class Playlist extends Base
             'message' => sprintf(__('Deleted %s'), $playlist->name)
         ]);
     }
+    /**
+     * Timeline Form
+     * @param int $regionId
+     */
+    public function playlistTimelineForm($playlistId)
+    {
+        // Get a complex object of playlists and widgets
+        $playlist = $this->playlistFactory->getById($regionId);
 
+        if (!$this->getUser()->checkEditable($playlist))
+            throw new AccessDeniedException();
+
+        // Set the view we have requested
+        $this->session->set('playlistView', $this->getSanitizer()->getString('view', $this->session->get('playlistView')));
+
+        // Load the region
+        $playlist->load();
+
+        // Loop through everything setting permissions
+        {
+            /* @var Playlist $playlist */
+            foreach ($playlist->widgets as $widget) 
+            {
+                /* @var Widget $widget */
+                $widget->module = $this->moduleFactory->createWithWidget($widget);
+            }
+        }
+
+        // Pass to view
+        $this->getState()->template = ($this->session->get('playlistView') == 'timeline') ? 'playlist-form-timeline' : 'playlist-form-grid';
+        $this->getState()->setData([
+            'playlist' => $playlist,
+            'modules' => $this->moduleFactory->getAssignableModules(),
+            'transitions' => $this->transitionData(),
+            'help' => $this->getHelp()->link('Playlist', 'Edit')
+        ]);
+    }
     /**
      * Widget Grid
      *

@@ -1,0 +1,108 @@
+{#
+/*
+ * Spring Signage Ltd - http://www.springsignage.com
+ * Copyright (C) 2015 Spring Signage Ltd
+ * (${FILE_NAME})
+ */
+
+#}
+{% extends "authed.twig" %}
+{% import "inline.twig" as inline %}
+{% block actionMenu %}
+    <ul class="nav nav-pills pull-right">
+        <li class="btn btn-success btn-xs"><a class="XiboFormButton btns" title="{% trans "Add a new playlist" %}" href="{{ urlFor("playlist.add.form") }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> {% trans "Add Playlist" %}</a></li>
+    </ul>
+{% endblock %}
+{% block pageContent %}
+    <div class="widget">
+        <div class="widget-title">{% trans "Playlists" %}</div>
+        <div class="widget-body">
+            <div class="XiboGrid" id="{{ random() }}" data-grid-name="playlistView">
+                <div class="XiboFilter well">
+                    <div class="FilterDiv" id="Filter">
+                        <form class="form-inline">
+
+                            {% set name %}{% trans "Name" %}{% endset %}
+                            {{ inline.input("name", name) }}
+
+                            {% set tags %}{% trans "Tags" %}{% endset %}
+                            {{ inline.input("tags", tags) }}
+
+                            {% set title %}{% trans "AI Tags aware" %}{% endset %}
+                            {{ inline.checkbox("isaitagmatchable", title) }}                            
+                        </form>
+                    </div>
+                </div>
+                <div class="XiboData">
+                    <table id="playlists" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{% trans "ID" %}</th>
+                                <th>{% trans "Name" %}</th>
+                                <th>{% trans "Descriptions" %} </th>
+                                <th>{% trans "AI Tags aware" %} </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javaScript %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var table = $("#playlists").DataTable({
+                "language": dataTablesLanguage,
+                serverSide: true, stateSave: true,
+                filter: false,
+                searchDelay: 3000,
+                "order": [[1, "asc"]],
+                ajax: {
+                    "url": "{{ urlFor("playlist.search") }}",
+                    "data": function (dataToSend) {
+                        console.log(dataToSend);
+                        //make a new object so as not to destroy the input.
+                        var data = {};
+                        data.draw = dataToSend.draw;
+                        data.length = dataToSend.length;
+                        data.start = dataToSend.start;
+                        data.order = dataToSend.order;
+                        data.columns = [];
+
+                        $.each(dataToSend.columns, function (index, e) {
+                            var col = {};
+                            col.data = e.data;
+                            if (e.name != null && e.name != "")
+                                col.name = e.name;
+                            data.columns.push(col);
+                        });
+
+                        $.extend(data, $("#playlists").closest(".XiboGrid").find(".FilterDiv form").serializeObject());
+
+                        return data;
+                    }
+                },
+                "columns": [
+                    {"data": "playlistId"},
+                    {"data": "name"},
+                    {"data": "description", "visible": true},
+                    {"data": "isaitagmatchable", "visible": true, "render": dataTableTickCrossColumn},
+                    {
+                        "orderable": false,
+                        "data": dataTableButtonsColumn
+                    }
+                ]
+            });
+
+            table.on('draw', dataTableDraw);
+            table.on('processing.dt', dataTableProcessing);
+            dataTableAddButtons(table, $('#playlists_wrapper').find('.col-sm-6').eq(1));
+        });
+    </script>
+{% endblock %}

@@ -725,7 +725,7 @@ class Layout extends Base
                     'text' => __('Edit')
                 );
                 // Edit AI Tags
-                $group->buttons[] = array(
+                $layout->buttons[] = array(
                     'id' => 'layout_button_editaitag',
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Layout::ItemType(), 'itemid' => $layout->layoutId]),
                     'text' => __('Edit AI Tags')

@@ -151,10 +151,24 @@
 
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <!-- Schedule link -->
-                    {% if currentUser.routeViewable("/schedule") %}
-                    <li><a href="{{ urlFor("schedule.view") }}">{% trans "Schedule" %}</a></li>
-                    {% endif %}
+
+                    <!-- Schedule dropdown -->
+                    {% if currentUser.routeViewable("/schedule") or currentUser.routeViewable("/daypart") %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Schedule" %} <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <!-- Schedule link -->
+                                {% if currentUser.routeViewable("/schedule") %}
+                                <li><a href="{{ urlFor("schedule.view") }}">{% trans "Schedule" %}</a></li>
+                                {% endif %}
+
+                                {% if currentUser.routeViewable("/daypart") %}
+                                <li><a href="{{ urlFor("daypart.view") }}">{% trans "Dayparting" %}</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>                        
+                    {% endif %}                
+
 
                     <!-- Design dropdown -->
                     {% if currentUser.routeViewable("/campaign") or currentUser.routeViewable("/layout") or currentUser.routeViewable("/template") or currentUser.routeViewable("/resolution") %}
@@ -176,6 +190,10 @@
                                 {% if currentUser.routeViewable("/resolution") %}
                                 <li ><a href="{{ urlFor("resolution.view") }}">{% trans "Resolutions" %}</a></li>
                                 {% endif %}
+
+                                {% if currentUser.routeViewable("/playlist") %}
+                                <li ><a href="{{ urlFor("playlist.view") }}">{% trans "Playlists" %}</a></li>
+                                {% endif %}                                
                             </ul>
                         </li>                        
                     {% endif %}

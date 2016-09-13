@@ -71,6 +71,8 @@ class Playlist implements \JsonSerializable
      */
     public $tags = [];
 
+    // Private
+    private $unassignTags = [];
     /**
      * @SWG\Property(description="An array of Regions this Playlist is assigned to")
      * @var Region[]
@@ -115,11 +117,17 @@ class Playlist implements \JsonSerializable
      */
     private $regionFactory;
 
+    /**
+     * @var tagFactory
+     */
+    private $tagFactory;
+
     // if this playlist is allowed to assign media by matching ai tags?
     public $isaitagmatchable;
 
     public $lastaitagsmatchedDT;
 
+    public $description;
     /**
      * Entity constructor.
      * @param StorageServiceInterface $store
@@ -128,13 +136,14 @@ class Playlist implements \JsonSerializable
      * @param PermissionFactory $permissionFactory
      * @param WidgetFactory $widgetFactory
      */
-    public function __construct($store, $log, $date, $permissionFactory, $widgetFactory)
+    public function __construct($store, $log, $date, $permissionFactory, $widgetFactory, $tagFactory)
     {
         $this->setCommonDependencies($store, $log);
 
         $this->dateService = $date;
         $this->permissionFactory = $permissionFactory;
         $this->widgetFactory = $widgetFactory;
+        $this->tagFactory = $tagFactory;
 
         $this->excludeProperty('regions');
     }
@@ -229,7 +238,75 @@ class Playlist implements \JsonSerializable
         $widget->displayOrder = count($this->widgets) + 1;
         $this->widgets[] = $widget;
     }
+    /**
+     * @param array[Tag] $tags
+     */
+    public function replaceTags($tags = [])
+    {
+        if (!is_array($this->tags) || count($this->tags) <= 0)
+            $this->tags = $this->tagFactory->loadByItemId($this->getItemType(), $this->playlistId);
 
+        $this->unassignTags = array_udiff($this->tags, $tags, function($a, $b) {
+            /* @var Tag $a */
+            /* @var Tag $b */
+            return $a->tagId - $b->tagId;
+        });
+
+        $this->getLog()->debug('Tags to be removed: %s', json_encode($this->unassignTags));
+
+        // Replace the arrays
+        $this->tags = $tags;
+
+        $this->getLog()->debug('Tags remaining: %s', json_encode($this->tags));
+    }
+    /**
+     * Unassign tag
+     * @param Tag $tag
+     * @return $this
+     */
+    public function unassignTag($tag)
+    {
+        $this->tags = array_udiff($this->tags, [$tag], function($a, $b) {
+            /* @var Tag $a */
+            /* @var Tag $b */
+            return $a->tagId - $b->tagId;
+        });
+
+        return $this;
+    }
+
+    /**
+     * Assign Tag
+     * @param Tag $tag
+     * @return $this
+     */
+    public function assignTag($tag)
+    {
+        $this->load();
+
+        if (!in_array($tag, $this->tags))
+            $this->tags[] = $tag;
+
+        return $this;
+    }
+
+    /**
+     * Does the playlist have the provided tag?
+     * @param $searchTag
+     * @return bool
+     */
+    public function hasTag($searchTag)
+    {
+        $this->load();
+
+        foreach ($this->tags as $tag) {
+            /* @var Tag $tag */
+            if ($tag->tag == $searchTag)
+                return true;
+        }
+
+        return false;
+    }            
     /**
      * Load
      * @param array $loadOptions
@@ -243,6 +320,7 @@ class Playlist implements \JsonSerializable
         $options = array_merge([
             'playlistIncludeRegionAssignments' => true,
             'loadPermissions' => true,
+            'loadTags' => true,
             'loadWidgets' => true
         ], $loadOptions);
 
@@ -268,7 +346,9 @@ class Playlist implements \JsonSerializable
                 $this->regions[] = $region;
             }
         }
-
+        // Load all tags
+        if ($options['loadTags'])
+            $this->tags = $this->tagFactory->loadByItemId($this->getItemType(), $this->playlistId);
         $this->hash = $this->hash();
         $this->loaded = true;
     }
@@ -305,6 +385,37 @@ class Playlist implements \JsonSerializable
             $widget->displayOrder = $i;
             $widget->save();
         }
+        // always save tags
+        {
+            $this->getLog()->debug('Saving tags on %s', $this);
+
+            // Save the tags
+            if (is_array($this->tags)) 
+            {
+                foreach ($this->tags as $tag) 
+                {
+                    /* @var Tag $tag */
+
+                    $this->getLog()->debug('Assigning tag %s', $tag->tag);
+
+                    $tag->assignItem($this->getItemType(), $this->playlistId, 1.0);
+                    $tag->save();
+                }
+            }
+
+            // Remove unwanted ones
+            if (is_array($this->unassignTags)) 
+            {
+                foreach ($this->unassignTags as $tag) 
+                {
+                    /* @var Tag $tag */
+                    $this->getLog()->debug('Unassigning tag %s', $tag->tag);
+
+                    $tag->unassignItem($this->getItemType(), $this->playlistId);
+                    $tag->save();
+                }
+            }
+        }        
     }
 
     /**
@@ -339,7 +450,13 @@ class Playlist implements \JsonSerializable
             $region->unassignPlaylist($this);
             $region->save();
         }
-
+        // Unassign all Tags
+        foreach ($this->tags as $tag) 
+        {
+            /* @var Tag $tag */
+            $tag->unassignItem($this->getItemType(), $this->layoutId);
+            $tag->save();
+        }
         // Delete this playlist
         $this->getStore()->update('DELETE FROM `playlist` WHERE playlistId = :playlistId', array('playlistId' => $this->playlistId));
     }
@@ -351,10 +468,12 @@ class Playlist implements \JsonSerializable
     {
         $this->getLog()->debug('Adding Playlist ' . $this->name);
 
-        $sql = 'INSERT INTO `playlist` (`name`, `ownerId`) VALUES (:name, :ownerId)';
+        $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`) VALUES (:name, :ownerId, :description, :isaitagmatchable)';
         $this->playlistId = $this->getStore()->insert($sql, array(
             'name' => $this->name,
-            'ownerId' => $this->ownerId
+            'ownerId' => $this->ownerId,
+            'description' => $this->description,
+            'isaitagmatchable' => $this->isaitagmatchable
         ));
     }
 
@@ -365,10 +484,12 @@ class Playlist implements \JsonSerializable
     {
         $this->getLog()->debug('Updating Playlist ' . $this->name . '. Id = ' . $this->playlistId);
 
-        $sql = 'UPDATE `playlist` SET `name` = :name WHERE `playlistId` = :playlistId';
+        $sql = 'UPDATE `playlist` SET `name` = :name, `description` = :description , `isaitagmatchable` = :isaitagmatchable WHERE `playlistId` = :playlistId';
         $this->getStore()->update($sql, array(
             'playlistId' => $this->playlistId,
-            'name' => $this->name
+            'name' => $this->name,
+            'description' => $this->description,
+            'isaitagmatchable' => $this->isaitagmatchable
         ));
     }
 

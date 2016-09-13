@@ -52,6 +52,10 @@ class PlaylistFactory extends BaseFactory
     private $widgetFactory;
 
     /**
+     * @var tagFactory
+     */
+    private $tagFactory;
+    /**
      * Construct a factory
      * @param StorageServiceInterface $store
      * @param LogServiceInterface $log
@@ -60,13 +64,14 @@ class PlaylistFactory extends BaseFactory
      * @param PermissionFactory $permissionFactory
      * @param WidgetFactory $widgetFactory
      */
-    public function __construct($store, $log, $sanitizerService, $date, $permissionFactory, $widgetFactory)
+    public function __construct($store, $log, $sanitizerService, $date, $permissionFactory, $widgetFactory, $tagFactory)
     {
         $this->setCommonDependencies($store, $log, $sanitizerService);
 
         $this->dateService = $date;
         $this->permissionFactory = $permissionFactory;
         $this->widgetFactory = $widgetFactory;
+        $this->tagFactory = $tagFactory;
     }
 
     /**
@@ -74,7 +79,7 @@ class PlaylistFactory extends BaseFactory
      */
     public function createEmpty()
     {
-        return new Playlist($this->getStore(), $this->getLog(), $this->dateService, $this->permissionFactory, $this->widgetFactory);
+        return new Playlist($this->getStore(), $this->getLog(), $this->dateService, $this->permissionFactory, $this->widgetFactory, $this->tagFactory);
     }
 
     /**

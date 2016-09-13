@@ -128,7 +128,7 @@ class Region extends Base
         }
 
         // Pass to view
-        $this->getState()->template = ($this->session->get('timeLineView') == 'grid') ? 'region-form-grid' : 'region-form-timeline';
+        $this->getState()->template = ($this->session->get('timeLineView') == 'timeline') ? 'region-form-timeline' : 'region-form-grid';
         $this->getState()->setData([
             'region' => $region,
             'modules' => $this->moduleFactory->getAssignableModules(),
