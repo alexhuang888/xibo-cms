@@ -949,27 +949,35 @@ class LayoutFactory extends BaseFactory
         }
 
         // Tags
+        //  filter by Tags
         if ($this->getSanitizer()->getString('tags', $filterBy) != '') {
-            $body .= " AND layout.layoutID IN (
-                SELECT lktaglayout.layoutId
+            $body .= " AND `layout`.layoutId IN (
+                SELECT `lklinkedtags`.itemid
                   FROM tag
-                    INNER JOIN lktaglayout
-                    ON lktaglayout.tagId = tag.tagId
+                    INNER JOIN `lklinkedtags`
+                    ON `lklinkedtags`.tagid = tag.tagId
                 ";
             $i = 0;
             foreach (explode(',', $this->getSanitizer()->getString('tags', $filterBy)) as $tag) {
                 $i++;
 
                 if ($i == 1)
-                    $body .= " WHERE tag LIKE :tags$i ";
+                    $body .= " WHERE ( tag LIKE :tags$i ";
                 else
                     $body .= " OR tag LIKE :tags$i ";
 
                 $params['tags' . $i] =  '%' . $tag . '%';
             }
-
+            if ($i > 0)
+            {
+                $body.= (" ) AND lklinkedtags.itemtype = " . \Xibo\Entity\Layout::ItemType() . " ");
+            }
+            else
+            {
+                $body .= ("WHERE lklinkedtags.itemtype = " . \Xibo\Entity\Layout::ItemType() . " ");
+            }
             $body .= " ) ";
-        }
+        } 
 
         // Exclude templates by default
         if ($this->getSanitizer()->getInt('excludeTemplates', 1, $filterBy) != -1) {

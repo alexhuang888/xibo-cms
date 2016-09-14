@@ -729,6 +729,7 @@ class State extends Middleware
                 $container->helpService,
                 $container->dateService,
                 $container->configService,
+                $container->session,
                 $container->playlistFactory,
                 $container->regionFactory,
                 $container->mediaFactory,
@@ -1245,7 +1246,7 @@ class State extends Middleware
                 $container->store,
                 $container->logService,
                 $container->sanitizerService,
-                $container->date,
+                $container->dateService,
                 $container->permissionFactory,
                 $container->widgetFactory,
                 $container->tagFactory

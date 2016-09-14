@@ -22,7 +22,7 @@
 
 namespace Xibo\Entity;
 
-
+use Respect\Validation\Validator as v;
 use Xibo\Exception\NotFoundException;
 use Xibo\Factory\PermissionFactory;
 use Xibo\Factory\RegionFactory;
@@ -352,7 +352,19 @@ class Playlist implements \JsonSerializable
         $this->hash = $this->hash();
         $this->loaded = true;
     }
-
+    /**
+     * Validate this playlist
+     */
+    public function validate()
+    {
+        if (!v::string()->notEmpty()->validate($this->name))
+            throw new \InvalidArgumentException(__('Please enter a playlist name'));
+        if ($this->description != null)
+        {
+            if (!v::string()->length(null, 254)->validate($this->description))
+                throw new \InvalidArgumentException(__('Description can not be longer than 254 characters'));
+        }
+    }
     /**
      * Save
      */
@@ -363,6 +375,7 @@ class Playlist implements \JsonSerializable
         else if ($this->hash != $this->hash())
             $this->update();
 
+        $this->validate();
         // Sort the widgets by their display order
         usort($this->widgets, function($a, $b) {
             /**
@@ -454,7 +467,7 @@ class Playlist implements \JsonSerializable
         foreach ($this->tags as $tag) 
         {
             /* @var Tag $tag */
-            $tag->unassignItem($this->getItemType(), $this->layoutId);
+            $tag->unassignItem($this->getItemType(), $this->getId());
             $tag->save();
         }
         // Delete this playlist
@@ -467,7 +480,7 @@ class Playlist implements \JsonSerializable
     private function add()
     {
         $this->getLog()->debug('Adding Playlist ' . $this->name);
-
+        $this->validate();
         $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`) VALUES (:name, :ownerId, :description, :isaitagmatchable)';
         $this->playlistId = $this->getStore()->insert($sql, array(
             'name' => $this->name,
@@ -483,6 +496,7 @@ class Playlist implements \JsonSerializable
     private function update()
     {
         $this->getLog()->debug('Updating Playlist ' . $this->name . '. Id = ' . $this->playlistId);
+        $this->validate();
 
         $sql = 'UPDATE `playlist` SET `name` = :name, `description` = :description , `isaitagmatchable` = :isaitagmatchable WHERE `playlistId` = :playlistId';
         $this->getStore()->update($sql, array(

@@ -20,6 +20,7 @@ use Xibo\Factory\RegionFactory;
 use Xibo\Factory\TransitionFactory;
 use Xibo\Factory\UserGroupFactory;
 use Xibo\Factory\WidgetFactory;
+use Xibo\Helper\Session;
 use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\DateServiceInterface;
 use Xibo\Service\LogServiceInterface;
@@ -31,6 +32,10 @@ use Xibo\Service\SanitizerServiceInterface;
  */
 class Playlist extends Base
 {
+    /**
+     * @var Session
+     */
+    private $session;    
     /**
      * @var PlaylistFactory
      */
@@ -93,12 +98,12 @@ class Playlist extends Base
      * @param ModuleFactory $moduleFactory
      * @param UserGroupFactory $userGroupFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $playlistFactory, $regionFactory, $mediaFactory, $permissionFactory,
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $session, $playlistFactory, $regionFactory, $mediaFactory, $permissionFactory,
                                 $transitionFactory, $widgetFactory, $moduleFactory, $userGroupFactory,
                                 $tagFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
-
+        $this->session = $session;
         $this->playlistFactory = $playlistFactory;
         $this->regionFactory = $regionFactory;
         $this->mediaFactory = $mediaFactory;
@@ -116,10 +121,8 @@ class Playlist extends Base
     {
         // Call to render the template
         $this->getState()->template = 'playlist-page';
-        $this->getState()->setData([
-            'playlists' => $this->playlistFactory->query()
-        ]);
     }
+
     public function addForm()
     {
         $this->getState()->template = 'playlist-form-add';
@@ -135,13 +138,19 @@ class Playlist extends Base
     public function editForm($playlistId)
     {
         $playlist = $this->playlistFactory->getById($playlistId);
+        $playlist->setChildObjectDependencies($this->regionFactory);
+        $playlist->load();
 
         if ($playlist->getOwnerId() != $this->getUser()->userId && $this->getUser()->userTypeId != 1)
             throw new AccessDeniedException();
+        $a = array_map(function($obj) { return $obj->tag; }, 
+                        $playlist->tags);
 
-        $this->getState()->template = 'playlist-form-grid';
+        $tagstr = implode(", ", $a);
+        $this->getState()->template = 'playlist-form-edit';
         $this->getState()->setData([
-            'playlist' => $playlist
+            'playlist' => $playlist,
+            'tagscvs' => $tagstr
         ]);
     }    
     /**
@@ -172,7 +181,8 @@ class Playlist extends Base
         $playlists = [];
         $filter = [
             'tags' => $this->getSanitizer()->getString('tags'),
-            'name' => $this->getSanitizer()->getString('name')
+            'name' => $this->getSanitizer()->getString('name'),
+            'isaitagmatchable' => $this->getSanitizer()->getInt('isaitagmatchable')
                     ];
         $playlists = $this->playlistFactory->query($this->gridRenderSort(), $this->gridRenderFilter($filter));
 
@@ -199,6 +209,13 @@ class Playlist extends Base
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
                     'text' => __('Edit AI Tags')
                 );
+
+                // Edit Widgets list
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_editwidgets',
+                    'url' => $this->urlFor('playlist.timeline.form', ['id' => $playlist->getId()]),
+                    'text' => __('Edit Widgets')
+                );                
                 // Copy Button
                 $playlist->buttons[] = array(
                     'id' => 'playlist_button_copy',
@@ -235,6 +252,7 @@ class Playlist extends Base
             }                                            
         }
         // Store the table rows
+        $this->getState()->template = 'grid';
         $this->getState()->recordsTotal = $this->playlistFactory->countLast();
         $this->getState()->setData($playlists);
     }
@@ -249,6 +267,7 @@ class Playlist extends Base
         $playlist->description = $this->getSanitizer()->getString('description');
         $playlist->isaitagmatchable = $this->getSanitizer()->getCheckbox('isaitagmatchable');
         $playlist->tags = $this->tagFactory->tagsFromString($this->getSanitizer()->getString('tags'));
+        $playlist->ownerId = $this->getUser()->getId();
         $playlist->save();
 
         // Assign to a region?
@@ -355,14 +374,14 @@ class Playlist extends Base
     public function playlistTimelineForm($playlistId)
     {
         // Get a complex object of playlists and widgets
-        $playlist = $this->playlistFactory->getById($regionId);
+        $playlist = $this->playlistFactory->getById($playlistId);
 
         if (!$this->getUser()->checkEditable($playlist))
             throw new AccessDeniedException();
 
         // Set the view we have requested
         $this->session->set('playlistView', $this->getSanitizer()->getString('view', $this->session->get('playlistView')));
-
+        $playlist->setChildObjectDependencies($this->regionFactory);
         // Load the region
         $playlist->load();
 
@@ -705,4 +724,24 @@ class Playlist extends Base
             'data' => $playlist
         ]);
     }
+    /**
+     * @return array
+     */
+    private function transitionData()
+    {
+        return [
+            'in' => $this->transitionFactory->getEnabledByType('in'),
+            'out' => $this->transitionFactory->getEnabledByType('out'),
+            'compassPoints' => array(
+                array('id' => 'N', 'name' => __('North')),
+                array('id' => 'NE', 'name' => __('North East')),
+                array('id' => 'E', 'name' => __('East')),
+                array('id' => 'SE', 'name' => __('South East')),
+                array('id' => 'S', 'name' => __('South')),
+                array('id' => 'SW', 'name' => __('South West')),
+                array('id' => 'W', 'name' => __('West')),
+                array('id' => 'NW', 'name' => __('North West'))
+            )
+        ];
+    }    
 }

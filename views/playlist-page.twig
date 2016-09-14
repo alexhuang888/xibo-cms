@@ -29,7 +29,8 @@
                             {{ inline.input("tags", tags) }}
 
                             {% set title %}{% trans "AI Tags aware" %}{% endset %}
-                            {{ inline.checkbox("isaitagmatchable", title) }}                            
+                            {% set values = [{id: 2, value: "All"}, {id: 1, value: "Yes"}, {id: 0, value: "No"}]%}
+                            {{ inline.dropdown("isaitagmatchable", "single", title, 2, values, "id", "value") }}                             
                         </form>
                     </div>
                 </div>
@@ -55,6 +56,7 @@
 {% endblock %}
 
 {% block javaScript %}
+    <script src="{{ theme.uri("js/xibo-playlist-designer.js") }}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             var table = $("#playlists").DataTable({
@@ -65,33 +67,14 @@
                 "order": [[1, "asc"]],
                 ajax: {
                     "url": "{{ urlFor("playlist.search") }}",
-                    "data": function (dataToSend) {
-                        console.log(dataToSend);
-                        //make a new object so as not to destroy the input.
-                        var data = {};
-                        data.draw = dataToSend.draw;
-                        data.length = dataToSend.length;
-                        data.start = dataToSend.start;
-                        data.order = dataToSend.order;
-                        data.columns = [];
-
-                        $.each(dataToSend.columns, function (index, e) {
-                            var col = {};
-                            col.data = e.data;
-                            if (e.name != null && e.name != "")
-                                col.name = e.name;
-                            data.columns.push(col);
-                        });
-
-                        $.extend(data, $("#playlists").closest(".XiboGrid").find(".FilterDiv form").serializeObject());
-
-                        return data;
-                    }
+                    "data": function(d) {
+                    $.extend(d, $("#playlists").closest(".XiboGrid").find(".FilterDiv form").serializeObject());
+                }
                 },
                 "columns": [
                     {"data": "playlistId"},
                     {"data": "name"},
-                    {"data": "description", "visible": true},
+                    {"data": "description"},
                     {"data": "isaitagmatchable", "visible": true, "render": dataTableTickCrossColumn},
                     {
                         "orderable": false,
@@ -104,5 +87,330 @@
             table.on('processing.dt', dataTableProcessing);
             dataTableAddButtons(table, $('#playlists_wrapper').find('.col-sm-6').eq(1));
         });
-    </script>
+        
+
+            var translation = {
+                savePositionsFirst: "{% trans "Please save the pending position changes first by clicking Save Positions or cancel by clicking Undo." %}"
+            };
+
+            // Callback for the media form
+            function mediaFormCallBack() {
+                var mediaTable = $("#mediaAssignments").DataTable({
+                    "language": dataTablesLanguage,
+                    serverSide: true, stateSave: true,
+                    searchDelay: 3000,
+                    "order": [[1, "asc"]],
+                    "filter": false,
+                    ajax: {
+                        url: "{{ urlFor("library.search") }}",
+                        "data": function (d) {
+                            $.extend(d, $("#libraryAssignFilterOptions").find("form").serializeObject());
+                        }
+                    },
+                    "columns": [
+                        {"data": "mediaId"},
+                        {"data": "name"},
+                        {"data": "mediaType"},
+                        {
+                            "sortable": false,
+                            "data": function (data, type, row, meta) {
+                                if (type != "display")
+                                    return "";
+
+                                // Create a click-able span
+                                return "<a href=\"#\" class=\"assignItem\"><span class=\"glyphicon glyphicon-plus-sign\"></a>";
+                            }
+                        }
+                    ]
+                });
+
+                mediaTable.on('draw', function (e, settings) {
+                    dataTableDraw(e, settings);
+
+                    // Clicky on the +spans
+                    $(".assignItem", "#mediaAssignments").click(function () {
+                        // Get the row that this is in.
+                        var data = mediaTable.row($(this).closest("tr")).data();
+
+                        // Construct a new list item for the lower list and append it.
+                        var newItem = $("<li/>", {
+                            "text": " " + data.name,
+                            "data-media-id": data.mediaId,
+                            "class": "li-sortable",
+                            "dblclick": function () {
+                                $(this).remove();
+                            }
+                        });
+
+                        newItem.appendTo("#LibraryAssignSortable");
+
+                        // Add a span to that new item
+                        $("<span/>", {
+                            "class": "glyphicon glyphicon-minus-sign",
+                            click: function () {
+                                $(this).parent().remove();
+                            }
+                        }).prependTo(newItem);
+                    });
+                });
+                mediaTable.on('processing.dt', dataTableProcessing);
+
+                // Make our little list sortable
+                $("#LibraryAssignSortable").sortable();
+
+                // Bind the filter form
+                $("#libraryAssignFilterOptions").find("input, select").change(function () {
+                    mediaTable.ajax.reload();
+                });
+            }
+
+            /**
+             * Open Upload Form
+             */
+            function openUploadForm(templateOptions, buttons) {
+
+                // Close the current dialog
+                XiboDialogClose();
+
+                var template = Handlebars.compile($("#template-file-upload").html());
+
+                // Handle bars and open a dialog
+                bootbox.dialog({
+                    message: template(templateOptions),
+                    title: "{% trans "Upload media" %}",
+                    buttons: buttons,
+                    updateInAllChecked: {% if settings.LIBRARY_MEDIA_UPDATEINALL_CHECKB == "Checked" %}true{% else %}false{% endif %},
+                    deleteOldRevisionsChecked: {% if settings.LIBRARY_MEDIA_DELETEOLDVER_CHECKB == "Checked" %}true{% else %}false{% endif %}
+                }).on('shown.bs.modal', function () {
+                    // Configure the upload form
+                    var url = "{{ urlFor("library.add") }}";
+                    var form = $(this).find("form");
+
+                    // Initialize the jQuery File Upload widget:
+                    form.fileupload({
+                        url: url,
+                        disableImageResize: false
+                    });
+
+                    // Upload server status check for browsers with CORS support:
+                    if ($.support.cors) {
+                        $.ajax({
+                            url: url,
+                            type: 'HEAD'
+                        }).fail(function () {
+                            $('<span class="alert alert-error"/>')
+                                    .text('Upload server currently unavailable - ' + new Date())
+                                    .appendTo(form);
+                        });
+                    }
+
+                    // Enable iframe cross-domain access via redirect option:
+                    form.fileupload(
+                            'option',
+                            'redirect',
+                            window.location.href.replace(
+                                    /\/[^\/]*$/,
+                                    '/cors/result.html?%s'
+                            )
+                    );
+
+                    form.bind('fileuploadsubmit', function (e, data) {
+                        var inputs = data.context.find(':input');
+                        if (inputs.filter('[required][value=""]').first().focus().length) {
+                            return false;
+                        }
+                        data.formData = inputs.serializeArray().concat(form.serializeArray());
+
+                        inputs.filter("input").prop("disabled", true);
+                    });
+                });
+            }
+
+            // Click Handler for Library Upload Buttons (image, video, powerpoint, flash)
+            function libraryUploadClick(e) {
+                e.preventDefault();
+
+                var validExt = $(this).data().validExt.replace(/,/g, "|");
+                var playlistId = $(this).data().playlistId;
+
+                openUploadForm({
+                    trans: {
+                        addFiles: "{% trans "Add files" %}",
+                        startUpload: "{% trans "Start upload" %}",
+                        cancelUpload: "{% trans "Cancel upload" %}"
+                    },
+                    upload: {
+                        maxSize: {{ libraryUpload.maxSize }},
+                        maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+                        validExt: validExt
+                    },
+                    playlistId: playlistId
+                }, {
+                    library: {
+                        label: "{% trans "View Library" %}",
+                        callback: function () {
+                            XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId));
+                        }
+                    },
+                    main: {
+                        label: "{% trans "Done" %}",
+                        className: "btn-primary",
+                        callback: function () {
+                            XiboFormRender(timelineForm.url, timelineForm.value);
+                        }
+                    }
+                });
+            }
+
+            /**
+             * Media Edit form
+             */
+            function mediaEditFormOpen(dialog) {
+
+                if (dialog.find("form").data().mediaEditable != 1)
+                    return;
+
+                // Create a new button
+                var footer = dialog.find(".modal-footer");
+                var mediaId = dialog.find("form").data().mediaId;
+                var widgetId = dialog.find("form").data().widgetId;
+                var validExtensions = dialog.find("form").data().validExtensions;
+
+                // Append
+                var replaceButton = $('<button class="btn btn-warning">').html("{% trans "Replace" %}");
+                replaceButton.click(function (e) {
+                    e.preventDefault();
+
+                    // Open the upload dialog with our options.
+                    openUploadForm({
+                        oldMediaId: mediaId,
+                        widgetId: widgetId,
+                        {% if config.LIBRARY_MEDIA_UPDATEINALL_CHECKB == "Checked" %}
+                        updateInAllChecked: true,
+                        {% else %}
+                        updateInAllChecked: false,
+                        {% endif %}
+                        trans: {
+                            addFiles: "{% trans "Add Replacement" %}",
+                            startUpload: "{% trans "Start Replace" %}",
+                            cancelUpload: "{% trans "Cancel Replace" %}",
+                            updateInLayouts: {
+                                title: "{% trans "Update this media in all layouts it is assigned to?" %}",
+                                helpText: "{% trans "Note: It will only be updated in layouts you have permission to edit." %}"
+                            },
+                            deleteOldRevisions: {
+                                title: "{% trans "Delete the old version?" %}",
+                                helpText: "{% trans "Completely remove the old version of this media item if a new file is being uploaded." %}"
+                            }
+                        },
+                        upload: {
+                            maxSize: {{ libraryUpload.maxSize }},
+                            maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+                            validExt: validExtensions
+                        }
+                    }, {
+                        main: {
+                            label: "{% trans "Done" %}",
+                            className: "btn-primary",
+                            callback: function () {
+                                XiboFormRender(timelineForm.url, timelineForm.value);
+                            }
+                        }
+                    });
+                });
+
+                footer.find(".btn-primary").before(replaceButton);
+            }
+
+            function timelineGridCallback(dialog) {
+
+                dialog.addClass("modal-big");
+
+                var timelineWidgetTabel = $("#timelineWidgets").DataTable({
+                    "language": dataTablesLanguage,
+                    serverSide: true, stateSave: true,
+                    filter: false,
+                    searchDelay: 3000,
+                    "order": [[0, "asc"]],
+                    ajax: {
+                        url: "{{ urlFor("playlist.widget.search") }}",
+                        "data": function (d) {
+                            $.extend(d, $("#timelineWidgets").closest(".XiboGrid").find(".FilterDiv form").serializeObject());
+                        }
+                    },
+                    "columns": [
+                        {"data": "displayOrder"},
+                        {"data": "name", "orderable": false},
+                        {"data": "type"},
+                        {"data": "duration"},
+                        {"data": "transition"},
+                        {
+                            "orderable": false,
+                            "data": dataTableButtonsColumn
+                        }
+                    ]
+                });
+
+                timelineWidgetTabel.on('draw', dataTableDraw);
+                timelineWidgetTabel.on('processing.dt', dataTableProcessing);
+                // Hook up the library Upload Buttons
+                $(".libraryUploadForm").click(libraryUploadClick);
+            }
+
+            function DeleteRegion(form, regionId) {
+                $.ajax({
+                    type: form.attr("method"),
+                    url: form.attr("action"),
+                    cache: false,
+                    dataType: "json",
+                    data: form.serialize(),
+                    success: function (xhr, textStatus, error) {
+
+                        XiboSubmitResponse(xhr, form);
+
+                        if (xhr.success)
+                            $("#region_" + regionId).remove();
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        SystemMessage(xhr.responseText, false);
+                    }
+                });
+            }
+
+            // Bind to the add button when we load
+            $(document).ready(function () {
+
+                // Add region button
+                $("#regionAddButton").click(function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        type: "post",
+                        url: $(this).attr("href"),
+                        cache: false,
+                        dataType: "json",
+                        success: function (xhr, textStatus, error) {
+
+                            XiboSubmitResponse(xhr);
+
+                            if (xhr.success) {
+                                // Reload the designer
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            });
+
+            $("[name='my-checkbox']").bootstrapSwitch();
+
+
+
+        </script>
+
+
+        {% for module in modules %}
+            {% if module.layoutDesignerJavaScript() != "" %}
+                {% include module.layoutDesignerJavaScript() ~ ".twig" %}
+            {% endif %}
+        {% endfor %}
 {% endblock %}

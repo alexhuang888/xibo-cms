@@ -60,7 +60,7 @@ class PlaylistFactory extends BaseFactory
      * @param StorageServiceInterface $store
      * @param LogServiceInterface $log
      * @param SanitizerServiceInterface $sanitizerService
-     * @param DateServiceInterface $date
+     * @param DateServiceInterface $dateunassignItem
      * @param PermissionFactory $permissionFactory
      * @param WidgetFactory $widgetFactory
      */
@@ -147,16 +147,51 @@ class PlaylistFactory extends BaseFactory
         }
 
         $body .= ' WHERE 1 = 1 ';
-
+        // filter by playlistid
         if ($this->getSanitizer()->getInt('playlistId', $filterBy) != 0) {
             $body .= ' AND playlistId = :playlistId ';
             $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', $filterBy);
         }
-        if (DBVERSION >= 210)
+        // filter by name
+        if ($this->getSanitizer()->getString('name', $filterBy) != 0) {
+            $body .= ' AND name = :name ';
+            $params['name'] = $this->getSanitizer()->getString('name', $filterBy);
+        } 
+        //  filter by Tags
+        if ($this->getSanitizer()->getString('tags', $filterBy) != '') {
+            $body .= " AND `playlist`.playlistId IN (
+                SELECT `lklinkedtags`.itemid
+                  FROM tag
+                    INNER JOIN `lklinkedtags`
+                    ON `lklinkedtags`.tagid = tag.tagId
+                ";
+            $i = 0;
+            foreach (explode(',', $this->getSanitizer()->getString('tags', $filterBy)) as $tag) {
+                $i++;
+
+                if ($i == 1)
+                    $body .= " WHERE ( tag LIKE :tags$i ";
+                else
+                    $body .= " OR tag LIKE :tags$i ";
+
+                $params['tags' . $i] =  '%' . $tag . '%';
+            }
+            if ($i > 0)
+            {
+                $body.= (" ) AND lklinkedtags.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
+            }
+            else
+            {
+                $body .= ("WHERE lklinkedtags.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
+            }
+            $body .= " ) ";
+        }               
+        if (DBVERSION >= 210 && array_key_exists('isaitagmatchable', $filterBy))
         {
-            if ($this->getSanitizer()->getInt('isaitagmatchable', $filterBy) != 0) {
+            if ($this->getSanitizer()->getInt('isaitagmatchable',0, $filterBy) < 2) 
+            {
                 $body .= ' AND isaitagmatchable = :isaitagmatchable ';
-                $params['isaitagmatchable'] = 1;
+                $params['isaitagmatchable'] = $this->getSanitizer()->getInt('isaitagmatchable', 0, $filterBy);
             }
         }
         // Sorting?

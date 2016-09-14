@@ -21,7 +21,6 @@
 namespace Xibo\Controller;
 
 use Xibo\Entity\Display;
-//use Xibo\Entity\DisplayGroup;
 use Xibo\Exception\AccessDeniedException;
 use Xibo\Exception\ConfigurationException;
 use Xibo\Factory\CommandFactory;

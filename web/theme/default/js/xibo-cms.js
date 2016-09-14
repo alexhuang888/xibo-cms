@@ -472,13 +472,15 @@ function XiboFormRender(formUrl, data) {
       return false;
     
     // Remove the link from the button
-    //data.removeAttr('href');
+    //if (data)
+    //    data.removeAttr('href');
     
     // Currently only support one of these at once.
     bootbox.hideAll();
 
     // Store the last form?
-    if (formUrl.indexOf("region/form/timeline") > -1) {
+    if (formUrl.indexOf("region/form/timeline") > -1 || formUrl.indexOf("playlist/form/timeline") > -1) 
+    {
         timelineForm = {
             url: formUrl,
             data: data
@@ -511,7 +513,8 @@ function XiboFormRender(formUrl, data) {
                 var id = new Date().getTime();
                 
                 // Restore the link to the button
-                //data.attr("href", lastForm);
+                //if (data)
+                //    data.attr("href", lastForm);
 
                 // Create the dialog with our parameters
                 var dialog = bootbox.dialog({
