@@ -13,6 +13,10 @@
     {
       "step": "lklinkedtags Table",
       "action": "CREATE TABLE IF NOT EXISTS `lklinkedtags` (`itemtype` int(11) NOT NULL, `itemid` int(11) NOT NULL, `tagid` int(11) NOT NULL, `score` float NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    },
+    {
+      "step": "Add the description to the playlist Table",
+      "action": "ALTER TABLE `playlist` ADD description varchar(254) DEFAULT NULL;"
     }
   ]
 }
