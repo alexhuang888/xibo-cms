@@ -311,6 +311,13 @@ class Library extends Base
      *      required=false
      *   ),
      *  @SWG\Parameter(
+     *      name="tags",
+     *      in="formData",
+     *      description="Filter by Tags - comma seperated",
+     *      type="string",
+     *      required=false
+     *   ),
+     *  @SWG\Parameter(
      *      name="duration",
      *      in="formData",
      *      description="Filter by Duration - a number or less-than,greater-than,less-than-equal or great-than-equal followed by a | followed by a number",
@@ -1129,7 +1136,7 @@ class Library extends Base
             $media->assignTag($this->tagFactory->tagFromString($tag));
         }
 
-        $media->save();
+        $media->save(['validate' => false]);
 
         // Return
         $this->getState()->hydrate([
@@ -1190,7 +1197,7 @@ class Library extends Base
             $media->unassignTag($this->tagFactory->tagFromString($tag));
         }
 
-        $media->save();
+        $media->save(['validate' => false]);
 
         // Return
         $this->getState()->hydrate([
