@@ -1249,7 +1249,8 @@ class State extends Middleware
                 $container->dateService,
                 $container->permissionFactory,
                 $container->widgetFactory,
-                $container->tagFactory
+                $container->tagFactory,
+                $container
             );
         });
 

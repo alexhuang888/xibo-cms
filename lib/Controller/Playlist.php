@@ -123,6 +123,12 @@ class Playlist extends Base
         $this->getState()->template = 'playlist-page';
     }
 
+    function playlistPageClone($srcPlaylistID)
+    {
+        $this->clonePlaylistFunction($srcPlaylistID);
+        // Call to render the template
+        $this->getState()->template = 'playlist-page';
+    }
     public function addForm()
     {
         $this->getState()->template = 'playlist-form-add';
@@ -219,7 +225,7 @@ class Playlist extends Base
                 // Copy Button
                 $playlist->buttons[] = array(
                     'id' => 'playlist_button_copy',
-                    'url' => $this->urlFor('playlist.copy.form', ['id' => $playlist->getId()]),
+                    'url' => $this->urlFor('playlist.clone', ['id' => $playlist->getId()]),
                     'text' => __('Copy')
                 );
                 // Extra buttons if have delete permissions
@@ -312,6 +318,71 @@ class Playlist extends Base
         ]);
     }
 
+    public function clonePlaylistFunction($srcPlaylistId)
+    {
+        $originPlaylist = $this->playlistFactory->getById($srcPlaylistId);
+        $originPlaylist->setChildObjectDependencies($this->regionFactory);
+        $originPlaylist->load();
+
+        $playlist = clone $originPlaylist;
+
+        $playlist->name = 'copy of ' . $originPlaylist->name;
+        $playlist->ownerId = $this->getUser()->getId();
+        $playlist->setChildObjectDependencies($this->regionFactory);
+        $playlist->save();
+
+        // Assign to a region?
+        if ($this->getSanitizer()->getInt('regionId') !== null) 
+        {
+            $region = $this->regionFactory->getById($this->getSanitizer()->getInt('regionId'));
+
+            // Assert the provided display order
+            $playlist->displayOrder = $this->getSanitizer()->getInt('displayOrder');
+
+            // Assign to a region
+            $region->assignPlaylist($playlist);
+            $region->save();
+
+            if ($this->getConfig()->GetSetting('INHERIT_PARENT_PERMISSIONS') == 1) {
+                // Apply permissions from the Parent
+                foreach ($region->permissions as $permission) {
+                    /* @var Permission $permission */
+                    $permission = $this->permissionFactory->create($permission->groupId, get_class($region), $region->getId(), $permission->view, $permission->edit, $permission->delete);
+                    $permission->save();
+                }
+            }
+        }
+
+        // Notify
+        $playlist->notifyLayouts();
+
+        // Permissions
+        if ($this->getConfig()->GetSetting('INHERIT_PARENT_PERMISSIONS' == 0)) 
+        {
+            // Default permissions
+            foreach ($this->permissionFactory->createForNewEntity($this->getUser(), get_class($playlist), $playlist->getId(), $this->getConfig()->GetSetting('LAYOUT_DEFAULT'), $this->userGroupFactory) as $permission) {
+                /* @var Permission $permission */
+                $permission->save();
+            }
+        }
+
+        return $playlist;
+    }
+    /**
+     * Clone
+     */
+    public function clonePlaylist($srcPlaylistId)
+    {
+        $playlist = $this->clonePlaylistFunction($srcPlaylistId);
+
+        // Success
+        $this->getState()->hydrate([
+            'httpStatus' => 201,
+            'message' => sprintf(__('Cloned %s'), $playlist->name),
+            'id' => $playlist->playlistId,
+            'data' => $playlist
+        ]);
+    }
     /**
      * Edit
      * @param $playlistId

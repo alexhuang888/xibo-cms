@@ -87,7 +87,7 @@
             table.on('processing.dt', dataTableProcessing);
             dataTableAddButtons(table, $('#playlists_wrapper').find('.col-sm-6').eq(1));
         });
-        
+     
 
             var translation = {
                 savePositionsFirst: "{% trans "Please save the pending position changes first by clicking Save Positions or cancel by clicking Undo." %}"
@@ -377,34 +377,7 @@
                 });
             }
 
-            // Bind to the add button when we load
-            $(document).ready(function () {
-
-                // Add region button
-                $("#regionAddButton").click(function (e) {
-                    e.preventDefault();
-                    $.ajax({
-                        type: "post",
-                        url: $(this).attr("href"),
-                        cache: false,
-                        dataType: "json",
-                        success: function (xhr, textStatus, error) {
-
-                            XiboSubmitResponse(xhr);
-
-                            if (xhr.success) {
-                                // Reload the designer
-                                window.location.reload();
-                            }
-                        }
-                    });
-                });
-            });
-
             $("[name='my-checkbox']").bootstrapSwitch();
-
-
-
         </script>
 
 

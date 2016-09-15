@@ -220,27 +220,35 @@
                         {# Campaign / Layout list. We want to build two arrays for us to use. #}
                         {% set layoutOptions = [] %}
                         {% set campaignOptions = [] %}
-
+                        {% set playlistOptions = [] %}
                         {% for item in campaigns %}
-                            {% if item.isLayoutSpecific == 1 %}
-                                {% set layoutOptions = layoutOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                            {% if item.isPlaylistCampaign == 1 %}
+                                {% set playlistOptions = playlistOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
                             {% else %}
-                                {% set campaignOptions = campaignOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                                {% if item.isLayoutSpecific == 1 %}
+                                    {% set layoutOptions = layoutOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                                {% else %}
+                                    {% set campaignOptions = campaignOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
 
                         {# Add a blank layout record #}
                         {% set layoutOptions = [{id: "", value: ""}]|merge(layoutOptions) %}
+                        {# Add a blank playlist record #}
+                        {% set playlistOptions = [{id: "", value: ""}]|merge(playlistOptions) %}
 
                         {% set campaigns %}{% trans "Campaigns" %}{% endset %}
                         {% set layouts %}{% trans "Layouts" %}{% endset %}
+                        {% set playlists %}{% trans "Playlists" %}{% endset %}
                         {% set optionGroups = [
                         {id: "campaign", label: campaigns},
-                        {id: "layout", label: layouts}
+                        {id: "layout", label: layouts},
+                        {id: "playlist", label: playlists}
                         ] %}
-                        {% set title %}{% trans "Layout / Campaign" %}{% endset %}
-                        {% set helpText %}{% trans "Please select a Layout or Campaign for this Event to show" %}{% endset %}
-                        {{ forms.dropdown("campaignId", "single", title, "", {campaign: campaignOptions, layout: layoutOptions}, "id", "value", helpText, "layout-control", "", "", "", "", optionGroups) }}
+                        {% set title %}{% trans "Layout / Campaign / Playlist" %}{% endset %}
+                        {% set helpText %}{% trans "Please select a Layout or Campaign or Playlist for this Event to show" %}{% endset %}
+                        {{ forms.dropdown("campaignId", "single", title, "", {campaign: campaignOptions, layout: layoutOptions, playlist: playlistOptions}, "id", "value", helpText, "layout-control", "", "", "", "", optionGroups) }}
 
                         {% set title %}{% trans "Command" %}{% endset %}
                         {% set helpText %}{% trans "Please select a command for this Event." %}{% endset %}

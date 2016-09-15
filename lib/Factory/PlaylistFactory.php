@@ -55,6 +55,11 @@ class PlaylistFactory extends BaseFactory
      * @var tagFactory
      */
     private $tagFactory;
+
+    /**
+     * @var container
+     */
+    private $container;    
     /**
      * Construct a factory
      * @param StorageServiceInterface $store
@@ -64,7 +69,7 @@ class PlaylistFactory extends BaseFactory
      * @param PermissionFactory $permissionFactory
      * @param WidgetFactory $widgetFactory
      */
-    public function __construct($store, $log, $sanitizerService, $date, $permissionFactory, $widgetFactory, $tagFactory)
+    public function __construct($store, $log, $sanitizerService, $date, $permissionFactory, $widgetFactory, $tagFactory, $container)
     {
         $this->setCommonDependencies($store, $log, $sanitizerService);
 
@@ -72,6 +77,7 @@ class PlaylistFactory extends BaseFactory
         $this->permissionFactory = $permissionFactory;
         $this->widgetFactory = $widgetFactory;
         $this->tagFactory = $tagFactory;
+        $this->container = $container;
     }
 
     /**
@@ -79,7 +85,7 @@ class PlaylistFactory extends BaseFactory
      */
     public function createEmpty()
     {
-        return new Playlist($this->getStore(), $this->getLog(), $this->dateService, $this->permissionFactory, $this->widgetFactory, $this->tagFactory);
+        return new Playlist($this->getStore(), $this->getLog(), $this->dateService, $this->permissionFactory, $this->widgetFactory, $this->tagFactory, $this->container->layoutFactory);
     }
 
     /**
@@ -129,41 +135,58 @@ class PlaylistFactory extends BaseFactory
         $entries = array();
 
         $params = array();
-        $select = 'SELECT playlist.* ';
+        $select = 'SELECT `playlist`.* ';
+        $select .= ' , `region`.regionId, `campaign`.CampaignID as playlistCompaignID ';
+        $select .= ' , `layout`.layoutId as playlistLayoutID ';
 
         if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) {
-            $select .= ' , lkregionplaylist.displayOrder ';
+            $select .= ' , `lkregionplaylist`.displayOrder ';
         }
 
         $body = '  FROM `playlist` ';
+       
+        // to get playlistLayoutID and playlistCampaignID
+        $body .= "  INNER JOIN `lkregionplaylist` ";
+        $body .= "   ON `lkregionplaylist`.playlistId = `playlist`.playlistId "; 
 
         if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) {
             $body .= '
-                INNER JOIN `lkregionplaylist`
-                ON lkregionplaylist.playlistId = playlist.playlistId
-                    AND lkregionplaylist.regionId = :regionId
+                    AND `lkregionplaylist`.regionId = :regionId
             ';
             $params['regionId'] = $this->getSanitizer()->getInt('regionId', $filterBy);
         }
 
+        $body .= "  INNER JOIN `region` ";
+        $body .= "   ON `region`.regionId = `lkregionplaylist`.regionId ";
+        $body .= "  INNER JOIN `layout` ";
+        $body .= "   ON `layout`.layoutID = `region`.layoutId ";
+        $body .= "       AND `layout`.isPlaylistLayout = 1";        
+        $body .= "  INNER JOIN `lkcampaignlayout` ";
+        $body .= "   ON `lkcampaignlayout`.LayoutID = `layout`.layoutID ";        
+        $body .= "  INNER JOIN `campaign` ";
+        $body .= "   ON `lkcampaignlayout`.CampaignID = `campaign`.CampaignID ";
+        $body .= "       AND `campaign`.IsLayoutSpecific = 1 ";
+        
+        //$body .= "   INNER JOIN `user` ON `user`.userId = `campaign`.userId ";
+
         $body .= ' WHERE 1 = 1 ';
         // filter by playlistid
         if ($this->getSanitizer()->getInt('playlistId', $filterBy) != 0) {
-            $body .= ' AND playlistId = :playlistId ';
+            $body .= ' AND `playlist`.playlistId = :playlistId ';
             $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', $filterBy);
         }
         // filter by name
         if ($this->getSanitizer()->getString('name', $filterBy) != 0) {
-            $body .= ' AND name = :name ';
+            $body .= ' AND `playlist`.name = :name ';
             $params['name'] = $this->getSanitizer()->getString('name', $filterBy);
         } 
         //  filter by Tags
         if ($this->getSanitizer()->getString('tags', $filterBy) != '') {
             $body .= " AND `playlist`.playlistId IN (
                 SELECT `lklinkedtags`.itemid
-                  FROM tag
+                  FROM `tag`
                     INNER JOIN `lklinkedtags`
-                    ON `lklinkedtags`.tagid = tag.tagId
+                    ON `lklinkedtags`.tagid = `tag`.tagId
                 ";
             $i = 0;
             foreach (explode(',', $this->getSanitizer()->getString('tags', $filterBy)) as $tag) {
@@ -178,11 +201,11 @@ class PlaylistFactory extends BaseFactory
             }
             if ($i > 0)
             {
-                $body.= (" ) AND lklinkedtags.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
+                $body.= (" ) AND `lklinkedtags`.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
             }
             else
             {
-                $body .= ("WHERE lklinkedtags.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
+                $body .= ("WHERE `lklinkedtags`.itemtype = " . \Xibo\Entity\Playlist::ItemType() . " ");
             }
             $body .= " ) ";
         }               
@@ -190,7 +213,7 @@ class PlaylistFactory extends BaseFactory
         {
             if ($this->getSanitizer()->getInt('isaitagmatchable',0, $filterBy) < 2) 
             {
-                $body .= ' AND isaitagmatchable = :isaitagmatchable ';
+                $body .= ' AND `playlist`.isaitagmatchable = :isaitagmatchable ';
                 $params['isaitagmatchable'] = $this->getSanitizer()->getInt('isaitagmatchable', 0, $filterBy);
             }
         }

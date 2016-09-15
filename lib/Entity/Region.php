@@ -424,18 +424,37 @@ class Region implements \JsonSerializable
         $this->unlinkPlaylists();
 
         // Should we delete orphaned playlists?
-        if ($options['deleteOrphanedPlaylists']) {
-            $this->getLog()->debug('We should delete orphaned playlists, checking %d playlists.', count($playlists));
+        if ($options['deleteOrphanedPlaylists']) 
+        {
+            $deletePL = true;
 
-            // Delete
-            foreach ($playlists as $playlist) {
-                /* @var Playlist $playlist */
-                if (!$playlist->hasLayouts()) {
-                    $this->getLog()->debug('Deleting orphaned playlist: %d', $playlist->playlistId);
-                    $playlist->delete();
+            if (array_key_exists('nodeleteplaylist', $options))
+            {
+                // when a playlist is to be deleted, it will delete its specific layout and campaign,
+                // while delete the layout, it will also delete regions, and region will delete playlists.
+                // in this case, we have to ask region not to delete playlist, to prevent looping.
+                {
+                    $deletePL = !$options['nodeleteplaylist'];
                 }
-                else {
-                    $this->getLog()->debug('Playlist still linked to Layouts, skipping playlist delete');
+            }
+
+            if ($deletePL)
+            {
+                $this->getLog()->debug('We should delete orphaned playlists, checking %d playlists.', count($playlists));
+
+                // Delete
+                foreach ($playlists as $playlist) 
+                {
+                    /* @var Playlist $playlist */
+                    if (!$playlist->hasLayouts()) 
+                    {
+                        $this->getLog()->debug('Deleting orphaned playlist: %d', $playlist->playlistId);
+                        $playlist->delete();
+                    }
+                    else 
+                    {
+                        $this->getLog()->debug('Playlist still linked to Layouts, skipping playlist delete');
+                    }
                 }
             }
         }

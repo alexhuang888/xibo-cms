@@ -196,7 +196,11 @@ class Layout implements \JsonSerializable
      * @SWG\Property(description="A status message detailing any errors with the layout")
      */
     public $statusMessage;
-
+    /**
+     * @var boolean
+     * @SWG\Property(description="If this a layout for playlist wrapper")
+     */
+    public $isPlaylistLayout = 0;
     // Child items
     /** @var Region[]  */
     public $regions = [];
@@ -618,7 +622,8 @@ class Layout implements \JsonSerializable
         }
 
         // Unassign from all Campaigns
-        foreach ($this->campaigns as $campaign) {
+        foreach ($this->campaigns as $campaign) 
+        {
             /* @var Campaign $campaign */
             $campaign->setChildObjectDependencies($this->layoutFactory);
             $campaign->unassignLayout($this);
@@ -1223,10 +1228,16 @@ class Layout implements \JsonSerializable
     private function add()
     {
         $this->getLog()->debug('Adding Layout ' . $this->layout);
-
-        $sql  = 'INSERT INTO layout (layout, description, userID, createdDT, modifiedDT, status, width, height, schemaVersion, backgroundImageId, backgroundColor, backgroundzIndex)
+        if (DBVERSION >= 210)
+        {
+            $sql  = 'INSERT INTO layout (layout, description, userID, createdDT, modifiedDT, status, width, height, schemaVersion, backgroundImageId, backgroundColor, backgroundzIndex, isPlaylistLayout)
+                  VALUES (:layout, :description, :userid, :createddt, :modifieddt, :status, :width, :height, 3, :backgroundImageId, :backgroundColor, :backgroundzIndex, :isPlaylistLayout)';
+        }
+        else
+        {
+            $sql  = 'INSERT INTO layout (layout, description, userID, createdDT, modifiedDT, status, width, height, schemaVersion, backgroundImageId, backgroundColor, backgroundzIndex)
                   VALUES (:layout, :description, :userid, :createddt, :modifieddt, :status, :width, :height, 3, :backgroundImageId, :backgroundColor, :backgroundzIndex)';
-
+        }
         $time = $this->date->getLocalDate();
 
         $this->layoutId = $this->getStore()->insert($sql, array(
@@ -1241,12 +1252,14 @@ class Layout implements \JsonSerializable
             'backgroundImageId' => $this->backgroundImageId,
             'backgroundColor' => $this->backgroundColor,
             'backgroundzIndex' => $this->backgroundzIndex,
+            'isPlaylistLayout' => $this->isPlaylistLayout
         ));
 
         // Add a Campaign
         $campaign = $this->campaignFactory->createEmpty();
         $campaign->campaign = $this->layout;
         $campaign->isLayoutSpecific = 1;
+        $campaign->isPlaylistCampaign = $this->isPlaylistLayout;
         $campaign->ownerId = $this->getOwnerId();
         $campaign->assignLayout($this);
 
@@ -1285,7 +1298,8 @@ class Layout implements \JsonSerializable
               `status` = :status,
               `userId` = :userId,
               `schemaVersion` = :schemaVersion,
-              `statusMessage` = :statusMessage
+              `statusMessage` = :statusMessage,
+              `isPlaylistLayout` = :isPlaylistLayout
          WHERE layoutID = :layoutid
         ';
 
@@ -1306,7 +1320,8 @@ class Layout implements \JsonSerializable
             'status' => $this->status,
             'userId' => $this->ownerId,
             'schemaVersion' => $this->schemaVersion,
-            'statusMessage' => (empty($this->statusMessage)) ? null : json_encode($this->statusMessage)
+            'statusMessage' => (empty($this->statusMessage)) ? null : json_encode($this->statusMessage),
+            'isPlaylistLayout' => $this->isPlaylistLayout
         ));
 
         // Update the Campaign

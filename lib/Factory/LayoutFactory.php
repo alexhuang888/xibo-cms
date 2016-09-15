@@ -197,7 +197,32 @@ class LayoutFactory extends BaseFactory
 
         return $layout;
     }
+    public function createFromResolutionForPlaylist($resolutionId, $ownerId, $name, $description, $tags, $playlist)
+    {
+        $resolution = $this->resolutionFactory->getById($resolutionId);
 
+        // Create a new Layout
+        $layout = $this->createEmpty();
+        $layout->width = $resolution->width;
+        $layout->height = $resolution->height;
+
+        // Set the properties
+        $layout->layout = $name;
+        $layout->description = $description;
+        $layout->backgroundzIndex = 0;
+        $layout->backgroundColor = '#000';
+        $layout->isPlaylistLayout = 1;  // it is a playlist layout
+        // Set the owner
+        $layout->setOwner($ownerId);
+
+        // Create some tags
+        $layout->tags = $this->tagFactory->tagsFromString($tags);
+
+        // Add a blank, full screen region
+        $layout->regions[] = $this->regionFactory->createWithPlaylist($ownerId, $name . '-1', $layout->width, $layout->height, 0, 0, $playlist);
+
+        return $layout;
+    }
     /**
      * Create Layout from Template
      * @param int $layoutId
@@ -253,9 +278,11 @@ class LayoutFactory extends BaseFactory
      * @return Layout
      * @throws NotFoundException
      */
-    public function getById($layoutId)
+    public function getById($layoutId, $filterOp = [])
     {
-        $layouts = $this->query(null, array('disableUserCheck' => 1, 'layoutId' => $layoutId, 'excludeTemplates' => -1, 'retired' => -1));
+        $options = array('disableUserCheck' => 1, 'layoutId' => $layoutId, 'excludeTemplates' => -1, 'retired' => -1);
+        $options = array_merge($options, $filterOp);
+        $layouts = $this->query(null, $options);
 
         if (count($layouts) <= 0) {
             throw new NotFoundException(\__('Layout not found'));
@@ -832,7 +859,10 @@ class LayoutFactory extends BaseFactory
         $select .= "        layout.backgroundColor, ";
         $select .= "        layout.backgroundzIndex, ";
         $select .= "        layout.schemaVersion, ";
-
+        if (DBVERSION >= 210)
+        {
+            $select .= "        layout.isPlaylistLayout, ";   
+        }
         if ($this->getSanitizer()->getInt('campaignId', 0, $filterBy) != 0) {
             $select .= ' lkcl.displayOrder, ';
         }
@@ -1035,6 +1065,25 @@ class LayoutFactory extends BaseFactory
 
             $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', 0, $filterBy);
         }
+
+        if (DBVERSION >= 210)
+        {
+            // normally, we just need those layout not playlist specific (for compatibility of other UI)
+            $isPL = 0;
+
+            if (array_key_exists('isPlaylistLayout', $filterBy))
+            {
+                if ($this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy) < 2) 
+                {
+                    $isPL = $this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy);
+                }
+                //$body .= (' AND isPlaylistLayout = ' . $isPL . " ");
+            }
+            
+            {
+                $body .= (' AND isPlaylistLayout = ' . $isPL . " ");
+            }
+        }        
         // Sorting?
         $order = '';
         if (is_array($sortOrder))
@@ -1073,7 +1122,10 @@ class LayoutFactory extends BaseFactory
             $layout->modifiedDt = $row['modifiedDt'];
             $layout->displayOrder = $row['displayOrder'];
             $layout->statusMessage = $row['statusMessage'];
-
+            //if (DBVERSION >= 210)
+            {
+                $layout->isPlaylistLayout = $this->getSanitizer()->int($row['isPlaylistLayout']);
+            }
             $layout->groupsWithPermissions = $row['groupsWithPermissions'];
 
             $entries[] = $layout;

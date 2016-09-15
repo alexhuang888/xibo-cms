@@ -120,14 +120,22 @@ class Playlist implements \JsonSerializable
     /**
      * @var tagFactory
      */
+    private $layoutFactory;
+    /**
+     * @var layoutFactory
+     */
     private $tagFactory;
-
     // if this playlist is allowed to assign media by matching ai tags?
     public $isaitagmatchable;
 
     public $lastaitagsmatchedDT;
 
     public $description;
+
+    // this is the compaign ID that specific this this playlist. (this compaign has single layout, which has 
+    //              single region, and this region connect to this playlist).
+    private $playlistCompaignID;
+    private $playlistLayoutID;
     /**
      * Entity constructor.
      * @param StorageServiceInterface $store
@@ -136,7 +144,7 @@ class Playlist implements \JsonSerializable
      * @param PermissionFactory $permissionFactory
      * @param WidgetFactory $widgetFactory
      */
-    public function __construct($store, $log, $date, $permissionFactory, $widgetFactory, $tagFactory)
+    public function __construct($store, $log, $date, $permissionFactory, $widgetFactory, $tagFactory, $layoutFactory)
     {
         $this->setCommonDependencies($store, $log);
 
@@ -144,6 +152,7 @@ class Playlist implements \JsonSerializable
         $this->permissionFactory = $permissionFactory;
         $this->widgetFactory = $widgetFactory;
         $this->tagFactory = $tagFactory;
+        $this->layoutFactory = $layoutFactory;
 
         $this->excludeProperty('regions');
     }
@@ -470,6 +479,17 @@ class Playlist implements \JsonSerializable
             $tag->unassignItem($this->getItemType(), $this->getId());
             $tag->save();
         }
+        // delete its own layout (then it will remove its own region and specific campaign)
+        {
+            // Delete our own layout (make sure it is a playlist layout ID)
+            $filterOp = array('isPlaylistLayout' => 1);
+            $pllayout = $this->layoutFactory->getById($this->playlistLayoutID, $filterOp);
+            if ($pllayout != null)
+            {
+                // in order not to delete PL recursively, we have to do so.
+                $pllayout->delete(array('nodeleteplaylist' => true));
+            }            
+        }
         // Delete this playlist
         $this->getStore()->update('DELETE FROM `playlist` WHERE playlistId = :playlistId', array('playlistId' => $this->playlistId));
     }
@@ -481,13 +501,23 @@ class Playlist implements \JsonSerializable
     {
         $this->getLog()->debug('Adding Playlist ' . $this->name);
         $this->validate();
-        $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`) VALUES (:name, :ownerId, :description, :isaitagmatchable)';
-        $this->playlistId = $this->getStore()->insert($sql, array(
-            'name' => $this->name,
-            'ownerId' => $this->ownerId,
-            'description' => $this->description,
-            'isaitagmatchable' => $this->isaitagmatchable
-        ));
+
+        {
+            $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`) VALUES (:name, :ownerId, :description, :isaitagmatchable)';
+            $this->playlistId = $this->getStore()->insert($sql, array(
+                'name' => $this->name,
+                'ownerId' => $this->ownerId,
+                'description' => $this->description,
+                'isaitagmatchable' => $this->isaitagmatchable
+            ));
+        }
+
+        // here, create a layout first, it will create a region automatically, and associate with this playlist
+        $pllayout = $this->layoutFactory->createFromResolutionForPlaylist(9, $this->ownerId, $this->name, $this->description, "", $this);
+        // then, it will create a compaign with its own save()
+        $pllayout->save();
+        $this->playlistLayoutID = $pllayout->layoutId;
+        $this->playlistCompaignID = $pllayout->campaignId;
     }
 
     /**
@@ -497,14 +527,24 @@ class Playlist implements \JsonSerializable
     {
         $this->getLog()->debug('Updating Playlist ' . $this->name . '. Id = ' . $this->playlistId);
         $this->validate();
-
-        $sql = 'UPDATE `playlist` SET `name` = :name, `description` = :description , `isaitagmatchable` = :isaitagmatchable WHERE `playlistId` = :playlistId';
-        $this->getStore()->update($sql, array(
-            'playlistId' => $this->playlistId,
-            'name' => $this->name,
-            'description' => $this->description,
-            'isaitagmatchable' => $this->isaitagmatchable
-        ));
+        if (DBVERSION >= 210)
+        {
+            $sql = 'UPDATE `playlist` SET `name` = :name, `description` = :description , `isaitagmatchable` = :isaitagmatchable WHERE `playlistId` = :playlistId';
+            $this->getStore()->update($sql, array(
+                'playlistId' => $this->playlistId,
+                'name' => $this->name,
+                'description' => $this->description,
+                'isaitagmatchable' => $this->isaitagmatchable
+            ));
+        }
+        else
+        {
+            $sql = 'UPDATE `playlist` SET `name` = :name  WHERE `playlistId` = :playlistId';
+            $this->getStore()->update($sql, array(
+                'playlistId' => $this->playlistId,
+                'name' => $this->name
+            ));            
+        }
     }
 
     /**
