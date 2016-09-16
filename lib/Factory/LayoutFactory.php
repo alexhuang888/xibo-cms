@@ -288,11 +288,15 @@ class LayoutFactory extends BaseFactory
      */
     public function getById($layoutId, $filterOp = [])
     {
+        if ($layoutId == 0)
+            throw new NotFoundException();
+            
         $options = array('disableUserCheck' => 1, 'layoutId' => $layoutId, 'excludeTemplates' => -1, 'retired' => -1);
         $options = array_merge($options, $filterOp);
         $layouts = $this->query(null, $options);
-
-        if (count($layouts) <= 0) {
+        
+        if (count($layouts) <= 0) 
+        {
             throw new NotFoundException(\__('Layout not found'));
         }
 
@@ -699,13 +703,17 @@ class LayoutFactory extends BaseFactory
                 // Do we want to try and use a dataset that already exists?
                 if ($useExistingDataSets) {
                     // Check to see if we already have a dataset with the same code/name, prefer code.
-                    try {
-                        // try and get by name
-                        $existingDataSet = $libraryController->getDataSetFactory()->getByCode($dataSet->code);
+                    if ($dataSet->code != '') {
+                        try {
+                            // try and get by code
+                            $existingDataSet = $libraryController->getDataSetFactory()->getByCode($dataSet->code);
+                        } catch (NotFoundException $e) {
+                            $this->getLog()->debug('Existing dataset not found with code %s', $dataSet->code);
 
-                        $this->getLog()->debug('Existing dataset not found with code %s', $dataSet->code);
+                        }
+                    }
 
-                    } catch (NotFoundException $e) {
+                    if ($existingDataSet === null) {
                         // try by name
                         try {
                             $existingDataSet = $libraryController->getDataSetFactory()->getByName($dataSet->dataSet);

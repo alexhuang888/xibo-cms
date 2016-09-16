@@ -215,6 +215,7 @@ $app->get('/dataset/view', '\Xibo\Controller\DataSet:displayPage')->name('dataSe
 $app->get('/dataset/data/view/:id', '\Xibo\Controller\DataSetData:displayPage')->name('dataSet.view.data');
 $app->get('/dataset/form/add', '\Xibo\Controller\DataSet:addForm')->name('dataSet.add.form');
 $app->get('/dataset/form/edit/:id', '\Xibo\Controller\DataSet:editForm')->name('dataSet.edit.form');
+$app->get('/dataset/form/copy/:id', '\Xibo\Controller\DataSet:copyForm')->name('dataSet.copy.form');
 $app->get('/dataset/form/delete/:id', '\Xibo\Controller\DataSet:deleteForm')->name('dataSet.delete.form');
 $app->get('/dataset/form/import/:id', '\Xibo\Controller\DataSet:importForm')->name('dataSet.import.form');
 // columns
@@ -302,7 +303,7 @@ $app->get('/transition/form/edit/:id', '\Xibo\Controller\Transition:editForm')->
 // sessions
 //
 $app->get('/sessions/view', '\Xibo\Controller\Sessions:displayPage')->name('sessions.view');
-$app->get('/sessions/form/logout', '\Xibo\Controller\Sessions:confirmLogoutForm')->name('sessions.confirm.logout.form');
+$app->get('/sessions/form/logout/:id', '\Xibo\Controller\Sessions:confirmLogoutForm')->name('sessions.confirm.logout.form');
 
 //
 // fault
