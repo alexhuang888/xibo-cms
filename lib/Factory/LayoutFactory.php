@@ -193,7 +193,7 @@ class LayoutFactory extends BaseFactory
         $layout->tags = $this->tagFactory->tagsFromString($tags);
 
         // Add a blank, full screen region
-        $layout->regions[] = $this->regionFactory->create($ownerId, $name . '-1', $layout->width, $layout->height, 0, 0);
+        $layout->regions[] = $this->regionFactory->create($ownerId, $name . '-r1', $layout->width, $layout->height, 0, 0);
 
         return $layout;
     }
@@ -212,6 +212,14 @@ class LayoutFactory extends BaseFactory
         $layout->backgroundzIndex = 0;
         $layout->backgroundColor = '#000';
         $layout->isPlaylistLayout = 1;  // it is a playlist layout
+        if ($playlist->isUserPlaylist)
+        {
+            $layout->isUserCreatedPLLayout = 1;
+        }
+        else
+        {
+            $layout->isUserCreatedPLLayout = 0;
+        }
         // Set the owner
         $layout->setOwner($ownerId);
 
@@ -219,7 +227,7 @@ class LayoutFactory extends BaseFactory
         $layout->tags = $this->tagFactory->tagsFromString($tags);
 
         // Add a blank, full screen region
-        $layout->regions[] = $this->regionFactory->createWithPlaylist($ownerId, $name . '-1', $layout->width, $layout->height, 0, 0, $playlist);
+        $layout->regions[] = $this->regionFactory->createWithPlaylist($ownerId, $name . '-r1', $layout->width, $layout->height, 0, 0, $playlist);
 
         return $layout;
     }
@@ -1070,19 +1078,24 @@ class LayoutFactory extends BaseFactory
         {
             // normally, we just need those layout not playlist specific (for compatibility of other UI)
             $isPL = 0;
-
-            if (array_key_exists('isPlaylistLayout', $filterBy))
             {
-                if ($this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy) < 2) 
+                if ($this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy) != null)
                 {
-                    $isPL = $this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy);
+                    if ($this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy) < 2) 
+                    {
+                        $isPL = $this->getSanitizer()->getInt('isPlaylistLayout', 0, $filterBy);
+
+                        $body .= (' AND isPlaylistLayout = ' . $isPL . " ");
+                    }
+                    // or if it is 2, dump all (no restriction)
                 }
-                //$body .= (' AND isPlaylistLayout = ' . $isPL . " ");
+                else
+                {
+                    // just normal layout
+                    $body .= (' AND isPlaylistLayout = ' . $isPL . " ");
+                }
             }
-            
-            {
-                $body .= (' AND isPlaylistLayout = ' . $isPL . " ");
-            }
+
         }        
         // Sorting?
         $order = '';

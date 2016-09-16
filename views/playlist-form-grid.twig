@@ -24,7 +24,7 @@
 {% endblock %}
 
 {% block callBack %}timelineGridCallback{% endblock %}
-
+{% set playlistset = [playlist] %}
 {% block formHtml %}
     <div class="container-fluid">
         <div class="row">
@@ -45,10 +45,16 @@
             </div>
             <div class="col-md-10">
                 <div class="XiboGrid" id="{{ random() }}">
-
+                    <div class="">
+                        <div class="FilterDiv" id="">
+                            <form class="form-inline">
+                                {% set title %}{% trans "Playlist" %}{% endset %}
+                                {{ inline.dropdown("playlistId", "single", title, playlist.playlistId, playlistset, "playlistId", "name") }}
+                            </form>
+                        </div>
+                    </div>
                     <div class="XiboData">
-                        <table id="timelineWidgets" class="table table-striped" "
-                                >
+                        <table id="timelineWidgets" class="table table-striped" data-playlist-id="{{ playlist.playlistId }}">
                             <thead>
                             <tr>
                                 <th>{% trans "Order" %}</th>

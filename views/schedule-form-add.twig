@@ -222,13 +222,15 @@
                         {% set campaignOptions = [] %}
                         {% set playlistOptions = [] %}
                         {% for item in campaigns %}
-                            {% if item.isPlaylistCampaign == 1 %}
+                            {% if item.isPlaylistCampaign == 1 and item.isCreatedByUserPlaylist == 1 %}
                                 {% set playlistOptions = playlistOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
                             {% else %}
-                                {% if item.isLayoutSpecific == 1 %}
+                                {% if item.isLayoutSpecific == 1 and item.isPlaylistCampaign != 1 %}
                                     {% set layoutOptions = layoutOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
                                 {% else %}
-                                    {% set campaignOptions = campaignOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                                    {% if item.isLayoutSpecific != 1 %}
+                                        {% set campaignOptions = campaignOptions|merge([{id: item.campaignId, value: item.campaign}]) %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         {% endfor %}

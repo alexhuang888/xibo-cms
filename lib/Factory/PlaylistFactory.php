@@ -136,8 +136,7 @@ class PlaylistFactory extends BaseFactory
 
         $params = array();
         $select = 'SELECT `playlist`.* ';
-        $select .= ' , `region`.regionId, `campaign`.CampaignID as playlistCompaignID ';
-        $select .= ' , `layout`.layoutId as playlistLayoutID ';
+
 
         if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) {
             $select .= ' , `lkregionplaylist`.displayOrder ';
@@ -146,28 +145,14 @@ class PlaylistFactory extends BaseFactory
         $body = '  FROM `playlist` ';
        
         // to get playlistLayoutID and playlistCampaignID
-        $body .= "  INNER JOIN `lkregionplaylist` ";
-        $body .= "   ON `lkregionplaylist`.playlistId = `playlist`.playlistId "; 
 
-        if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) {
-            $body .= '
-                    AND `lkregionplaylist`.regionId = :regionId
-            ';
+        if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) 
+        {
+            $body .= "  INNER JOIN `lkregionplaylist` ";
+            $body .= "   ON `lkregionplaylist`.playlistId = `playlist`.playlistId ";             
+            $body .= '        AND `lkregionplaylist`.regionId = :regionId ';
             $params['regionId'] = $this->getSanitizer()->getInt('regionId', $filterBy);
         }
-
-        $body .= "  INNER JOIN `region` ";
-        $body .= "   ON `region`.regionId = `lkregionplaylist`.regionId ";
-        $body .= "  INNER JOIN `layout` ";
-        $body .= "   ON `layout`.layoutID = `region`.layoutId ";
-        $body .= "       AND `layout`.isPlaylistLayout = 1";        
-        $body .= "  INNER JOIN `lkcampaignlayout` ";
-        $body .= "   ON `lkcampaignlayout`.LayoutID = `layout`.layoutID ";        
-        $body .= "  INNER JOIN `campaign` ";
-        $body .= "   ON `lkcampaignlayout`.CampaignID = `campaign`.CampaignID ";
-        $body .= "       AND `campaign`.IsLayoutSpecific = 1 ";
-        
-        //$body .= "   INNER JOIN `user` ON `user`.userId = `campaign`.userId ";
 
         $body .= ' WHERE 1 = 1 ';
         // filter by playlistid
@@ -217,6 +202,12 @@ class PlaylistFactory extends BaseFactory
                 $params['isaitagmatchable'] = $this->getSanitizer()->getInt('isaitagmatchable', 0, $filterBy);
             }
         }
+        // filter by playlistid
+        if ($this->getSanitizer()->getInt('isUserPlaylist', $filterBy) != 0) 
+        {
+            $body .= ' AND `playlist`.isUserPlaylist = :isUserPlaylist ';
+            $params['isUserPlaylist'] = $this->getSanitizer()->getInt('isUserPlaylist', $filterBy);
+        }        
         // Sorting?
         $order = '';
         if (is_array($sortOrder))

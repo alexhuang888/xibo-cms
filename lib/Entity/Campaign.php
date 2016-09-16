@@ -77,7 +77,11 @@ class Campaign implements \JsonSerializable
      * @var int
      */
     public $isPlaylistCampaign = 0;
-
+    /**
+     * @SWG\Property(description="A 0|1 flag to indicate whether this is a campaign created because of user's playlist'")
+     * @var int
+     */    
+    public $isCreatedByUserPlaylist = 0;
     /**
      * @SWG\Property(description="The number of Layouts associated with this Campaign")
      * @var int
@@ -303,11 +307,12 @@ class Campaign implements \JsonSerializable
 
     private function add()
     {
-        $this->campaignId = $this->getStore()->insert('INSERT INTO `campaign` (Campaign, IsLayoutSpecific, UserId, isPlaylistCampaign) VALUES (:campaign, :isLayoutSpecific, :userId, :isPlaylistCampaign)', array(
+        $this->campaignId = $this->getStore()->insert('INSERT INTO `campaign` (Campaign, IsLayoutSpecific, UserId, isPlaylistCampaign, isCreatedByUserPlaylist) VALUES (:campaign, :isLayoutSpecific, :userId, :isPlaylistCampaign, :isCreatedByUserPlaylist)', array(
             'campaign' => $this->campaign,
             'isLayoutSpecific' => $this->isLayoutSpecific,
             'userId' => $this->ownerId,
-            'isPlaylistCampaign' => $this->isPlaylistCampaign
+            'isPlaylistCampaign' => $this->isPlaylistCampaign,
+            'isCreatedByUserPlaylist' => $this->isCreatedByUserPlaylist
         ));
     }
 

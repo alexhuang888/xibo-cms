@@ -123,12 +123,6 @@ class Playlist extends Base
         $this->getState()->template = 'playlist-page';
     }
 
-    function playlistPageClone($srcPlaylistID)
-    {
-        $this->clonePlaylistFunction($srcPlaylistID);
-        // Call to render the template
-        $this->getState()->template = 'playlist-page';
-    }
     public function addForm()
     {
         $this->getState()->template = 'playlist-form-add';
@@ -188,7 +182,8 @@ class Playlist extends Base
         $filter = [
             'tags' => $this->getSanitizer()->getString('tags'),
             'name' => $this->getSanitizer()->getString('name'),
-            'isaitagmatchable' => $this->getSanitizer()->getInt('isaitagmatchable')
+            'isaitagmatchable' => $this->getSanitizer()->getInt('isaitagmatchable'),
+            'isUserPlaylist' => 1
                     ];
         $playlists = $this->playlistFactory->query($this->gridRenderSort(), $this->gridRenderFilter($filter));
 
@@ -224,10 +219,21 @@ class Playlist extends Base
                 );                
                 // Copy Button
                 $playlist->buttons[] = array(
+                    'class' => 'XiboAjaxSubmit',
                     'id' => 'playlist_button_copy',
                     'url' => $this->urlFor('playlist.clone', ['id' => $playlist->getId()]),
                     'text' => __('Copy')
                 );
+
+                // Preview
+                $playlist->buttons[] = array(
+                    'id' => 'layout_button_preview',
+                    'linkType' => '_blank',
+                    'external' => true,
+                    'url' => $this->urlFor('layout.preview', ['id' => $playlist->playlistLayoutID]),
+                    'text' => __('Preview Playlist')
+                );
+                
                 // Extra buttons if have delete permissions
                 if ($this->getUser()->checkDeleteable($playlist)) {
                     // Delete Button
@@ -274,6 +280,7 @@ class Playlist extends Base
         $playlist->isaitagmatchable = $this->getSanitizer()->getCheckbox('isaitagmatchable');
         $playlist->tags = $this->tagFactory->tagsFromString($this->getSanitizer()->getString('tags'));
         $playlist->ownerId = $this->getUser()->getId();
+        $playlist->isUserPlaylist = 1;
         $playlist->save();
 
         // Assign to a region?
@@ -326,8 +333,9 @@ class Playlist extends Base
 
         $playlist = clone $originPlaylist;
 
-        $playlist->name = 'copy of ' . $originPlaylist->name;
+        $playlist->name = 'copy-' . $originPlaylist->name;
         $playlist->ownerId = $this->getUser()->getId();
+        $playlist->isUserPlaylist = 1;
         $playlist->setChildObjectDependencies($this->regionFactory);
         $playlist->save();
 

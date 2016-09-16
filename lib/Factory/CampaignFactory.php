@@ -149,7 +149,7 @@ class CampaignFactory extends BaseFactory
         $params = array();
 
         $select = '
-        SELECT `campaign`.campaignId, `campaign`.campaign, `campaign`.isLayoutSpecific, `campaign`.userId AS ownerId, `campaign`.isPlaylistCampaign,
+        SELECT `campaign`.campaignId, `campaign`.campaign, `campaign`.isLayoutSpecific, `campaign`.userId AS ownerId, `campaign`.isPlaylistCampaign, `campaign`.isCreatedByUserPlaylist,
               (
                 SELECT COUNT(*)
                   FROM lkcampaignlayout

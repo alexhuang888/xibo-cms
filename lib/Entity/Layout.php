@@ -201,6 +201,7 @@ class Layout implements \JsonSerializable
      * @SWG\Property(description="If this a layout for playlist wrapper")
      */
     public $isPlaylistLayout = 0;
+    public $isUserCreatedPLLayout = 0;
     // Child items
     /** @var Region[]  */
     public $regions = [];
@@ -1258,7 +1259,11 @@ class Layout implements \JsonSerializable
         // Add a Campaign
         $campaign = $this->campaignFactory->createEmpty();
         $campaign->campaign = $this->layout;
+        // if this campaign is not created by users (used to represent this layout only.)
         $campaign->isLayoutSpecific = 1;
+        // if this campaign created by a User created Playlist
+        $campaign->isCreatedByUserPlaylist = $this->isUserCreatedPLLayout;
+        // if this campaign created by a playlist-layout 
         $campaign->isPlaylistCampaign = $this->isPlaylistLayout;
         $campaign->ownerId = $this->getOwnerId();
         $campaign->assignLayout($this);

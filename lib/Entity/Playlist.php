@@ -126,7 +126,7 @@ class Playlist implements \JsonSerializable
      */
     private $tagFactory;
     // if this playlist is allowed to assign media by matching ai tags?
-    public $isaitagmatchable;
+    public $isaitagmatchable = 0;
 
     public $lastaitagsmatchedDT;
 
@@ -134,8 +134,9 @@ class Playlist implements \JsonSerializable
 
     // this is the compaign ID that specific this this playlist. (this compaign has single layout, which has 
     //              single region, and this region connect to this playlist).
-    private $playlistCompaignID;
-    private $playlistLayoutID;
+    public $playlistCompaignID;
+    public $playlistLayoutID;
+    public $isUserPlaylist = 0;
     /**
      * Entity constructor.
      * @param StorageServiceInterface $store
@@ -501,23 +502,38 @@ class Playlist implements \JsonSerializable
     {
         $this->getLog()->debug('Adding Playlist ' . $this->name);
         $this->validate();
-
+        // how can we get the resoluton of this layout? or just use a default one?
+        $resolutionId = 9;//$this->getSanitizer()->getInt('resolutionId', 9);
         {
-            $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`) VALUES (:name, :ownerId, :description, :isaitagmatchable)';
+            $sql = 'INSERT INTO `playlist` (`name`, `ownerId`, `description`, `isaitagmatchable`, `isUserPlaylist`) VALUES (:name, :ownerId, :description, :isaitagmatchable, :isUserPlaylist)';
             $this->playlistId = $this->getStore()->insert($sql, array(
                 'name' => $this->name,
                 'ownerId' => $this->ownerId,
                 'description' => $this->description,
-                'isaitagmatchable' => $this->isaitagmatchable
+                'isaitagmatchable' => $this->isaitagmatchable,
+                'isUserPlaylist' => $this->isUserPlaylist
             ));
         }
 
         // here, create a layout first, it will create a region automatically, and associate with this playlist
-        $pllayout = $this->layoutFactory->createFromResolutionForPlaylist(9, $this->ownerId, $this->name, $this->description, "", $this);
+        $pllayout = $this->layoutFactory->createFromResolutionForPlaylist($resolutionId, $this->ownerId, $this->name, $this->description, "", $this);
+        //$pllayout->isUserCreatedPLLayout = 1;   // it is a user-created PL Layout
         // then, it will create a compaign with its own save()
         $pllayout->save();
         $this->playlistLayoutID = $pllayout->layoutId;
         $this->playlistCompaignID = $pllayout->campaignId;
+
+        // update back to playlist about its playlist-layout-id and playlist-campaign-id
+        // these two ids are the ID to be used for playback this playlist alone. 
+        // this layout is created automitically, which contains one region (full-layout-boundary), and this region
+        // is linked to this playlist.
+
+        $sql = 'UPDATE `playlist` SET `playlistLayoutID` = :playlistLayoutID, `playlistCompaignID` = :playlistCompaignID  WHERE `playlistId` = :playlistId';
+        $this->getStore()->update($sql, array(
+            'playlistId' => $this->playlistId,
+            'playlistCompaignID' => $this->playlistCompaignID,
+            'playlistLayoutID' => $this->playlistLayoutID
+        ));          
     }
 
     /**
@@ -580,7 +596,13 @@ class Playlist implements \JsonSerializable
 
         return ($results[0]['qty'] > 0);
     }
+    // if this playlist has any non-playlist-layout
+    public function hasNormalLayouts()
+    {
+        $results = $this->getStore()->select('SELECT COUNT(*) AS qty FROM `lkregionplaylist` inner join `region` on region.regionid = `lkregionplaylist`.regionid inner join `layout` on `layout`.layoutid = `region`.layoutid and `layout`.isPlaylistLayout<> 1 WHERE playlistId = :playlistId', ['playlistId' => $this->playlistId]);
 
+        return ($results[0]['qty'] > 0);
+    }
     /**
      * Has media
      * @return bool

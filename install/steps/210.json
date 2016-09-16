@@ -23,10 +23,12 @@
       "action": "ALTER TABLE  `layout` ADD  `isPlaylistLayout` BOOLEAN NOT NULL DEFAULT FALSE COMMENT  'A layout for a playlist for scheduling';"
     },
     {
-      "step": "Add the isPlaylistCampaign to the campaign Table",
-      "action": "ALTER TABLE `campaign` ADD `isPlaylistCampaign` BOOLEAN NOT NULL DEFAULT FALSE ;"
+      "step": "Add the isPlaylistCampaign, isUserCreated to the campaign Table",
+      "action": "ALTER TABLE `campaign` ADD `isPlaylistCampaign` BOOLEAN NOT NULL DEFAULT FALSE, ADD `isUserCreated` BOOLEAN NULL COMMENT 'if this compaign is created because of users''s playlist' ;"
+    },
+    {
+      "step": "Add the playlistLayoutID, playlistCompaignID to the playlist Table",
+      "action": "ALTER TABLE `playlist`, ADD `playlistLayoutID` INT NOT NULL , ADD `playlistCompaignID` INT NOT NULL,ADD `isUserPlaylist` BOOLEAN NULL COMMENT 'is this the playlist created by users (not from template)' ;"
     }
-
-    
   ]
 }

@@ -446,7 +446,7 @@ class Region implements \JsonSerializable
                 foreach ($playlists as $playlist) 
                 {
                     /* @var Playlist $playlist */
-                    if (!$playlist->hasLayouts()) 
+                    if (!$playlist->hasNormalLayouts()) 
                     {
                         $this->getLog()->debug('Deleting orphaned playlist: %d', $playlist->playlistId);
                         $playlist->delete();

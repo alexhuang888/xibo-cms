@@ -117,7 +117,8 @@ class RegionFactory extends BaseFactory
 
         // Create a Playlist for this region
         // many to many relationship
-        $playlist = $this->playlistFactory->create($name, $ownerId);
+        $playlist = $this->playlistFactory->create($name . '-p', $ownerId);
+        $playlist->isUserPlaylist = 0;
         $region->assignPlaylist($playlist);
 
         return $region;
