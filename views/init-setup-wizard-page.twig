@@ -1,0 +1,266 @@
+{#
+/*
+ * Spring Signage Ltd - http://www.springsignage.com
+ * Copyright (C) 2015 Spring Signage Ltd
+ * (${FILE_NAME})
+ */
+#}
+{% extends "form-base.twig" %}
+{% import "forms.twig" as forms %}
+
+{% block formTitle %}
+
+{% endblock %}
+
+{% block formButtons %}
+    {% trans "Cancel" %}, XiboDialogClose()
+    {% trans "Done" %}, $("#home_form").submit()
+{% endblock %}
+{% block formHtml %}
+
+
+    <div class="widget">
+        <div class="widget-title">{% trans "Initial Setup" %}</div>
+        <div class="widget-body">
+            <div class="row">
+                <div class="board">
+                    <div class="board-inner">
+                        <ul class="nav fault nav-tabs" id="initsetupwizard">
+                            <div class="liner"></div>
+                            <li class="active">
+                                <a href="#home" data-toggle="tab">
+                                    <span class="round-tabs one"> <i class="glyphicon glyphicon-home"></i> </span> </a>
+                            </li>
+                            <li class="">
+                                <a href="#admininfo" data-toggle="tab">
+                                    <span class="round-tabs two"> <i class="fa fa-check-square-o" aria-hidden="true"></i> </span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a href="#companyinfo" data-toggle="tab">
+                                    <span class="round-tabs three"> <i class="fa fa-bug" aria-hidden="true"></i> </span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a href="#branchinfo" data-toggle="tab">
+                                    <span class="round-tabs four"> <i class="fa fa-clone" aria-hidden="true"></i> </span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a href="#summary" data-toggle="tab">
+                                    <span class="round-tabs five"> <i class="fa fa-floppy-o" aria-hidden="true"></i> </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="home">
+                            <h3 class="head text-center">{% trans "Initial Setup" %}
+                                <span style="color:#f48260;"></span>
+                            </h3>
+                            <p class="narrow text-center">{% trans "Setup company information and template information" %}</p>
+
+                            <form class="form-horizontal text-center" id="home_form" name="home_form" role="form">
+                                <fieldset>
+                                    <button type="button" href="#admininfo" name="home_form" class="btn-submit btn btn-success">
+                                        {% trans "Next" %}
+                                        <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></button>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="admininfo">
+                            <p class="narrow text-center">{% trans "Setup administrator account" %}</p>
+
+                            <form class="form-horizontal text-center" id="admininfo_form" name="admininfo_form" role="form">
+                                <fieldset>
+                                    <button type="button" href="#home" name="admininfo_form" class="btn-submit btn btn-info">
+                                        <i class="fa fa-chevron-circle-left" aria-hidden="true"></i> {% trans "Previous" %}
+                                    </button>
+                                    <button type="button" href="#companyinfo" name="admininfo_form" class="btn-submit btn btn-primary">
+                                        {% trans "Next" %} <i class="fa fa-chevron-circle-right" aria-hidden="true"></i>
+                                    </button>
+                                </fieldset>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="companyinfo">
+
+                            <p class="narrow text-center">{% trans "Setup Company Information and default template" %}</p>
+                            <form class="form-horizontal text-center" id="companyinfo_form" name="turnons_form" role="form">
+                                {% set title %}{% trans "Company Name" %}{% endset %}
+                                {% set helpText %}{% trans "Company name" %}{% endset %}
+                                {{ forms.input("companyname", title, "", "","","required") }}
+                                {% set title %}{% trans "Setup company profile" %}{% endset %}
+                                {{ forms.message(title) }}
+                                
+                                {% set title %}{% trans "Profile/Web URL" %}{% endset %}
+                                {% set helpText %}{% trans "Give company web address so the system can find some profile about your company" %}{% endset %}
+                                {{ forms.input("companyweburl", title, "", helpText,"","required") }}   
+
+                                {% set title %}{% trans "or, tell us about your company" %}{% endset %}
+                                {% set helpText %}{% trans "type or copy&paste your company information here" %}{% endset %}
+                                {{ forms.textarea("companyintro", title, "", helpText,"","required") }} 
+                                {% set title %}{% trans "Default template" %}{% endset %}
+                                {% set helpText %}{% trans "Choose a default template for this company" %}{% endset %}
+                                {{ forms.dropdown("companytemplate", title, title, "","", helpText, "required") }}                                                                                            
+                                <fieldset>
+                                    <button type="button" href="#admininfo" name="companyinfo_form" class="btn-submit btn btn-info">
+                                        <i class="fa fa-chevron-circle-left" aria-hidden="true"></i> {% trans "Previous" %}
+                                    </button>
+                                    <button type="button" href="#branchinfo" name="companyinfo_form" class="btn-submit btn btn-primary">
+                                        {% trans "Next" %} <i class="fa fa-chevron-circle-right" aria-hidden="true"></i>
+                                    </button>
+                                </fieldset>
+                            </form>
+
+                        </div>
+
+
+                        <div class="tab-pane fade text-center" id="branchinfo">
+                            <p class="narrow text-center">{% trans "Setup Branch Information" %}</p>
+                            
+                            <form class="form-horizontal text-center" id="branchinfo_form" name="branchinfo_form" role="form">
+                                {% set title %}{% trans "You can setup several branch to have different display groups, so it is easier to manage your displays." %}{% endset %}
+                                {{ forms.message(title) }}
+                                {% set title %}{% trans "Branch Name" %}{% endset %}
+                                {% set helpText %}{% trans "Branch name" %}{% endset %}
+                                {{ forms.input("branchname", title, "", "","","required") }}
+                                
+                                {% set title %}{% trans "Profile/Web URL" %}{% endset %}
+                                {% set helpText %}{% trans "Give web address so the system can find some profile about this branch" %}{% endset %}
+                                {{ forms.input("branchweburl", title, "", helpText,"","required") }}   
+
+                                {% set title %}{% trans "or, tell us about this branch" %}{% endset %}
+                                {% set helpText %}{% trans "type or copy&paste your branch information here" %}{% endset %}
+                                {{ forms.textarea("branchintro", title, "", helpText,"","required") }}    
+
+                                {% set title %}{% trans "Default template" %}{% endset %}
+                                {% set helpText %}{% trans "Choose a default template for this branch" %}{% endset %}
+                                {{ forms.dropdown("branchtemplate", title, title, "","", helpText, "required") }}                                                                                            
+                                {% set title %}{% trans "+1 branch" %}{% endset %}
+                                {% set helpText %}{% trans "add one more branch" %}{% endset %}
+                                {{ forms.button(title, 'button', "+", helpText,"","required", "branchintro") }}                                                               
+                                <fieldset>
+                                    <button type="button" href="#companyinfo" name="branchinfo_form" class="btn-submit btn btn btn-info">
+                                        <i class="fa fa-chevron-circle-left" aria-hidden="true"></i> {% trans "Previous" %}
+                                    </button>
+                                    <button type="button" href="#summary" name="branchinfo_form" class="btn-submit btn btn-primary">
+                                        {% trans "Next" %} <i class="fa fa-chevron-circle-right" aria-hidden="true"></i>
+                                    </button>
+                                </fieldset>
+                            </form>
+                        </div>
+
+
+                        <div class="tab-pane fade" id="summary">
+                            <div class="narrow text-center"><i class="img-intro icon-checkmark-circle"></i></div>
+                            <p class="narrow text-center">{% trans "Summary" %}</p>
+                            <form class="form-horizontal text-center" id="summary_form" name="summary_form" role="form">
+                                <fieldset>
+                                    <button type="button" href="#branchinfo" name="summary_form" class="btn-submit btn btn btn-info">
+                                        <i class="fa fa-chevron-circle-left" aria-hidden="true"></i> {% trans "Previous" %}
+                                    </button>
+                                    <button type="button" href="#home" name="summary_form" class="btn-submit btn btn-info">
+                                        <i class="fa fa-home" aria-hidden="true"></i> {% trans "Start again" %}
+                                    </button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <script type="text/javascript">
+            // Page List switcher
+            $(function () 
+            {
+                $('a[title]').tooltip();
+                $('.btn-submit').on('click', function (e) 
+                {
+                    var formname = $(this).attr('name');
+                    var tabname = $(this).attr('href');
+                    if ($('#' + formname)[0].checkValidity()) 
+                    { /* Only works in Firefox/Chrome need polyfill for IE9, Safari. */
+                        e.preventDefault();
+                        $('ul.nav li a[href="' + tabname + '"]').parent().removeClass('disabled');
+                        $('ul.nav li a[href="' + tabname + '"]').trigger('click');
+                    }
+                });
+                $('ul.nav li').on('click', function (e) 
+                {
+                    if ($(this).hasClass('disabled')) 
+                    {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            });
+
+        </script>
+
+
+        <script type="text/javascript">
+
+            $(function () {
+                $('[data-toggle="popover"]').popover()
+            })
+
+
+            function checkFormOn(form) {
+                form.onDeb.disabled = true;
+                form.onDeb.value = "Debugging mode ON";
+                return true;
+            }
+
+            function checkFormOff(form) {
+                form.offDeb.disabled = true;
+                form.offDeb.value = "Debugging mode Off";
+                return true;
+            }
+
+            $("#dldata").on("click", function (event) {
+                if ($(this).hasClass("disabled")) {
+                    event.preventDefault();
+                }
+
+                // Disable download button when downloading
+                $(this).addClass("btn-success disabled");
+                $("#dldata").text('{% trans "Downloading file" %}');
+                $("#dldata").prop("href", $("#dldata").data().baseHref + "?" + $(".funkyradio").find("input[type=checkbox]").serialize());
+
+
+                //Re Enables download button after new checkbox selection
+                $('.funkyradio').click(function () {
+                    if ($(this).is(':checked')) {
+                        $('#dldata').removeClass('disabled');
+
+                    } else {
+                        $('#dldata').removeClass('disabled').attr('enabled');
+                        ;
+                        $("#dldata").text('{% trans "Download selected items" %}');
+                    }
+                });
+
+            });
+
+
+        </script>
+
+        <script>
+            $("#toggler").click(function () {
+                $(this).text(function (i, v) {
+                    return v === '{% trans "Hide Environment checks" %}' ? '{% trans "Show Environment checks" %}' : '{% trans "Hide Environment checks" %}'
+                })
+                $("#checksWithSuccess").toggle();
+            });
+
+        </script>    
+{% endblock %}
+
+
+    {% block javaScript %}
+
+
+
+    {% endblock %}
