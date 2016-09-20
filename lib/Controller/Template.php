@@ -307,12 +307,13 @@ class Template extends Base
         $layout->tags = $this->tagFactory->tagsFromString($this->getSanitizer()->getString('tags'));
         $layout->tags[] = $this->tagFactory->getByTag('template');
         $layout->description = $this->getSanitizer()->getString('description');
+        $layout->isTemplateLayout = 1;
         $layout->save();
 
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Saved %s'), $layout->layout),
+            'message' => sprintf(__('Saved template: %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);

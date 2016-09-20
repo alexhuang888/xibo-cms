@@ -811,7 +811,7 @@ class Display extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $display->display),
+            'message' => sprintf(__('Edited display: %s'), $display->display),
             'id' => $display->displayId,
             'data' => $display
         ]);
@@ -853,7 +853,7 @@ class Display extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $display->display),
+            'message' => sprintf(__('Deleted display: %s'), $display->display),
             'id' => $display->displayId,
             'data' => $display
         ]);
@@ -950,7 +950,7 @@ class Display extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('%s assigned to Display Groups'), $display->display),
+            'message' => sprintf(__('Display %s assigned to Display Groups'), $display->display),
             'id' => $display->displayId
         ]);
     }
@@ -1049,7 +1049,7 @@ class Display extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Request sent for %s'), $display->display),
+            'message' => sprintf(__('Request sent for display: %s'), $display->display),
             'id' => $display->displayId
         ]);
     }
@@ -1117,7 +1117,7 @@ class Display extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Wake on Lan sent for %s'), $display->display),
+            'message' => sprintf(__('Wake on Lan sent for display: %s'), $display->display),
             'id' => $display->displayId
         ]);
     }

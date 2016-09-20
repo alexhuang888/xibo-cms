@@ -267,7 +267,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Added %s'), $group->group),
+            'message' => sprintf(__('Added user group: %s'), $group->group),
             'id' => $group->groupId,
             'data' => $group
         ]);
@@ -297,7 +297,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $group->group),
+            'message' => sprintf(__('Edited user group: %s'), $group->group),
             'id' => $group->groupId,
             'data' => $group
         ]);
@@ -319,7 +319,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Deleted %s'), $group->group),
+            'message' => sprintf(__('Deleted user group: %s'), $group->group),
             'id' => $group->groupId
         ]);
     }
@@ -459,7 +459,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('ACL set for %s'), $group->group),
+            'message' => sprintf(__('ACL set for user group: %s'), $group->group),
             'id' => $group->groupId
         ]);
     }
@@ -560,7 +560,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Membership set for %s'), $group->group),
+            'message' => sprintf(__('Membership set for user group: %s'), $group->group),
             'id' => $group->groupId
         ]);
     }
@@ -586,7 +586,7 @@ class UserGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Membership set for %s'), $group->group),
+            'message' => sprintf(__('Membership set for user group: %s'), $group->group),
             'id' => $group->groupId
         ]);
     }
@@ -676,7 +676,7 @@ class UserGroup extends Base
 
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Copied %s'), $group->group),
+            'message' => sprintf(__('Copied user group: %s'), $group->group),
             'id' => $newGroup->groupId,
             'data' => $newGroup
         ]);

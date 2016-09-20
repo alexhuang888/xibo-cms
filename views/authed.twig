@@ -16,6 +16,10 @@
                     <li class="sidebar-list"><a href="{{ urlFor("daypart.view") }}">{% trans "Dayparting" %}</a></li>
                     {% endif %}
 
+                    {% if currentUser.routeViewable("/init") %}
+                    <li class="sidebar-list"><a href="{{ urlFor("init.setup.wizard") }}">{% trans "Init Setup Wizard" %}</a></li>
+                    {% endif %}
+
                     {% if currentUser.routeViewable("/campaign") or currentUser.routeViewable("/layout") or currentUser.routeViewable("/template") or currentUser.routeViewable("/resolution") %}
                         <li class="sidebar-title"><a>{% trans "Design" %}</a></li>
                         {% if currentUser.routeViewable("/campaign") %}
@@ -164,7 +168,7 @@
 
                                 {% if currentUser.routeViewable("/daypart") %}
                                 <li><a href="{{ urlFor("daypart.view") }}">{% trans "Dayparting" %}</a></li>
-                                {% endif %}
+                                {% endif %}                              
                             </ul>
                         </li>                        
                     {% endif %}                
@@ -343,7 +347,12 @@
                             <li class="divider"></li>
                             <li><a class="XiboFormButton" href="{{ urlFor("user.change.password.form") }}" title="{% trans "Change Password" %}">{% trans "Change Password" %}</a></li>
                             <li><a href="{{ urlFor("welcome.wizard") }}">{% trans "Reshow welcome" %}</a></li>
+                            {% if currentUser.routeViewable("/init") %}
+                                <li><a href="javascript:void(0)" onclick="XiboFormRender('{{ urlFor("init.setup.wizard") }}');">{% trans "Init Setup Wizard" %}</a></li>
+                            {% endif %}    
+                            <li class="divider"></li>
                             <li><a class="XiboHelpButton" href="{{ help.page }}">{% trans "Help" %}</a></li>
+                                                      
                             <li class="divider"></li>
                             <li><a title="Logout" href="{{ urlFor("logout") }}">{% trans "Logout" %}</a></li>
                         </ul>

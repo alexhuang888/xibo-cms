@@ -135,8 +135,12 @@ class PlaylistFactory extends BaseFactory
         $entries = array();
 
         $params = array();
-        $select = 'SELECT `playlist`.* ';
-
+        $select = 'SELECT `playlist`.*, 
+            (
+                SELECT COUNT(*)
+                  FROM widget
+                 WHERE widget.playlistid = `playlist`.playlistid
+              ) AS numberWidgets ';
 
         if ($this->getSanitizer()->getInt('regionId', $filterBy) !== null) {
             $select .= ' , `lkregionplaylist`.displayOrder ';

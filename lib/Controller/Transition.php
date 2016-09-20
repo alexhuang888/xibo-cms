@@ -125,7 +125,7 @@ class Transition extends Base
         $transition->save();
 
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $transition->transition),
+            'message' => sprintf(__('Edited transition: %s'), $transition->transition),
             'id' => $transition->transitionId,
             'data' => $transition
         ]);

@@ -233,7 +233,12 @@ class Playlist extends Base
                     'url' => $this->urlFor('layout.preview', ['id' => $playlist->playlistLayoutID]),
                     'text' => __('Preview Playlist')
                 );
-                
+                // Schedule Now
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_schedulenow',
+                    'url' => $this->urlFor('schedule.now.form', ['id' => $playlist->playlistCampaignID, 'from' => 'Campaign']),
+                    'text' => __('Schedule Now')
+                );                
                 // Extra buttons if have delete permissions
                 if ($this->getUser()->checkDeleteable($playlist)) {
                     // Delete Button
@@ -319,7 +324,7 @@ class Playlist extends Base
         // Success
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $playlist->name),
+            'message' => sprintf(__('Added playlist: %s'), $playlist->name),
             'id' => $playlist->playlistId,
             'data' => $playlist
         ]);
@@ -386,7 +391,7 @@ class Playlist extends Base
         // Success
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Cloned %s'), $playlist->name),
+            'message' => sprintf(__('Cloned playlist: %s'), $playlist->name),
             'id' => $playlist->playlistId,
             'data' => $playlist
         ]);
@@ -416,7 +421,7 @@ class Playlist extends Base
         // Success
         $this->getState()->hydrate([
             'httpStatus' => 200,
-            'message' => sprintf(__('Edited %s'), $playlist->name),
+            'message' => sprintf(__('Edited playlist: %s'), $playlist->name),
             'id' => $playlist->playlistId,
             'data' => $playlist
         ]);
@@ -443,7 +448,7 @@ class Playlist extends Base
         // Success
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $playlist->name)
+            'message' => sprintf(__('Deleted playlist: %s'), $playlist->name)
         ]);
     }
     /**
@@ -728,7 +733,7 @@ class Playlist extends Base
 
         // Success
         $this->getState()->hydrate([
-            'message' => __('Media Assigned'),
+            'message' => __('Media Assigned to playlist'),
             'data' => $playlist
         ]);
     }

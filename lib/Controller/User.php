@@ -457,7 +457,7 @@ class User extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $user->userName),
+            'message' => sprintf(__('Added user: %s'), $user->userName),
             'id' => $user->userId,
             'data' => $user
         ]);
@@ -521,7 +521,7 @@ class User extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $user->userName),
+            'message' => sprintf(__('Edited user: %s'), $user->userName),
             'id' => $user->userId,
             'data' => $user
         ]);
@@ -564,7 +564,7 @@ class User extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Deleted %s'), $user->userName),
+            'message' => sprintf(__('Deleted user: %s'), $user->userName),
             'id' => $user->userId
         ]);
     }

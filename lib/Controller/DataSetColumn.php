@@ -268,7 +268,7 @@ class DataSetColumn extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $column->heading),
+            'message' => sprintf(__('Added dataset column: %s'), $column->heading),
             'id' => $column->dataSetColumnId,
             'data' => $column
         ]);
@@ -396,7 +396,7 @@ class DataSetColumn extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $column->heading),
+            'message' => sprintf(__('Edited dataset column: %s'), $column->heading),
             'id' => $column->dataSetColumnId,
             'data' => $column
         ]);
@@ -467,7 +467,7 @@ class DataSetColumn extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $column->heading)
+            'message' => sprintf(__('Deleted dataset column: %s'), $column->heading)
         ]);
     }
 }

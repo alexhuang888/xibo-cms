@@ -42,6 +42,7 @@
                                 <th>{% trans "Name" %}</th>
                                 <th>{% trans "Descriptions" %} </th>
                                 <th>{% trans "AI Tags aware" %} </th>
+                                <th>{% trans "# Widgets" %} </th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -76,6 +77,7 @@
                     {"data": "name"},
                     {"data": "description"},
                     {"data": "isaitagmatchable", "visible": true, "render": dataTableTickCrossColumn},
+                    {"data": "numberWidgets"},
                     {
                         "orderable": false,
                         "data": dataTableButtonsColumn

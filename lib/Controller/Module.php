@@ -275,7 +275,7 @@ class Module extends Base
 
         // Successful
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $module->getModule()->name),
+            'message' => sprintf(__('Edited module: %s'), $module->getModule()->name),
             'id' => $module->getModule()->moduleId,
             'data' => $module->getModule()
         ]);
@@ -306,7 +306,7 @@ class Module extends Base
 
         // Successful
         $this->getState()->hydrate([
-            'message' => __('Verified')
+            'message' => __('Verified module.')
         ]);
     }
 
@@ -355,7 +355,7 @@ class Module extends Base
 
         // Excellent... capital... success
         $this->getState()->hydrate([
-            'message' => sprintf(__('Installed %s'), $module->getModuleType()),
+            'message' => sprintf(__('Installed module: %s'), $module->getModuleType()),
             'data' => $module
         ]);
     }
@@ -434,7 +434,7 @@ class Module extends Base
 
         // Successful
         $this->getState()->hydrate([
-            'message' => sprintf(__('Added %s'), $module->getName()),
+            'message' => sprintf(__('Added module: %s'), $module->getName()),
             'id' => $module->widget->widgetId,
             'data' => $module
         ]);
@@ -479,7 +479,7 @@ class Module extends Base
 
         // Successful
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $module->getName()),
+            'message' => sprintf(__('Edited module: %s'), $module->getName()),
             'id' => $module->widget->widgetId,
             'data' => $module
         ]);
@@ -550,7 +550,7 @@ class Module extends Base
 
         // Successful
         $this->getState()->hydrate([
-            'message' => sprintf(__('Deleted %s'), $moduleName)
+            'message' => sprintf(__('Deleted module: %s'), $moduleName)
         ]);
     }
 

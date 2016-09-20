@@ -182,8 +182,8 @@ class Layout extends Base
         $data = [
             'layout' => $layout,
             'resolution' => $resolution,
-            'isTemplate' => $layout->hasTag('template'),
-            'layouts' => $this->layoutFactory->query(),
+            'isTemplate' => $layout->isTemplateLayout == 1 ? true : false,//hasTag('template'),
+            'layouts' => $this->layoutFactory->query(null, $layout->isTemplateLayout != 1 ? null : array('excludeTemplates' => 0)),
             'zoom' => $this->getSanitizer()->getDouble('zoom', $this->getUser()->getOptionValue('defaultDesignerZoom', 1)),
             'modules' => array_map(function($element) use ($moduleFactory) { return $moduleFactory->createForInstall($element->class); }, $moduleFactory->getAssignableModules())
         ];
@@ -291,7 +291,7 @@ class Layout extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $layout->layout),
+            'message' => sprintf(__('Added layout: %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
@@ -412,7 +412,7 @@ class Layout extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $layout->layout),
+            'message' => sprintf(__('Edited layout: %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
@@ -498,7 +498,7 @@ class Layout extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $layout->layout)
+            'message' => sprintf(__('Deleted layout: %s'), $layout->layout)
         ]);
     }
 
@@ -543,7 +543,7 @@ class Layout extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Retired %s'), $layout->layout)
+            'message' => sprintf(__('Retired layout: %s'), $layout->layout)
         ]);
     }
 
@@ -962,7 +962,7 @@ class Layout extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Copied as %s'), $layout->layout),
+            'message' => sprintf(__('Copied layout as %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
@@ -1023,7 +1023,7 @@ class Layout extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Tagged %s'), $layout->layout),
+            'message' => sprintf(__('Tagged layout: %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
@@ -1084,7 +1084,7 @@ class Layout extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Untagged %s'), $layout->layout),
+            'message' => sprintf(__('Untagged layout: %s'), $layout->layout),
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
@@ -1388,7 +1388,7 @@ class Layout extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Upgraded %s'), $layout->layout)
+            'message' => sprintf(__('Upgraded layout: %s'), $layout->layout)
         ]);
     }
 }

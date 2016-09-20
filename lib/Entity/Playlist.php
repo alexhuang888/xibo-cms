@@ -64,7 +64,11 @@ class Playlist implements \JsonSerializable
      * @var string
      */
     public $name;
-
+    /**
+     * @SWG\Property(description="The number of Widgets associated with this playlist")
+     * @var int
+     */
+    public $numberWidgets;
     /**
      * @SWG\Property(description="An array of Tags")
      * @var Tag[]
@@ -134,7 +138,7 @@ class Playlist implements \JsonSerializable
 
     // this is the compaign ID that specific this this playlist. (this compaign has single layout, which has 
     //              single region, and this region connect to this playlist).
-    public $playlistCompaignID;
+    public $playlistCampaignID;
     public $playlistLayoutID;
     public $isUserPlaylist = 0;
     /**
@@ -521,17 +525,17 @@ class Playlist implements \JsonSerializable
         // then, it will create a compaign with its own save()
         $pllayout->save();
         $this->playlistLayoutID = $pllayout->layoutId;
-        $this->playlistCompaignID = $pllayout->campaignId;
+        $this->playlistCampaignID = $pllayout->campaignId;
 
         // update back to playlist about its playlist-layout-id and playlist-campaign-id
         // these two ids are the ID to be used for playback this playlist alone. 
         // this layout is created automitically, which contains one region (full-layout-boundary), and this region
         // is linked to this playlist.
 
-        $sql = 'UPDATE `playlist` SET `playlistLayoutID` = :playlistLayoutID, `playlistCompaignID` = :playlistCompaignID  WHERE `playlistId` = :playlistId';
+        $sql = 'UPDATE `playlist` SET `playlistLayoutID` = :playlistLayoutID, `playlistCampaignID` = :playlistCampaignID  WHERE `playlistId` = :playlistId';
         $this->getStore()->update($sql, array(
             'playlistId' => $this->playlistId,
-            'playlistCompaignID' => $this->playlistCompaignID,
+            'playlistCampaignID' => $this->playlistCampaignID,
             'playlistLayoutID' => $this->playlistLayoutID
         ));          
     }

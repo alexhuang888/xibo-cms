@@ -224,7 +224,7 @@ class DisplayProfile extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $displayProfile->name),
+            'message' => sprintf(__('Added display profile: %s'), $displayProfile->name),
             'id' => $displayProfile->displayProfileId,
             'data' => $displayProfile
         ]);
@@ -386,7 +386,7 @@ class DisplayProfile extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $displayProfile->name),
+            'message' => sprintf(__('Edited display profile: %s'), $displayProfile->name),
             'id' => $displayProfile->displayProfileId,
             'data' => $displayProfile
         ]);
@@ -448,7 +448,7 @@ class DisplayProfile extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $displayProfile->name)
+            'message' => sprintf(__('Deleted display profile: %s'), $displayProfile->name)
         ]);
     }
 }

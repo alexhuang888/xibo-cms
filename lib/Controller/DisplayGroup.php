@@ -475,7 +475,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpState' => 201,
-            'message' => sprintf(__('Added %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Added display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId,
             'data' => $displayGroup
         ]);
@@ -549,7 +549,7 @@ class DisplayGroup extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Edited display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId,
             'data' => $displayGroup
         ]);
@@ -591,7 +591,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $displayGroup->displayGroup)
+            'message' => sprintf(__('Deleted display group: %s'), $displayGroup->displayGroup)
         ]);
     }
 
@@ -693,7 +693,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Displays assigned to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Displays assigned to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -753,7 +753,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Displays unassigned from %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Displays unassigned from display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -839,7 +839,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('DisplayGroups assigned to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('DisplayGroups assigned to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -898,7 +898,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('DisplayGroups unassigned from %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('DisplayGroups unassigned from display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1010,7 +1010,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Files assigned to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Files assigned to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1072,7 +1072,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Files unassigned from %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Files unassigned from display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1184,7 +1184,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Layouts assigned to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Layouts assigned to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1246,7 +1246,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Layouts unassigned from %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Layouts unassigned from display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1337,7 +1337,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Version set for %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Version set for display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1378,7 +1378,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Command Sent to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Command Sent to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1477,7 +1477,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Command Sent to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Command Sent to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1518,7 +1518,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Command Sent to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Command Sent to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1609,7 +1609,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Command Sent to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Command Sent to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }
@@ -1686,7 +1686,7 @@ class DisplayGroup extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Command Sent to %s'), $displayGroup->displayGroup),
+            'message' => sprintf(__('Command Sent to display group: %s'), $displayGroup->displayGroup),
             'id' => $displayGroup->displayGroupId
         ]);
     }

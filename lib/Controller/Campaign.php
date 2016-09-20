@@ -259,7 +259,7 @@ class Campaign extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $campaign->campaign),
+            'message' => sprintf(__('Added campaign: %s'), $campaign->campaign),
             'id' => $campaign->campaignId,
             'data' => $campaign
         ]);
@@ -326,7 +326,7 @@ class Campaign extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $campaign->campaign),
+            'message' => sprintf(__('Edited campaign: %s'), $campaign->campaign),
             'id' => $campaign->campaignId,
             'data' => $campaign
         ]);
@@ -387,7 +387,7 @@ class Campaign extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $campaign->campaign)
+            'message' => sprintf(__('Deleted campaign: %s'), $campaign->campaign)
         ]);
     }
 
@@ -523,7 +523,7 @@ class Campaign extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Assigned Layouts to %s'), $campaign->campaign)
+            'message' => sprintf(__('Assigned Layouts to campaign: %s'), $campaign->campaign)
         ]);
     }
 
@@ -595,7 +595,7 @@ class Campaign extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Unassigned Layouts from %s'), $campaign->campaign)
+            'message' => sprintf(__('Unassigned Layouts from campaign: %s'), $campaign->campaign)
         ]);
     }
 

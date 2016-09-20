@@ -247,7 +247,7 @@ class Resolution extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $resolution->resolution),
+            'message' => sprintf(__('Added resolution: %s'), $resolution->resolution),
             'id' => $resolution->resolutionId,
             'data' => $resolution
         ]);
@@ -313,7 +313,7 @@ class Resolution extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $resolution->resolution),
+            'message' => sprintf(__('Edited resolution: %s'), $resolution->resolution),
             'id' => $resolution->resolutionId,
             'data' => $resolution
         ]);
@@ -353,7 +353,7 @@ class Resolution extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Deleted %s'), $resolution->resolution),
+            'message' => sprintf(__('Deleted resolution: %s'), $resolution->resolution),
         ]);
     }
 }

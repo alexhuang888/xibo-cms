@@ -243,7 +243,7 @@ class DayPart extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $dayPart->name),
+            'message' => sprintf(__('Added day parting: %s'), $dayPart->name),
             'id' => $dayPart->dayPartId,
             'data' => $dayPart
         ]);
@@ -338,7 +338,7 @@ class DayPart extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 200,
-            'message' => sprintf(__('Edited %s'), $dayPart->name),
+            'message' => sprintf(__('Edited day parting: %s'), $dayPart->name),
             'id' => $dayPart->dayPartId,
             'data' => $dayPart
         ]);
@@ -435,7 +435,7 @@ class DayPart extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $dayPart->name)
+            'message' => sprintf(__('Deleted day parting: %s'), $dayPart->name)
         ]);
     }
 }

@@ -240,7 +240,7 @@ class Command extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $command->command),
+            'message' => sprintf(__('Added command: %s'), $command->command),
             'id' => $command->commandId,
             'data' => $command
         ]);
@@ -298,7 +298,7 @@ class Command extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 200,
-            'message' => sprintf(__('Edited %s'), $command->command),
+            'message' => sprintf(__('Edited command: %s'), $command->command),
             'id' => $command->commandId,
             'data' => $command
         ]);
@@ -340,7 +340,7 @@ class Command extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $command->command)
+            'message' => sprintf(__('Deleted command: %s'), $command->command)
         ]);
     }
 }

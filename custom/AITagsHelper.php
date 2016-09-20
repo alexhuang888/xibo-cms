@@ -282,10 +282,16 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
         {
            // now I have $row['itemtype']
            // find media first
-           $media = $this->mediaFactory->getById($row['itemid']);
-           $filePath = $this->configService->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
+            try {
+                $media = $this->mediaFactory->getById($row['itemid']);
+                $filePath = $this->configService->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
 
-           $this->processnewmedia($row['userid'], $media, $filePath);
+                $this->processnewmedia($row['userid'], $media, $filePath);            
+           } catch (NotFoundException $e)
+           {
+
+           }
+
            $processqid[] = $row['queueid'];
         }
 

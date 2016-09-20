@@ -293,6 +293,10 @@ class LayoutFactory extends BaseFactory
             
         $options = array('disableUserCheck' => 1, 'layoutId' => $layoutId, 'excludeTemplates' => -1, 'retired' => -1);
         $options = array_merge($options, $filterOp);
+        if (array_key_exists('isPlaylistLayout', $options) == false)
+        {
+            $options = array_merge($options, array('isPlaylistLayout' => 2));
+        }
         $layouts = $this->query(null, $options);
         
         if (count($layouts) <= 0) 
@@ -361,7 +365,7 @@ class LayoutFactory extends BaseFactory
      * @param Layout[Optional] $layout
      * @return Layout
      */
-    public function loadByXlf($layoutXlf, $layout = null)
+    public function loadByXlf($layoutXlf, $layout = null, $lname = null, $ldescription = null)
     {
         $this->getLog()->debug('Loading Layout by XLF');
 
@@ -381,7 +385,16 @@ class LayoutFactory extends BaseFactory
         $layout->height = $document->documentElement->getAttribute('height');
         $layout->backgroundColor = $document->documentElement->getAttribute('bgcolor');
         $layout->backgroundzIndex = (int)$document->documentElement->getAttribute('zindex');
-
+        
+        if ($lname != null)
+        {
+            $layout->layout = $lname;
+        }
+        if ($ldescription != null)
+        {
+            $layout->description = $ldescription;
+        }        
+        
         // Xpath to use when getting media
         $xpath = new \DOMXPath($document);
 
@@ -390,9 +403,14 @@ class LayoutFactory extends BaseFactory
             /* @var \DOMElement $regionNode */
             $this->getLog()->debug('Found Region');
 
+            $rname = $regionNode->getAttribute('name');
+            if ($rname == "" || $rname == null)
+            {
+                $rname = $layout->layout . "-r" . (count($layout->regions) + 1);
+            }
             $region = $this->regionFactory->create(
                 (int)$regionNode->getAttribute('userId'),
-                $regionNode->getAttribute('name'),
+                $rname,
                 (double)$regionNode->getAttribute('width'),
                 (double)$regionNode->getAttribute('height'),
                 (double)$regionNode->getAttribute('top'),
@@ -540,14 +558,18 @@ class LayoutFactory extends BaseFactory
         // Get the layout details
         $layoutDetails = json_decode($zip->getFromName('layout.json'), true);
 
+        // Override the name/description
+        $lname = (($layoutName != '') ? $layoutName : $layoutDetails['layout']);
+        $ldescription = (isset($layoutDetails['description']) ? $layoutDetails['description'] : '');
+
         // Construct the Layout
-        $layout = $this->loadByXlf($zip->getFromName('layout.xml'));
+        $layout = $this->loadByXlf($zip->getFromName('layout.xml'), null, $lname, $ldescription);
 
         $this->getLog()->debug('Layout Loaded: %s.', $layout);
 
         // Override the name/description
-        $layout->layout = (($layoutName != '') ? $layoutName : $layoutDetails['layout']);
-        $layout->description = (isset($layoutDetails['description']) ? $layoutDetails['description'] : '');
+        //$layout->layout = (($layoutName != '') ? $layoutName : $layoutDetails['layout']);
+        //$layout->description = (isset($layoutDetails['description']) ? $layoutDetails['description'] : '');
 
         // Update region names
         if (isset($layoutDetails['regions']) && count($layoutDetails['regions']) > 0) {
@@ -568,6 +590,7 @@ class LayoutFactory extends BaseFactory
         // Add the template tag if we are importing a template
         if ($template) {
             $layout->tags[] = $this->tagFactory->getByTag('template');
+            $layout->isTemplateLayout = 1;
         }
 
         // Tag as imported
@@ -875,7 +898,9 @@ class LayoutFactory extends BaseFactory
         $select .= "        layout.backgroundColor, ";
         $select .= "        layout.backgroundzIndex, ";
         $select .= "        layout.schemaVersion, ";
-        if (DBVERSION >= 210)
+        $select .= "        layout.isTemplateLayout, ";
+        
+        //if (DBVERSION >= 210)
         {
             $select .= "        layout.isPlaylistLayout, ";   
         }
@@ -1026,11 +1051,17 @@ class LayoutFactory extends BaseFactory
         } 
 
         // Exclude templates by default
-        if ($this->getSanitizer()->getInt('excludeTemplates', 1, $filterBy) != -1) {
-            if ($this->getSanitizer()->getInt('excludeTemplates', 1, $filterBy) == 1) {
-                $body .= " AND layout.layoutID NOT IN (SELECT layoutId FROM lktaglayout WHERE tagId = 1) ";
-            } else {
-                $body .= " AND layout.layoutID IN (SELECT layoutId FROM lktaglayout WHERE tagId = 1) ";
+        if ($this->getSanitizer()->getInt('excludeTemplates', 1, $filterBy) != -1) 
+        {
+            if ($this->getSanitizer()->getInt('excludeTemplates', 1, $filterBy) == 1) 
+            {
+                //$body .= " AND layout.layoutID NOT IN (SELECT layoutId FROM lktaglayout WHERE tagId = 1) ";
+                $body .= " AND layout.isTemplateLayout <> 1 ";
+            } 
+            else
+            {
+                //$body .= " AND layout.layoutID IN (SELECT layoutId FROM lktaglayout WHERE tagId = 1) ";
+                $body .= " AND layout.isTemplateLayout = 1 ";
             }
         }
 
@@ -1082,7 +1113,7 @@ class LayoutFactory extends BaseFactory
             $params['playlistId'] = $this->getSanitizer()->getInt('playlistId', 0, $filterBy);
         }
 
-        if (DBVERSION >= 210)
+        //if (DBVERSION >= 210)
         {
             // normally, we just need those layout not playlist specific (for compatibility of other UI)
             $isPL = 0;
@@ -1143,6 +1174,7 @@ class LayoutFactory extends BaseFactory
             $layout->modifiedDt = $row['modifiedDt'];
             $layout->displayOrder = $row['displayOrder'];
             $layout->statusMessage = $row['statusMessage'];
+            $layout->isTemplateLayout = $row['isTemplateLayout'];
             //if (DBVERSION >= 210)
             {
                 $layout->isPlaylistLayout = $this->getSanitizer()->int($row['isPlaylistLayout']);

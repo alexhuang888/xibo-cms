@@ -503,7 +503,7 @@ class Library extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $media->name)
+            'message' => sprintf(__('Deleted media: %s'), $media->name)
         ]);
     }
 
@@ -698,7 +698,7 @@ class Library extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $media->name),
+            'message' => sprintf(__('Edited media: %s'), $media->name),
             'id' => $media->mediaId,
             'data' => $media
         ]);
@@ -1140,7 +1140,7 @@ class Library extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Tagged %s'), $media->name),
+            'message' => sprintf(__('Tagged media: %s'), $media->name),
             'id' => $media->mediaId,
             'data' => $media
         ]);
@@ -1201,7 +1201,7 @@ class Library extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Untagged %s'), $media->name),
+            'message' => sprintf(__('Untagged media: %s'), $media->name),
             'id' => $media->mediaId,
             'data' => $media
         ]);

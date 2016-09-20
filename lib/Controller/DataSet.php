@@ -302,7 +302,7 @@ class DataSet extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 201,
-            'message' => sprintf(__('Added %s'), $dataSet->dataSet),
+            'message' => sprintf(__('Added dataset: %s'), $dataSet->dataSet),
             'id' => $dataSet->dataSetId,
             'data' => $dataSet
         ]);
@@ -387,7 +387,7 @@ class DataSet extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), $dataSet->dataSet),
+            'message' => sprintf(__('Edited dataset: %s'), $dataSet->dataSet),
             'id' => $dataSet->dataSetId,
             'data' => $dataSet
         ]);
@@ -455,7 +455,7 @@ class DataSet extends Base
         // Return
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Deleted %s'), $dataSet->dataSet)
+            'message' => sprintf(__('Deleted dataset: %s'), $dataSet->dataSet)
         ]);
     }
 
@@ -544,7 +544,7 @@ class DataSet extends Base
 
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Copied %s as %s'), $oldName, $dataSet->dataSet),
+            'message' => sprintf(__('Copied dataset: %s as %s'), $oldName, $dataSet->dataSet),
             'id' => $dataSet->dataSetId,
             'data' => $dataSet
         ]);
@@ -748,7 +748,7 @@ class DataSet extends Base
 
         $this->getState()->hydrate([
             'httpStatus' => 204,
-            'message' => sprintf(__('Imported JSON into %s'), $dataSet->dataSet)
+            'message' => sprintf(__('Imported JSON into dataset: %s'), $dataSet->dataSet)
         ]);
     }
 }

@@ -354,3 +354,8 @@ $app->get('/daypart/view', '\Xibo\Controller\DayPart:displayPage')->name('daypar
 $app->get('/daypart/form/add', '\Xibo\Controller\DayPart:addForm')->name('daypart.add.form');
 $app->get('/daypart/form/edit/:id', '\Xibo\Controller\DayPart:editForm')->name('daypart.edit.form');
 $app->get('/daypart/form/delete/:id', '\Xibo\Controller\DayPart:deleteForm')->name('daypart.delete.form');
+
+//
+// Init Setup Wizard
+//
+$app->get('/init/setup/wizard', '\Xibo\Controller\InitSetupWizard:displayPage')->name('init.setup.wizard');

@@ -283,7 +283,7 @@ class AITags extends Base
         $result = $this->container->aitagshelper->profiletextextractor($profileText, $withScore);
         
         $this->getState()->hydrate([
-            'message' => sprintf(__('Extract profile %s'), 'tags'),
+            'message' => sprintf(__('Extract profile: %s'), 'tags'),
             'data' => json_decode($result)
         ]);   
     }

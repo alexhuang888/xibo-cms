@@ -970,7 +970,19 @@ class State extends Middleware
                 $container
             );
         });
-        
+        $app->container->singleton('\Xibo\Controller\InitSetupWizard', function($container) {
+            return new \Xibo\Controller\InitSetupWizard(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->layoutFactory,
+                $container->tagFactory
+            );
+        });       
     }
 
     /**
