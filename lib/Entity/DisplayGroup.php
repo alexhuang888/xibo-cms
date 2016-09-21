@@ -100,6 +100,7 @@ class DisplayGroup implements \JsonSerializable
     public $childId = -1;   // this DG's ID
     public $depth = -1;     // the depth to parent
     public $subdgchildcount = 0;    // all sub-dg counts to this DG (recursively)
+    public $displaycount = 0;
     // end of new members
 
     // Child Items the Display Group is linked to

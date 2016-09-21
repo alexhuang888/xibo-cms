@@ -78,3 +78,8 @@ tr.shown td.details-control {
 .notification {
     padding: 10px;
 }
+
+h1 .pagetitle {
+  font-size:25px;
+  font-weight:800;
+}

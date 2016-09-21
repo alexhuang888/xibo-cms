@@ -18,7 +18,7 @@
     {% else %}
         {% set title %}{% trans %}Display {{ displayName }} is not logged in at the moment and last accessed at <span class="unixDate">{{ displayLastAccessed }}</span>{% endtrans %}{% endset %}
     {% endif %}
-    <h1>{{ title }}</h1>
+    <h1 class='pagetitle'>{{ title }}</h1>
     {% if display.status == 3 %}
     <p>{% trans "This Display hasn't connected since updates have been made in the CMS. The below information will be updated when it has." %}</p>
     {% endif %}

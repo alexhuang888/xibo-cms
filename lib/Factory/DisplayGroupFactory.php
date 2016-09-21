@@ -156,7 +156,8 @@ class DisplayGroupFactory extends BaseFactory
                 `lkdgdgjoin`.parentId,
                 `lkdgdgjoin`.childId,
                 `lkdgdgjoin`.depth,
-                (select count(*) from lkdgdg where lkdgdg.parentId = lkdgdgjoin.childId and depth <> 0) as subdgchildcount
+                (select count(*) from `lkdgdg` where `lkdgdg`.parentId = `lkdgdgjoin`.childId and `lkdgdg`.depth <> 0) as subdgchildcount,
+                (select count(*) from `lkdisplaydg` where `lkdisplaydg`.DisplayGroupID = `displaygroup`.displayGroupId) as displaycount
         ';
 
         $body = '
@@ -164,7 +165,7 @@ class DisplayGroupFactory extends BaseFactory
               INNER JOIN (SELECT childId, parentId, max(depth) depth 
                             FROM lkdgdg where (depth = 0 or depth = 1) group by childId 
                             ) lkdgdgjoin
-                ON lkdgdgjoin.childId = `displaygroup`.displayGroupId 
+                ON lkdgdgjoin.childId = `displaygroup`.displayGroupId
         ';
 
         if ($this->getSanitizer()->getInt('mediaId', $filterBy) !== null) {
@@ -190,7 +191,8 @@ class DisplayGroupFactory extends BaseFactory
         // View Permissions
         $this->viewPermissionSql('Xibo\Entity\DisplayGroup', $body, $params, '`displaygroup`.displayGroupId', '`displaygroup`.userId', $filterBy);
 
-        if ($this->getSanitizer()->getInt('displayGroupId', $filterBy) !== null) {
+        if ($this->getSanitizer()->getInt('displayGroupId', $filterBy) !== null) 
+        {
             $body .= ' AND displaygroup.displayGroupId = :displayGroupId ';
             $params['displayGroupId'] = $this->getSanitizer()->getInt('displayGroupId', $filterBy);
         }
