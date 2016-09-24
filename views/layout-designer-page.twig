@@ -29,7 +29,7 @@
         {% set backgroundCss %}url('{{ urlFor("library.download", {id: layout.backgroundImageId}) }}?preview=1&width={{ width }}&height={{ height }}') top center no-repeat; background-color: {{ layout.backgroundColor }}{% endset %}
     {% endif %}
 
-
+    <!-- top toolbar panel -->
     <div class="layout-toolbox row">
         <div class="col-md-12">
             <div class="panel bttm-fix with-nav-tabs panel-primary">
@@ -89,11 +89,11 @@
                                 <div class="btn-group btn-group-justified" role="group" aria-label="...">
                                     <div class="btn-group" role="group">
 
-                                        <a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" href="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
+                                        <a id="layoutzoomout" class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
                                     </div>
                                     <div class="btn-group" role="group">
 
-                                        <a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" href="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+                                        <a id="layoutzoomin" class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
                                     </div>
                                     <div class="btn-group" role="group">
                                         <button id="saveDesignerSize" data-toggle="tooltip" data-placement="bottom" title="{% trans "Save canvas size as default" %}" class="btn btn-success btn-sm " role="button" data-designer-size="{{ zoom }}">
@@ -148,71 +148,230 @@
         </div>
         </div>
     </div>
-
+    <!-- layout start -->
     <div class="row">
-        <div class="col-md-12">
-            <div id="layout" zoom="{{ zoom }}" tip_scale="1" designer_scale="{{ designerScale }}" class="layout center-block" layoutid="{{ layout.layoutId }}" data-background-color="{{ layout.backgroundColor }}" data-status-url="{{ urlFor("layout.status", {id: layout.layoutId}) }}" data-position-all-url="{{ urlFor("region.position.all", {id: layout.layoutId}) }}" style="position:relative; width:{{ width }}px; height:{{ height }}px; background:{{ backgroundCss }};">
-
-                {% for region in layout.regions %}
-                    {% set regionWidth = region.width * designerScale %}
-                    {% set regionHeight = region.height * designerScale %}
-                    {% set regionLeft = region.left * designerScale %}
-                    {% set regionTop = region.top * designerScale %}
-
-                    {# Disabled / Enabled CSS #}
-                    {% if currentUser.checkEditable(region) %}
-                        {% set disabledCss = "region" %}
-                        {% set trasparencyCss = "" %}
-                    {% else %}
-                        {% set disabledCss = "regionDis" %}
-                        {% set trasparencyCss = "regionDisabled" %}
-                    {% endif %}
-
-                    {% if currentUser.checkViewable(region) %}
-                        {% set previewCss = "regionPreview" %}
-                    {% else %}
-                        {% set previewCss = "" %}
-                    {% endif %}
-
-                    <div id="region_{{ region.regionId }}" regionEnabled="{{ currentUser.checkEditable(region) }}" regionid="{{ region.regionId }}" layoutid="{{ layout.layoutId }}" zindex="{{ region.zIndex }}" tip_scale="1" designer_scale="{{ designerScale }}" width="{{ region.width }}" height="{{ region.height }}" href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}" {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this).attr('href'))"{% endif %} class="{{ disabledCss }} {{ previewCss }}" data-preview-url="{{ urlFor("region.preview", {id: region.regionId}) }}" style="position:absolute; width:{{ regionWidth }}px; height:{{ regionHeight }}px; top: {{ regionTop }}px; left:{{ regionLeft }}px; z-index: {{ region.zIndex }};">
-                        <div class="regionTransparency {{ transparencyCss }}" style="width:100%; height:100%;"></div>
-
-                        {% if currentUser.checkEditable(region) %}
-                            <div class="btn-group regionInfo pull-right">
-                                <button class="btn dropdown-toggle" data-toggle="dropdown">
-                                    <span class="region-tip">{{ region.width|round }} x {{ region.height|round }} ({{ region.left|round }} ,{{ region.top|round }})</span> <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="XiboFormButton" href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}">{% trans "Edit Timeline" %}</a>
+        <!-- left media panel -->
+        <div class="col-md-2" id="mediaselectorpanel">
+                <div id="mediaoptional">
+                    <div style="width:90%; ">
+                        <select class="form-control" id="mediatypeselector">
+                            <option value="one">One</option>
+                            <option value="two">Two</option>
+                            <option value="three">Three</option>
+                            <option value="four">Four</option>
+                            <option value="five">Five</option>
+                        </select>
+                        <input class="form-control" id='mediatagfiter'></input>
+                    </div>
+                    <div id="medialisttoolpanel">
+                        <i class="fa fa-cog fa-fw" style="width:10%;text-size:1em;"></i>
+                        <i class="fa fa-cog fa-fw " style="width:10%;text-size:1em;"></i>
+                    </div>
+                </div>
+                <div id="medialistpanel">
+                    <div class="medialistcarousel-wrapper">
+                        <!--
+                            <a href="#" class="medialistcarousel-control-first">&lsaquo;&lsaquo;</a>
+                            -->
+                            <a href="#" class="medialistcarousel-control-prev">&lsaquo;</a>
+                            
+                            <div class="medialistcarousel" id='medialistcarousel-droppable'>
+                                <ul id="medialist-draggable">
+                                <!--
+                                    <li id="m-1" data-mediatype="image" data-mediaid="1" class="mediaitem ui-state-default">1
                                     </li>
-                                    <li>
-                                        <a class="RegionOptionsMenuItem" href="{{ urlFor("region.edit.form", {id: region.regionId}) }}">{% trans "Options" %}</a>
+                                    <li id="m-2" data-mediatype="image" data-mediaid="2" class="mediaitem ui-state-default">2
                                     </li>
-                                    <li>
-                                        <a class="XiboFormButton" href="{{ urlFor("region.delete.form", {id: region.regionId}) }}">{% trans "Delete" %}</a>
+                                    <li id="m-3" data-mediatype="image" data-mediaid="3" class="mediaitem ui-state-default">3
                                     </li>
-                                    <li>
-                                        <a class="XiboFormButton" href="{{ urlFor("user.permissions.form", {entity: "Region", id: region.regionId}) }}">{% trans "Permissions" %}</a>
+                                    <li id="m-4" data-mediatype="image" data-mediaid="4" class="mediaitem ui-state-default">4
                                     </li>
+                                    <li id="m-5" data-mediatype="image" data-mediaid="5" class="mediaitem ui-state-default">5
+                                    </li>
+                                    <li id="m-6" data-mediatype="image" data-mediaid="6" class="mediaitem ui-state-default">6
+                                    </li>
+                                    <li id="m-7" data-mediatype="image" data-mediaid="7" class="mediaitem ui-state-default">7
+                                    </li>
+                                    <li id="m-8" data-mediatype="image" data-mediaid="8" class="mediaitem ui-state-default">8
+                                    </li>
+                                    <li id="m-9" data-mediatype="image" data-mediaid="9" class="mediaitem ui-state-default">9
+                                    </li>
+                                    <li id="m-10" data-mediatype="image" data-mediaid="10" class="mediaitem ui-state-default">10
+                                    </li>
+                                    <li id="m-11" data-mediatype="image" data-mediaid="11" class="mediaitem ui-state-default">11
+                                    </li>
+                                    <li id="m-12" data-mediatype="image" data-mediaid="12" class="mediaitem ui-state-default">12
+                                    </li>-->
                                 </ul>
                             </div>
-                        {% elseif layout.schemaVersion >= 2 and currentUser.checkViewable(region) %}
-                            <div class="regionInfo">
-                                <span class="region-tip">{{ region.width|round }} x {{ region.height|round }}
-                                    ({{ region.left|round }}
-                                    ,{{ region.top|round }})</span>
-                            </div>
-                        {% endif %}
-                        <div class="preview">
-                            <div class="previewContent">
-
-                            </div>
-                            <div class="previewNav label label-info"></div>
-                        </div>
+                            <!--
+                            <a href="#" class="medialistcarousel-control-last">&rsaquo;&rsaquo;</a>
+                            -->
+                            <a href="#" class="medialistcarousel-control-next"on>&rsaquo;</a>
+                            <p class="medialistcarousel-pagination" 
+                            </p>                            
                     </div>
-                {% endfor %}
+                </div>
+        </div>
+        <div class="col-md-10" id="layoutcontentpanel" style="width: {{resolution.designerWidth+100}}px; height:{{resolution.designerHeight+200}}px;">                   
+            <div class="row" id="layoutpanel" style="height: 80%;">
+                <div id="layout" zoom="{{ zoom }}" 
+                                tip_scale="1" designer_scale="{{ designerScale }}" 
+                                class="layout center-block col-md-12 layoutitem" 
+                                layoutid="{{ layout.layoutId }}" 
+                                width="{{layout.width}}"
+                                height = "{{layout.height}}" 
+                                reswidth="{{resolution.designerWidth}}"
+                                resheight = "{{resolution.designerHeight}}" 
+                                data-background-color="{{ layout.backgroundColor }}" 
+                                data-status-url="{{ urlFor("layout.status", {id: layout.layoutId}) }}" 
+                                data-position-all-url="{{ urlFor("region.position.all", {id: layout.layoutId}) }}" 
+                                style="position:relative; width:{{ width }}px; height:{{ height }}px; background:{{ backgroundCss }}; margin:0px;padding:0px;">
+
+                    {% for region in layout.regions %}
+                        {% set regionWidth = region.width * designerScale %}
+                        {% set regionHeight = region.height * designerScale %}
+                        {% set regionLeft = region.left * designerScale %}
+                        {% set regionTop = region.top * designerScale %}
+
+                        {# Disabled / Enabled CSS #}
+                        {% if currentUser.checkEditable(region) %}
+                            {% set disabledCss = "region" %}
+                            {% set trasparencyCss = "" %}
+                        {% else %}
+                            {% set disabledCss = "regionDis" %}
+                            {% set trasparencyCss = "regionDisabled" %}
+                        {% endif %}
+
+                        {% if currentUser.checkViewable(region) %}
+                            {% set previewCss = "regionPreview" %}
+                        {% else %}
+                            {% set previewCss = "" %}
+                        {% endif %}
+                        <!-- region start -->
+                        <div id="region_{{ region.regionId }}" 
+                                regionEnabled="{{ currentUser.checkEditable(region) }}" 
+                                regionid="{{ region.regionId }}" 
+                                layoutid="{{ layout.layoutId }}" 
+                                zindex="{{ region.zIndex }}" 
+                                tip_scale="1" 
+                                designer_scale="{{ designerScale }}" 
+                                left = "{{ region.left }}",
+                                top = "{{ region.top }}",
+                                width="{{ region.width }}" 
+                                height="{{ region.height }}" 
+                                href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}" 
+                                {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this).attr('href'))"{% endif %} 
+                                class="{{ disabledCss }} {{ previewCss }} regionitem mediadroppable" 
+                                data-preview-url="{{ urlFor("region.preview", {id: region.regionId}) }}" 
+                                style="position:absolute; width:{{ regionWidth }}px; height:{{ regionHeight }}px; top: {{ regionTop }}px; left:{{ regionLeft }}px; z-index: {{ region.zIndex }};margin:0px;padding:0px;">
+                            <!-- region transparency background -->                            
+                            <div class="regionTransparency {{ transparencyCss }}" style="width:100%; height:100%;"></div>
+                            <!-- region dropdown menu items -->
+                            {% if currentUser.checkEditable(region) %}
+                                <i class="fa fa-cog fa-fw regionitemsettingicon"></i>
+                                <i class="fa fa-times fa-fw regionitemdeleteicon"></i>                             
+                                <div class="btn-group regionInfo pull-right">
+                                    <button class="btn dropdown-toggle" data-toggle="dropdown">
+                                        <span class="region-tip">{{ region.width|round }} x {{ region.height|round }} ({{ region.left|round }} ,{{ region.top|round }})</span> <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="XiboFormButton" href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}">{% trans "Edit Timeline" %}</a>
+                                        </li>
+                                        <li>
+                                            <a class="RegionOptionsMenuItem" href="{{ urlFor("region.edit.form", {id: region.regionId}) }}">{% trans "Options" %}</a>
+                                        </li>
+                                        <li>
+                                            <a class="XiboFormButton" href="{{ urlFor("region.delete.form", {id: region.regionId}) }}">{% trans "Delete" %}</a>
+                                        </li>
+                                        <li>
+                                            <a class="XiboFormButton" href="{{ urlFor("user.permissions.form", {entity: "Region", id: region.regionId}) }}">{% trans "Permissions" %}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {% elseif layout.schemaVersion >= 2 and currentUser.checkViewable(region) %}
+                                <div class="regionInfo">
+                                    <span class="region-tip">{{ region.width|round }} x {{ region.height|round }}
+                                        ({{ region.left|round }}
+                                        ,{{ region.top|round }})</span>
+                                </div>
+                            {% endif %}
+                            <!-- region preview panel -->
+                            <div class="preview">
+                                <div class="previewContent">
+
+                                </div>
+                                <div class="previewNav label label-info"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
+            <div class="row" id="playlistpanel" style="height: 20%;">
+                <div class="playlistcarousel-wrapper">
+
+                    <a href="#" class="playlistcarousel-control-prev">&lsaquo;</a>
+
+                    <div class="playlistcarousel" id='playlistcarousel-droppable'>
+                        <ul id="playlist-sortable-draggable">
+                            <li class="playlistitem ui-state-default">A
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">B
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">C
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">D
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">E
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">F
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">G
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">H
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">I
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">J
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">K
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                            <li class="playlistitem ui-state-default">L
+                                <i class="fa fa-times fa-fw playlistitemdeleteicon"></i>
+                                <i class="fa fa-cog fa-fw playlistitemsettingicon"></i>
+                            </li>
+                        </ul>
+
+                    </div>
+                    
+                    <a href="#" class="playlistcarousel-control-next">&rsaquo;</a>
+                    <p class="playlistcarousel-pagination">
+                    </p>
+                </div>           
+            <div>    
         </div>
 
     </div>
@@ -233,7 +392,9 @@
 {% endblock %}
 
     {% block javaScript %}
+        <script src="{{ theme.uri("libraries/jquery-jcarousel/jquery.jcarousel.min.js") }}"></script>
         <script src="{{ theme.uri("js/xibo-layout-designer.js") }}"></script>
+        <script src="{{ theme.uri("js/thumblist-designer.js") }}"></script>
         <script type="text/javascript">
             var translation = {
                 savePositionsFirst: "{% trans "Please save the pending position changes first by clicking Save Positions or cancel by clicking Undo." %}"
@@ -551,14 +712,60 @@
                         }
                     });
                 });
+
+                $.ajax({
+                    type: "get",
+                    url: "{{ urlFor("library.search") }}",
+                    cache: false,
+                    dataType: "json"                        
+                })
+                .done(function(data) 
+                {                 
+                    if (data.data.length > 0)
+                    {
+                        for (var m = 0; m < data.data.length; m++)
+                        {
+                            var media = data.data[m];
+                            var alink = media.thumbnail;
+                            var alinkdom = $.parseHTML(alink);
+                            //console.log($(alinkdom));
+                            //console.log($(alinkdom).attr('href'));
+                            var html = '<li class="mediaitem ui-state-default"';
+                            html = html + ' id="m-' + media.mediaId + '"';
+                            html = html + ' data-mediatype="' + media.mediaType + '"';
+                            html = html + ' data-mediaid="' + media.mediaId + '"';
+                            html = html + ' data-mediafilesize="' + media.fileSize + '"';
+                            html = html + ' >';
+                            html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + $(alinkdom).attr('href') + '" alt="' + media.name + '" />';
+                            html = html + ' </li>';
+                            $("#medialist-draggable").append(html);                          
+                        }
+                        $('.medialistcarousel').jcarousel('reload');
+                        $('.medialistcarousel-pagination').jcarouselPagination('reloadCarouselItems');
+                            $( ".mediaitem" ).draggable({
+                                connectToSortable: "#playlist-sortable-draggable",
+                                appendTo: "body",
+                                helper: "clone",
+                                revert: "invalid",
+                                //cursor: "move",
+                                containment: "document",
+                                zIndex: 10000,
+                                scroll:false,
+                                start: function (event, ui) {
+                                    $(this).hide();              
+                                },
+                                stop: function (event, ui) {
+                                    $(this).show();
+                                }
+                            }).disableSelection();                        
+                    }
+                });
             });
 
             $("[name='my-checkbox']").bootstrapSwitch();
 
-
-
         </script>
-
+  </script>
 
         {% for module in modules %}
             {% if module.layoutDesignerJavaScript() != "" %}
