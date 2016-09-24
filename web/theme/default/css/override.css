@@ -83,3 +83,312 @@ h1 .pagetitle {
   font-size:25px;
   font-weight:800;
 }
+
+
+/* for designer playlist/medialist */
+.mediaitem,
+.playlistitem{
+    margin: 2px;
+    padding: 1px;
+    width: 96px;
+    height: 72px;
+    font-size: 4em;
+    text-align: center;
+    list-style: none;
+}
+#right-panel{
+    height:600px;
+}
+#layoutpanel {
+  display: flex;
+  justify-content: center;
+}
+
+#layout {
+  align-self: center;
+  position: relative;
+}
+.playlistitem {
+    position: relative;
+}
+.playlistitemdeleteicon {
+    position:absolute; 
+    right:5px; 
+    top: 5px;
+    font-size:.3em;
+}
+.playlistitemsettingicon {
+    position:absolute; 
+    right:5px; 
+    bottom: 5px;
+    font-size:.3em;
+}
+.regionitem  {
+    position:absolute; 
+    border: 2px solid #000;
+}
+.ui-selected  {
+    position:absolute; 
+    border: 2px solid #ff0000;
+}
+.regionitemsettingicon {
+    position:absolute; 
+    right:5px; 
+    top: 5px;
+    font-size:1em;
+}
+.regionitemdeleteicon {
+    position:absolute; 
+    right:5px; 
+    bottom: 5px;
+    font-size:1em;
+}
+.ui-resizable-se {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+}
+.medialistcarousel-wrapper {
+    margin: 20px 0px;
+    position: relative;
+    border: 2px solid #8f8f8f;
+    width: 104px;
+    height: 500px;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+}
+
+/** Carousel **/
+
+.medialistcarousel {
+    position: relative;
+    overflow: hidden;
+    height: 490px;
+}
+
+.medialistcarousel ul {
+    width: 100%;
+    height: 20000em;
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.medialistcarousel li {
+    float: left;
+}
+
+/** Carousel Controls **/
+
+.medialistcarousel-control-prev,
+.medialistcarousel-control-next,
+.medialistcarousel-control-first,
+.medialistcarousel-control-last {
+    position: absolute;
+    width: 15px;
+    height: 90px;
+    text-align: center;
+    background: #4E443C;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 0 1px #000;
+    font: 24px/27px Arial, sans-serif;
+    -webkit-border-radius: 30px;
+       -moz-border-radius: 30px;
+            border-radius: 30px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+    padding-top: 10px;
+    padding-bottom:10px;
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+    transform: rotate(90deg);                
+}
+
+.medialistcarousel-control-prev
+ {
+    left: 40px;
+    top: -60px;
+}
+.medialistcarousel-control-next
+{
+    left: 40px;
+    top: 465px;
+}
+.medialistcarousel-control-first {
+    left: 10px;
+    top: -50px;  
+}
+.medialistcarousel-control-last {
+    left: 10px;
+    top: 480px;  
+      
+}
+.medialistcarousel-control-prev:hover span,
+.medialistcarousel-control-next:hover span,
+.medialistcarousel-control-first:hover span,
+.medialistcarousel-control-last:hover span {
+    display: block;
+}
+
+.medialistcarousel-control-prev.inactive,
+.medialistcarousel-control-next.inactive,
+.medialistcarousel-control-first.inactive,
+.medialistcarousel-control-last.inactive {
+    opacity: .5;
+    cursor: default;
+}
+
+/** Carousel Pagination **/
+
+.medialistcarousel-pagination {
+    position: absolute;
+    top:0px;
+    left:110px;
+    width:30px;
+}
+
+.medialistcarousel-pagination a {
+    text-decoration: none;
+    display: inline-block;
+
+    font-size: 11px;
+    line-height: 14px;
+    min-width: 14px;
+
+    background: #fff;
+    color: #4E443C;
+    border-radius: 14px;
+    padding: 3px;
+    text-align: center;
+
+    margin-right: 2px;
+
+    opacity: .75;
+}
+
+.medialistcarousel-pagination a.active {
+    background: #4E443C;
+    color: #fff;                    
+    opacity: 1;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/** HORIZONTAL **/
+.playlistcarousel-wrapper {
+    margin: 10px auto;
+    position: relative;
+    border: 2px solid #8f8f8f;
+    width: 760px;
+    height: 80px;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+}
+
+/** Carousel **/
+
+.playlistcarousel {
+    position: relative;
+    overflow: hidden;
+    height: 76px;    
+}
+
+.playlistcarousel ul {
+    height: 100%;
+    width: 20000em;
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.playlistcarousel li {
+    float: left;
+}
+
+/** Carousel Controls **/
+
+.playlistcarousel-control-prev,
+.playlistcarousel-control-next {
+    position: absolute;
+    width: 15px;
+    height: 80px;
+    text-align: center;
+
+    background: #4E443C;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 0 1px #000;
+    font: 24px/27px Arial, sans-serif;
+    -webkit-border-radius: 30px;
+       -moz-border-radius: 30px;
+            border-radius: 30px;
+    -webkit-box-shadow: 0 0 2px #999;
+       -moz-box-shadow: 0 0 2px #999;
+            box-shadow: 0 0 2px #999;
+}
+
+.playlistcarousel-control-prev {
+    left: -30px;
+    top: 0px;
+}
+
+.playlistcarousel-control-next {
+    right: -30px;
+    top: 0px;
+}
+
+.playlistcarousel-control-prev:hover span,
+.playlistcarousel-control-next:hover span {
+    display: block;
+}
+
+.playlistcarousel-control-prev.inactive,
+.playlistcarousel-control-next.inactive {
+    opacity: .5;
+    cursor: default;
+}
+
+/** Carousel Pagination **/
+
+.playlistcarousel-pagination {
+    position: absolute;
+    top: 85px;
+    left: 0px;
+}
+
+.playlistcarousel-pagination a {
+    text-decoration: none;
+    display: inline-block;
+    
+    font-size: 11px;
+    line-height: 14px;
+    min-width: 14px;
+    
+    background: #fff;
+    color: #4E443C;                                    
+    border-radius: 14px;
+    padding: 3px;
+    text-align: center;
+    
+    margin-right: 2px;
+    
+    opacity: .75;
+}
+
+.playlistcarousel-pagination a.active {
+    background: #4E443C;
+    color: #fff;
+    opacity: 1;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+}

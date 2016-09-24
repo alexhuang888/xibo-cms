@@ -58,7 +58,8 @@ $(document).ready(function(){
     // Hover functions for previews/info
     layout.find(".region")
         .hover(function() {
-            if (!hideControls) {
+            if (!hideControls) 
+            {
                 layout.find(".regionInfo").show();
                 layout.find(".previewNav").show();
             }
@@ -69,7 +70,13 @@ $(document).ready(function(){
         .draggable({
             containment: layout,
             stop: regionPositionUpdate,
-            drag: updateRegionInfo
+            drag: updateRegionInfo,
+            start: function(event, ui) {
+                $(".mediadroppable").removeClass("ui-selected");
+                $(this).addClass("ui-selected");
+            },
+            //grid: [ 0, 0 ],
+            snap: false
         })
         .resizable({
             containment: layout,
@@ -77,6 +84,46 @@ $(document).ready(function(){
             minHeight: 25,
             stop: regionPositionUpdate,
             resize: updateRegionInfo
+        })
+        .selectable()
+        .droppable({ 
+            accept:'.mediaitem',
+            tolerance:'pointer',
+            greedy: true,               
+            drop: function(event, ui) 
+            {
+                var topElement = undefined;
+                var topElementArray = Array();
+                var zIndexHighest = 0;
+                // Change it as you want to write in your code
+                // For Container id or for your specific class for droppable or for both
+                $('.mediadroppable').each(function()
+                {                     
+                    _left = $(this).offset().left, _right = $(this).offset().left + $(this).width();
+                    _top = $(this).offset().top, _bottom = $(this).offset().top + $(this).height();
+                    console.log("item: " + $(this).attr('id') + "(" + _left + "," + _top + "," + _right + "," + _bottom + ")");
+                    if (event.pageX >= _left && 
+                        event.pageX <= _right && 
+                        event.pageY >= _top && 
+                        event.pageY <= _bottom) 
+                    {   
+                        topElementArray.push($(this).attr('id'));
+                        z_index = $(this).attr("zindex");
+                        if (z_index > zIndexHighest)
+                        {
+                            zIndexHighest = z_index;
+                            topElement = $(this);
+                        }                    
+                        console.log($(this).attr('id'));
+                    }
+                });            
+                    
+                if ($(this).attr('id') == $(topElement).attr('id')) 
+                {
+                    var thisP = $(this).find("p");
+                    thisP.html(thisP.html() + $(ui.draggable).attr("data-mediatype") + "[" + $(ui.draggable).attr('data-mediaid') + "]/");
+                }                       
+            }
         });
 
     // Initial Drag and Drop configuration
@@ -172,8 +219,153 @@ $(document).ready(function(){
         }]);
     });
 
+    // Bind to the save size button
+    $("#layoutzoomout").on("click", function () 
+    {
+        layout = $("#layout");
+        var oldDesignerScale = parseFloat(layout.attr("designer_scale"));
+        curDesignerScale = oldDesignerScale - 0.3;
+
+
+        if (curDesignerScale != oldDesignerScale)
+        {
+            var layoutWidth = parseFloat(layout.attr('width'));
+            var layoutHeight = parseFloat(layout.attr('height'));
+
+            layout.attr("designer_scale", curDesignerScale);
+            layout.css('width', layoutWidth * curDesignerScale);
+            layout.css('height', layoutHeight * curDesignerScale);
+
+            layout.find(".region").each(function()
+            {
+                var regionWidth = parseFloat($(this).attr("width"));
+                var regionHeight = parseFloat($(this).attr("height"));
+                var regionTop = parseFloat($(this).attr("top"));
+                var regionLeft = parseFloat($(this).attr("left"));
+                var regionId = $(this).attr("regionId");
+
+                // Update the region width / height attributes
+                $(this).css("width", regionWidth * curDesignerScale).
+                        css("height", regionHeight * curDesignerScale).
+                        css("left", regionLeft * curDesignerScale).
+                        css("top", regionTop * curDesignerScale).
+                        attr('designer_scale', curDesignerScale);
+
+                // refresh preview
+                refreshPreview(regionId);
+
+                
+            });
+            lowDesignerScale = (curDesignerScale < 0.41);
+            if (lowDesignerScale)
+                $("input[name=lockPosition]").attr("disabled", true);
+            else
+                $("input[name=lockPosition]").attr("disabled", false);                        
+        }
+    });
+    $("#layoutzoomin").on("click", function () 
+    {
+        layout = $("#layout");
+        var oldDesignerScale = parseFloat(layout.attr("designer_scale"));
+        curDesignerScale = oldDesignerScale + 0.3;
+
+
+        if (curDesignerScale != oldDesignerScale)
+        {
+            var layoutWidth = parseFloat(layout.attr('width'));
+            var layoutHeight = parseFloat(layout.attr('height'));
+
+            layout.attr("designer_scale", curDesignerScale);
+            layout.css('width', layoutWidth * curDesignerScale);
+            layout.css('height', layoutHeight * curDesignerScale);
+
+            layout.find(".region").each(function()
+            {
+                var regionWidth = parseFloat($(this).attr("width"));
+                var regionHeight = parseFloat($(this).attr("height"));
+                var regionTop = parseFloat($(this).attr("top"));
+                var regionLeft = parseFloat($(this).attr("left"));
+                var regionId = $(this).attr("regionId");
+
+                // Update the region width / height attributes
+                $(this).css("width", regionWidth * curDesignerScale).
+                        css("height", regionHeight * curDesignerScale).
+                        css("left", regionLeft * curDesignerScale).
+                        css("top", regionTop * curDesignerScale).
+                        attr('designer_scale', curDesignerScale);
+
+                // refresh preview
+                refreshPreview(regionId);               
+            });
+            lowDesignerScale = (curDesignerScale < 0.41);
+            if (lowDesignerScale)
+                $("input[name=lockPosition]").attr("disabled", true);
+            else
+                $("input[name=lockPosition]").attr("disabled", false);                        
+        }
+    });
     // Hook up toggle
     $('[data-toggle="tooltip"]').tooltip();
+
+    // alex: region item
+    $(".layoutitem").on('click', '.mediadroppable', function()
+    {
+        $(".mediadroppable").removeClass("ui-selected");
+        $(this).addClass("ui-selected");
+    }); 
+    /* vertical media list, draggable */
+    $( ".mediaitem" ).draggable({
+        connectToSortable: "#playlist-sortable-draggable",
+        appendTo: "body",
+        helper: "clone",
+        revert: "invalid",
+        //cursor: "move",
+        containment: ".wrapper",
+        zIndex: 10000,
+        scroll:false,
+        start: function (event, ui) {
+            $(this).hide();              
+        },
+        stop: function (event, ui) {
+            $(this).show();
+        }
+    }).disableSelection();
+    /* horizontal playlist, sortable, draggable, droppable */
+    $( "#playlist-sortable-draggable" ).sortable({
+        connectWith: "#medialist-draggable",
+        cursor: "move",
+        revert: true,
+        helper: "clone",
+        appendTo: document.body,
+        start: function(event, ui) {
+            var start_pos = ui.item.index();
+            ui.item.data('start_pos', start_pos);
+        },
+        change: function(event, ui) {
+            var start_pos = ui.item.data('start_pos');
+            var index = ui.placeholder.index();
+            if (start_pos < index) {
+                //$('#playlist-sortable-draggable li:nth-child(' + index + ')').addClass('highlights');
+            } else {
+                //$('#playlist-sortable-draggable li:eq(' + (index + 1) + ')').addClass('highlights');
+            }
+        },
+        beforeStop: function (event, ui) { 
+            $(ui.item).addClass('newInsertedMedia');
+        },                        
+        stop: function(event, ui) {
+            $(ui.item).addClass('playlistitem').append('<i class="fa fa-cog fa-fw playlistitemdeleteicon" ></i><i class="fa fa-cog fa-fw playlistitemsettingicon"></i>');
+            //$('.playlistcarousel').jcarousel('scroll', $(ui.item));
+            $('.playlistcarousel').jcarousel('reload');
+            $('.playlistcarousel-pagination').jcarouselPagination('reloadCarouselItems');
+        }
+    }).disableSelection();
+    $("#playlist-sortable-draggable").on("click", '.playlistitemdeleteicon', function() {
+        // find the nearest playlistitem to delete this item
+        $(this).closest(".playlistitem").hide().remove();
+        $('.playlistcarousel').jcarousel('reload');
+        $('.playlistcarousel-pagination').jcarouselPagination('reloadCarouselItems');
+    });       
 });
 
 function configureDragAndDrop() {
@@ -192,21 +384,30 @@ function configureDragAndDrop() {
  * @param  {[type]} ui [description]
  * @return {[type]}    [description]
  */
-function updateRegionInfo(e, ui) {
-
+function updateRegionInfo(e, ui) 
+{
     var pos = $(this).position();
     var scale = ($(this).closest('.layout').attr("version") == 1) ? (1 / $(this).attr("tip_scale")) : $(this).attr("designer_scale");
-    $('.region-tip', this).html(Math.round($(this).width() / scale, 0) + " x " + Math.round($(this).height() / scale, 0) + " (" + Math.round(pos.left / scale, 0) + "," + Math.round(pos.top / scale, 0) + ")");
+    $('.region-tip', this).html(Math.round($(this).width() / scale, 0) + 
+                                " x " + 
+                                Math.round($(this).height() / scale, 0) + 
+                                " (" + 
+                                    Math.round(pos.left / scale, 0) + 
+                                    "," + 
+                                    Math.round(pos.top / scale, 0) + ")");
 }
 
 function regionPositionUpdate(e, ui) {
-
-    var width   = $(this).css("width");
-    var height  = $(this).css("height");
+    var curDesignerScale = parseFloat($(this).attr("designer_scale"));
+    var width   = parseFloat($(this).css("width"));
+    var height  = parseFloat($(this).css("height"));
+    var left   = parseFloat($(this).css("left"));
+    var top  = parseFloat($(this).css("top"));
+    var pos = $(this).position();
     var regionid = $(this).attr("regionid");
 
     // Update the region width / height attributes
-    $(this).attr("width", width).attr("height", height);
+    $(this).attr("width", $(this).width() / curDesignerScale).attr("height", $(this).height() / curDesignerScale).attr("left", pos.left / curDesignerScale).attr("top", pos.top / curDesignerScale);
 
     // Update the Preview for the new sizing
     var preview = Preview.instances[regionid];
@@ -227,7 +428,6 @@ function savePositions() {
 
         // Store the Layout ID
         var url = $(this).data().positionAllUrl;
-
         // Build an array of
         var regions = new Array();
 
