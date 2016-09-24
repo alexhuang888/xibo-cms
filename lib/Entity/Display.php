@@ -388,6 +388,9 @@ class Display implements \JsonSerializable
         $this->displayGroupFactory = $displayGroupFactory;
         $this->displayProfileFactory = $displayProfileFactory;
         $this->playerAction = $playerAction;
+
+        // Initialise extra validation rules
+        v::with('Xibo\\Validation\\Rules\\');
     }
 
     /**
@@ -516,6 +519,13 @@ class Display implements \JsonSerializable
             $this->numberOfMacAddressChanges++;
             $this->lastChanged = time();
         }
+
+        // Lat/Long
+        if (!empty($this->longitude) && !v::longitude()->validate($this->longitude))
+            throw new \InvalidArgumentException(__('The longitude entered is not valid.'));
+
+        if (!empty($this->latitude) && !v::latitude()->validate($this->latitude))
+            throw new \InvalidArgumentException(__('The latitude entered is not valid.'));
     }
 
     /**

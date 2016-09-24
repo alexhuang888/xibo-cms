@@ -177,31 +177,6 @@
                             
                             <div class="medialistcarousel" id='medialistcarousel-droppable'>
                                 <ul id="medialist-draggable">
-                                <!--
-                                    <li id="m-1" data-mediatype="image" data-mediaid="1" class="mediaitem ui-state-default">1
-                                    </li>
-                                    <li id="m-2" data-mediatype="image" data-mediaid="2" class="mediaitem ui-state-default">2
-                                    </li>
-                                    <li id="m-3" data-mediatype="image" data-mediaid="3" class="mediaitem ui-state-default">3
-                                    </li>
-                                    <li id="m-4" data-mediatype="image" data-mediaid="4" class="mediaitem ui-state-default">4
-                                    </li>
-                                    <li id="m-5" data-mediatype="image" data-mediaid="5" class="mediaitem ui-state-default">5
-                                    </li>
-                                    <li id="m-6" data-mediatype="image" data-mediaid="6" class="mediaitem ui-state-default">6
-                                    </li>
-                                    <li id="m-7" data-mediatype="image" data-mediaid="7" class="mediaitem ui-state-default">7
-                                    </li>
-                                    <li id="m-8" data-mediatype="image" data-mediaid="8" class="mediaitem ui-state-default">8
-                                    </li>
-                                    <li id="m-9" data-mediatype="image" data-mediaid="9" class="mediaitem ui-state-default">9
-                                    </li>
-                                    <li id="m-10" data-mediatype="image" data-mediaid="10" class="mediaitem ui-state-default">10
-                                    </li>
-                                    <li id="m-11" data-mediatype="image" data-mediaid="11" class="mediaitem ui-state-default">11
-                                    </li>
-                                    <li id="m-12" data-mediatype="image" data-mediaid="12" class="mediaitem ui-state-default">12
-                                    </li>-->
                                 </ul>
                             </div>
                             <!--
@@ -305,6 +280,7 @@
                                 <div class="previewNav label label-info"></div>
                             </div>
                         </div>
+                        <!-- region end -->
                     {% endfor %}
                 </div>
             </div>
@@ -701,14 +677,26 @@
                         url: $(this).attr("href"),
                         cache: false,
                         dataType: "json",
-                        success: function (xhr, textStatus, error) {
+                        success: function (xhr, textStatus, error) 
+                        {
 
                             XiboSubmitResponse(xhr);
 
-                            if (xhr.success) {
+                            if (xhr.success) 
+                            {
                                 // Reload the designer
-                                window.location.reload();
+                                //window.location.reload();
+                                // we have to creae a new region 
                             }
+                        }
+                    })
+                    .done(function(data)
+                    {
+                        if (data)
+                        {
+                            // data.id::regionid
+                            // data.data: region
+                            // create a new region
                         }
                     });
                 });
@@ -729,43 +717,26 @@
                             var alink = media.thumbnail;
                             var alinkdom = $.parseHTML(alink);
                             //console.log($(alinkdom));
-                            //console.log($(alinkdom).attr('href'));
+                            console.log($(alinkdom).find('img').attr('src'));
                             var html = '<li class="mediaitem ui-state-default"';
                             html = html + ' id="m-' + media.mediaId + '"';
                             html = html + ' data-mediatype="' + media.mediaType + '"';
                             html = html + ' data-mediaid="' + media.mediaId + '"';
                             html = html + ' data-mediafilesize="' + media.fileSize + '"';
                             html = html + ' >';
-                            html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + $(alinkdom).attr('href') + '" alt="' + media.name + '" />';
+                            html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + $(alinkdom).find('img').attr('src') + '" alt="' + media.name + '" />';
                             html = html + ' </li>';
                             $("#medialist-draggable").append(html);                          
                         }
+                        $("#medialist-draggable").html($("#medialist-draggable").html());
                         $('.medialistcarousel').jcarousel('reload');
-                        $('.medialistcarousel-pagination').jcarouselPagination('reloadCarouselItems');
-                            $( ".mediaitem" ).draggable({
-                                connectToSortable: "#playlist-sortable-draggable",
-                                appendTo: "body",
-                                helper: "clone",
-                                revert: "invalid",
-                                //cursor: "move",
-                                containment: "document",
-                                zIndex: 10000,
-                                scroll:false,
-                                start: function (event, ui) {
-                                    $(this).hide();              
-                                },
-                                stop: function (event, ui) {
-                                    $(this).show();
-                                }
-                            }).disableSelection();                        
+                        configureMedialistHandler();                        
                     }
                 });
             });
 
             $("[name='my-checkbox']").bootstrapSwitch();
-
         </script>
-  </script>
 
         {% for module in modules %}
             {% if module.layoutDesignerJavaScript() != "" %}

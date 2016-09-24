@@ -27,6 +27,7 @@ use Xibo\Exception\AccessDeniedException;
 use Xibo\Exception\ConfigurationException;
 use Xibo\Exception\LibraryFullException;
 use Xibo\Factory\DataSetFactory;
+use Xibo\Factory\DisplayFactory;
 use Xibo\Factory\DisplayGroupFactory;
 use Xibo\Factory\LayoutFactory;
 use Xibo\Factory\MediaFactory;
@@ -114,7 +115,12 @@ class Library extends Base
     /** @var  DataSetFactory */
     private $dataSetFactory;
 
+    /** @var  aitagshelper */
     private $aitagshelper;
+
+    /** @var  DisplayFactory */
+    private $displayFactory;
+
     /**
      * Set common dependencies.
      * @param LogServiceInterface $log
@@ -138,8 +144,9 @@ class Library extends Base
      * @param DisplayGroupFactory $displayGroupFactory
      * @param RegionFactory $regionFactory
      * @param DataSetFactory $dataSetFactory
+     * @param DisplayFactory $displayFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $moduleFactory, $tagFactory, $mediaFactory, $widgetFactory, $permissionFactory, $layoutFactory, $playlistFactory, $userGroupFactory, $displayGroupFactory, $regionFactory,                                  $dataSetFactory, $aitagshelper)
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $moduleFactory, $tagFactory, $mediaFactory, $widgetFactory, $permissionFactory, $layoutFactory, $playlistFactory, $userGroupFactory, $displayGroupFactory, $regionFactory,                                  $dataSetFactory, $aitagshelper, $displayFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -158,6 +165,7 @@ class Library extends Base
         $this->regionFactory = $regionFactory;
         $this->dataSetFactory = $dataSetFactory;
         $this->aitagshelper = $aitagshelper;
+        $this->displayFactory = $displayFactory;
     }
 
     public function getAITagsHelper()
@@ -1019,6 +1027,13 @@ class Library extends Base
             // Install Files for this module
             $moduleObject = $this->moduleFactory->create($module->type);
             $moduleObject->installFiles();
+        }
+
+        // Dump the cache on all displays
+        foreach ($this->displayFactory->query() as $display) {
+            /** @var \Xibo\Entity\Display $display */
+            $display->setMediaIncomplete();
+            $display->save(\Xibo\Entity\Display::$saveOptionsMinimum);
         }
     }
 

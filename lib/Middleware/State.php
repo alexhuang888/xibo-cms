@@ -615,7 +615,8 @@ class State extends Middleware
                 $container->displayGroupFactory,
                 $container->regionFactory,
                 $container->dataSetFactory,
-                $container->aitagshelper
+                $container->aitagshelper,
+                $container->displayFactory
             );
         });
 

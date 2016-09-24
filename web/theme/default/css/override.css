@@ -116,12 +116,14 @@ h1 .pagetitle {
     right:5px; 
     top: 5px;
     font-size:.3em;
+    z-index:1000;
 }
 .playlistitemsettingicon {
     position:absolute; 
     right:5px; 
     bottom: 5px;
     font-size:.3em;
+    z-index:1000;
 }
 .regionitem  {
     position:absolute; 
@@ -134,14 +136,16 @@ h1 .pagetitle {
 .regionitemsettingicon {
     position:absolute; 
     right:5px; 
-    top: 5px;
+    bottom: 5px;
     font-size:1em;
+    z-index:1000;
 }
 .regionitemdeleteicon {
     position:absolute; 
     right:5px; 
-    bottom: 5px;
+    top: 5px;
     font-size:1em;
+    z-index:1000;
 }
 .ui-resizable-se {
     position: absolute;
