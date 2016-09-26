@@ -255,13 +255,15 @@ class ModuleFactory extends BaseFactory
     {
         $module = $this->create($type);
 
+        // notice, never have a chance to give region id
+        /*
         // Do we have a regionId
         if ($regionId != 0) {
             // Load the region and set
             $region = $this->regionFactory->getById($regionId);
             $module->setRegion($region);
         }
-
+        */
         // Do we have a widgetId
         if ($widgetId == 0) {
             // If we don't have a widget we must have a playlist
@@ -293,6 +295,7 @@ class ModuleFactory extends BaseFactory
      * @param Region[optional] $region
      * @return \Xibo\Widget\ModuleWidget
      */
+     /*
     public function createWithWidget($widget, $region = null)
     {
         $module = $this->create($widget->type);
@@ -303,7 +306,22 @@ class ModuleFactory extends BaseFactory
 
         return $module;
     }
+    */
+    /**
+     * Create a Module using a Widget
+     * @param Widget $widget
+     * @param Region[optional] $region
+     * @return \Xibo\Widget\ModuleWidget
+     */
+    public function createWithWidgetAndPreferredDim($widget, $preferredWidth=0, $preferredHeight=0)
+    {
+        $module = $this->create($widget->type);
+        $module->setWidget($widget);
 
+        $module->setPreferredDisplayDim($preferredWidth, $preferredHeight);
+
+        return $module;
+    }
     public function get($key = 'type')
     {
         $modules = $this->query();

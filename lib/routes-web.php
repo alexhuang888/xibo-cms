@@ -124,6 +124,7 @@ $app->get('/region/form/timeline/:id', '\Xibo\Controller\Region:timelineForm')->
 //
 // playlists
 //
+$app->get('/playlist/preview/:id', '\Xibo\Controller\Playlist:preview')->name('playlist.preview');
 $app->get('/playlist/form/view', '\Xibo\Controller\Playlist:playlistPage')->name('playlist.view');
 $app->get('/playlist/form/edit/:id', '\Xibo\Controller\Playlist:editForm')->name('playlist.edit.form');
 
@@ -141,7 +142,8 @@ $app->get('/playlist/widget/form/transition/edit/:type/:id', '\Xibo\Controller\M
 $app->get('/playlist/widget/form/audio/:id', '\Xibo\Controller\Module:widgetAudioForm')->name('module.widget.audio.form');
 // Outputs
 $app->get('/playlist/widget/tab/:tab/:id', '\Xibo\Controller\Module:getTab')->name('module.widget.tab.form');
-$app->get('/playlist/widget/resource/:regionId/:id', '\Xibo\Controller\Module:getResource')->name('module.getResource');
+//$app->get('/playlist/widget/resource/:regionId/:id', '\Xibo\Controller\Module:getResource')->name('module.getResource');
+$app->get('/playlist/widget/resource/:preferredDisplayWidth/:preferredDisplayHeight/:id', '\Xibo\Controller\Module:getResourceWithPreferredDim')->name('module.getResourceWithPreferredDim');
 
 //
 // library

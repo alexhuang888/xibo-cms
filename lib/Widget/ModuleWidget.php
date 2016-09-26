@@ -76,8 +76,15 @@ abstract class ModuleWidget implements ModuleInterface
     /**
      * @var \Xibo\Entity\Region $region The region this module is in
      */
-    protected $region;
+    //protected $region;
+    /*
+    module is intended to be displayed inside a region, however, that is "region_width" and "region_height"
+    that we want, so we can assign a "original width/original heigh" while return data from getResource().
 
+    To make it more flexible and de-couple from region, it is good to remove $region from this class.
+    */
+    protected $preferredDisplayWidth = 0;
+    protected $preferredDisplayHeight = 0;
     /**
      * @var int $codeSchemaVersion The Schema Version of this code
      */
@@ -342,11 +349,17 @@ abstract class ModuleWidget implements ModuleInterface
      * Set the regionId
      * @param \Xibo\Entity\Region $region
      */
+    /*
     final public function setRegion($region)
     {
         $this->region = $region;
     }
-
+    */
+    final public function setPreferredDisplayDim($w, $h)
+    {
+        $this->preferredDisplayWidth = $w;
+        $this->preferredDisplayHeight = $h;
+    }
     /**
      * Set User
      * @param User $user
@@ -613,9 +626,24 @@ abstract class ModuleWidget implements ModuleInterface
 
         return $name;
     }
+    // notice, this returns the module icon path directly without any decorator
+    public function getModuleIconImgSrcPath()
+    {
+        return $this->getConfig()->uri('img/' . $this->getModule()->imageUri);
+    }
 
+    public function getModulePreviewImgSrcPath($previewWidth, $previewHeight, $scaleOverride)
+    {
+        if ($this->module->previewEnabled == 0)
+            return getModuleIconImgSrcPath();
+
+        $url = $this->getApp()->urlFor('module.getResourceWithPreferredDim', ['preferredDisplayWidth' => ($this->preferredDisplayWidth == 0 ? $previewWidth : $this->preferredDisplayWidth), 'preferredDisplayHeight' => ($this->preferredDisplayHeight == 0 ? $previewHeight : $this->preferredDisplayHeight), 'id' => $this->getWidgetId()]);
+
+        return $url . '?raw=true&preview=true&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;
+    }
     /**
-     * Preview code for a module
+     * Preview code for a module.
+     * it will either return previewicon, or a html codes to embedded module's content
      * @param double $width
      * @param double $height
      * @param int [Optional] $scaleOverride
@@ -630,7 +658,7 @@ abstract class ModuleWidget implements ModuleInterface
     }
 
     /**
-     * Preview Icon
+     * Preview Icon, to return module's icon with <div> decorato'
      * @return string
      */
     public function previewIcon()
@@ -650,13 +678,14 @@ abstract class ModuleWidget implements ModuleInterface
         $widthPx = $width . 'px';
         $heightPx = $height . 'px';
 
-        $url = $this->getApp()->urlFor('module.getResource', ['regionId' => $this->region->regionId, 'id' => $this->getWidgetId()]);
+        $url = $this->getApp()->urlFor('module.getResourceWithPreferredDim', ['preferredDisplayWidth' => ($this->preferredDisplayWidth == 0 ? $width:$this->preferredDisplayWidth), 'preferredDisplayHeight' => ($this->preferredDisplayHeight==0 ? $height:$this->preferredDisplayHeight),  'id' => $this->getWidgetId()]);
 
         return '<iframe scrolling="no" src="' . $url . '?raw=true&preview=true&scale_override=' . $scaleOverride . '&width=' . $width . '&height=' . $height . '" width="' . $widthPx . '" height="' . $heightPx . '" style="border:0;"></iframe>';
     }
 
     /**
      * Default code for the hover preview
+     * this part is mostly useless, and is binded to UI. 
      * @return string
      */
     public function hoverPreview()
@@ -700,7 +729,9 @@ abstract class ModuleWidget implements ModuleInterface
     }
 
     /**
-     * Get Resource Url
+     * Get Resource Url, this just tried to get resource from module vendor's directory
+     * (that is, it will return a url by [vendor's base url] + given uri.
+     *  normally, it is used to access module vendor's private js or css or img/icon etc.)
      * @param $uri
      * @return string
      */

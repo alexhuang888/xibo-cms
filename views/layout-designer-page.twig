@@ -153,7 +153,8 @@
         <!-- left media panel -->
         <div class="col-md-2" id="mediaselectorpanel">
                 <div id="mediaoptional">
-                    <div style="width:90%; ">
+                    <div style="">
+                    <!--
                         <select class="form-control" id="mediatypeselector">
                             <option value="one">One</option>
                             <option value="two">Two</option>
@@ -161,13 +162,15 @@
                             <option value="four">Four</option>
                             <option value="five">Five</option>
                         </select>
-                        <input class="form-control" id='mediatagfiter'></input>
+                        
+                        <input class="form-control" id='mediatagfilter'></input>
+                        -->
                     </div>
                     <div id="medialisttoolpanel">
-                        <i class="fa fa-cog fa-fw" style="width:10%;text-size:1em;"></i>
-                        <i class="fa fa-cog fa-fw " style="width:10%;text-size:1em;"></i>
+                        <i id='addnewplaylisticon' class="fa fa-plus fa-fw" title='{% trans "Add a new playlist" %}' style="width:10%;text-size:1em;"></i>
                     </div>
                 </div>
+                <!-- actually a playlist panel -->
                 <div id="medialistpanel">
                     <div class="medialistcarousel-wrapper">
                         <!--
@@ -177,6 +180,7 @@
                             
                             <div class="medialistcarousel" id='medialistcarousel-droppable'>
                                 <ul id="medialist-draggable">
+
                                 </ul>
                             </div>
                             <!--
@@ -188,8 +192,8 @@
                     </div>
                 </div>
         </div>
-        <div class="col-md-10" id="layoutcontentpanel" style="width: {{resolution.designerWidth+100}}px; height:{{resolution.designerHeight+200}}px;">                   
-            <div class="row" id="layoutpanel" style="height: 80%;">
+        <div class="col-md-10" id="layoutcontentpanel" style="height:{{resolution.designerHeight+200}}px;">                   
+            <div class="row" id="layoutpanel" >
                 <div id="layout" zoom="{{ zoom }}" 
                                 tip_scale="1" designer_scale="{{ designerScale }}" 
                                 class="layout center-block col-md-12 layoutitem" 
@@ -228,7 +232,7 @@
                                 regionEnabled="{{ currentUser.checkEditable(region) }}" 
                                 regionid="{{ region.regionId }}" 
                                 layoutid="{{ layout.layoutId }}" 
-                                zindex="{{ region.zIndex }}" 
+                                zindex="{{ region.regionId }}" 
                                 tip_scale="1" 
                                 designer_scale="{{ designerScale }}" 
                                 left = "{{ region.left }}",
@@ -236,16 +240,17 @@
                                 width="{{ region.width }}" 
                                 height="{{ region.height }}" 
                                 href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}" 
-                                {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this).attr('href'))"{% endif %} 
+                                {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this))"{% endif %} 
                                 class="{{ disabledCss }} {{ previewCss }} regionitem mediadroppable" 
                                 data-preview-url="{{ urlFor("region.preview", {id: region.regionId}) }}" 
+                                data-reset-playlist-url="{{ urlFor("region.resetplaylist", {regionid: region.regionId}) }}"
                                 style="position:absolute; width:{{ regionWidth }}px; height:{{ regionHeight }}px; top: {{ regionTop }}px; left:{{ regionLeft }}px; z-index: {{ region.zIndex }};margin:0px;padding:0px;">
                             <!-- region transparency background -->                            
                             <div class="regionTransparency {{ transparencyCss }}" style="width:100%; height:100%;"></div>
                             <!-- region dropdown menu items -->
                             {% if currentUser.checkEditable(region) %}
-                                <i class="fa fa-cog fa-fw regionitemsettingicon"></i>
-                                <i class="fa fa-times fa-fw regionitemdeleteicon"></i>                             
+                                <!--<i class="fa fa-cog fa-fw regionitemsettingicon"></i>
+                                <i class="fa fa-times fa-fw regionitemdeleteicon"></i>   -->                          
                                 <div class="btn-group regionInfo pull-right">
                                     <button class="btn dropdown-toggle" data-toggle="dropdown">
                                         <span class="region-tip">{{ region.width|round }} x {{ region.height|round }} ({{ region.left|round }} ,{{ region.top|round }})</span> <span class="caret"></span>
@@ -284,6 +289,7 @@
                     {% endfor %}
                 </div>
             </div>
+            <!--
             <div class="row" id="playlistpanel" style="height: 20%;">
                 <div class="playlistcarousel-wrapper">
 
@@ -347,7 +353,8 @@
                     <p class="playlistcarousel-pagination">
                     </p>
                 </div>           
-            <div>    
+            <div>   
+            --> 
         </div>
 
     </div>
@@ -368,7 +375,7 @@
 {% endblock %}
 
     {% block javaScript %}
-        <script src="{{ theme.uri("libraries/jquery-jcarousel/jquery.jcarousel.min.js") }}"></script>
+        <script src="{{ theme.uri("libraries/jquery-jcarousel/jquery.jcarousel.js") }}"></script>
         <script src="{{ theme.uri("js/xibo-layout-designer.js") }}"></script>
         <script src="{{ theme.uri("js/thumblist-designer.js") }}"></script>
         <script type="text/javascript">
@@ -665,7 +672,76 @@
                     }
                 });
             }
+            refreshplaylistCallback = function() {
+                $.ajax({
+                    type: "get",
+                    url: "{{ urlFor("playlist.search") }}",
+                    cache: false,
+                    dataType: "json"                        
+                })
+                .success(function(data) 
+                {                 
+                    if (data.data.length > 0)
+                    {
+                        $("#medialist-draggable").html("");
+                        for (var m = 0; m < data.data.length; m++)
+                        {
+                            var playlist = data.data[m];
+                            var alink = playlist.thumbnail;
+                            //var alinkdom = $.parseHTML(alink);
+                            //console.log($(alinkdom));
+                            //console.log(playlist);
+                            var alttip = playlist.name + "/" + playlist.numberWidgets + "items";
+                            var html = '<li class="mediaitem mediaitemtooltip ui-state-default"';
+                            html = html + ' title="' + alttip + '"';
+                            html = html + ' id="m-' + playlist.playlistId + '"';
+                            //html = html + ' data-mediatype="' + media.mediaType + '"';
+                            html = html + ' data-playlistid="' + playlist.playlistId + '"';
+                            //html = html + ' data-mediafilesize="' + media.fileSize + '"';
+                            html = html + ' >';
+                            html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + playlist.thumbnail + '" alt="' + alttip + '" />';
+                            html = html + '<i class="fa fa-cog fa-fw medialistitemsettingicon medialistitemsettingiconOff"';
+                            html = html + ' data-playlistid=' + playlist.playlistId;
+                            html = html + ' data-playlisteditformurl="' + '{{ urlFor('playlist.timeline.form')}}' + '?view=grid"'
+                            html = html + ' ></i>';
+                            html = html + ' </li>';
+                            $("#medialist-draggable").append(html);
+                            //$(html).appendto("#medialist-draggable");                          
+                        }
+                        //$("#medialist-draggable").html($("#medialist-draggable").html());
 
+                        $('.medialistcarousel').jcarousel('reload');
+                        configureMedialistHandler();                        
+                    }
+                });
+            };
+            // this will be called from layout-designer-page
+            function playlistAddFormOpen() {
+                $("#playlistAddForm").submit(function(e) {
+                    e.preventDefault();
+                    var form = $(this);
+
+                    //var url = $(this).data().redirect;
+                    var urlFormRedirect = $(this).data().formRedirect;
+                    $.ajax({
+                        type: $(this).attr("method"),
+                        url: $(this).attr("action"),
+                        data: $(this).serialize(),
+                        cache: false,
+                        dataType:"json",
+                        success: function(xhr, textStatus, error) {
+
+                            XiboSubmitResponse(xhr, form);
+
+                            if (xhr.success && urlFormRedirect != null) 
+                            {
+                                // Reload the designer
+                                XiboFormRender(urlFormRedirect.replace(":id", xhr.id));
+                            }
+                        }
+                    });
+                });
+            }
             // Bind to the add button when we load
             $(document).ready(function () {
 
@@ -684,9 +760,25 @@
 
                             if (xhr.success) 
                             {
+                                console.log("add new region: " + xhr.id);
+                                var regionIDElement = '.region_' + xhr.id;
                                 // Reload the designer
                                 //window.location.reload();
                                 // we have to creae a new region 
+                                newHtml = addNewRegionWithRegionId(xhr.id, 
+                                                                    xhr.data.left,
+                                                                    xhr.data.top,
+                                                                    xhr.data.width,
+                                                                    xhr.data.height,
+                                                                    $('#layout').attr('designer_scale'),
+                                                                    xhr.data.zIndex,
+                                                                    xhr.extra['currentUserEditable']);
+                                console.log(newHtml);
+                                var regionItem = $(newHtml).appendTo('#layout');
+                                configureRegionHandler();
+                                //console.log($(regionItem));
+                                //console.log($(regionItem).data());
+                                new Preview($(regionItem));                                                                    
                             }
                         }
                     })
@@ -700,41 +792,116 @@
                         }
                     });
                 });
-
-                $.ajax({
-                    type: "get",
-                    url: "{{ urlFor("library.search") }}",
-                    cache: false,
-                    dataType: "json"                        
-                })
-                .done(function(data) 
-                {                 
-                    if (data.data.length > 0)
-                    {
-                        for (var m = 0; m < data.data.length; m++)
-                        {
-                            var media = data.data[m];
-                            var alink = media.thumbnail;
-                            var alinkdom = $.parseHTML(alink);
-                            //console.log($(alinkdom));
-                            console.log($(alinkdom).find('img').attr('src'));
-                            var html = '<li class="mediaitem ui-state-default"';
-                            html = html + ' id="m-' + media.mediaId + '"';
-                            html = html + ' data-mediatype="' + media.mediaType + '"';
-                            html = html + ' data-mediaid="' + media.mediaId + '"';
-                            html = html + ' data-mediafilesize="' + media.fileSize + '"';
-                            html = html + ' >';
-                            html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + $(alinkdom).find('img').attr('src') + '" alt="' + media.name + '" />';
-                            html = html + ' </li>';
-                            $("#medialist-draggable").append(html);                          
-                        }
-                        $("#medialist-draggable").html($("#medialist-draggable").html());
-                        $('.medialistcarousel').jcarousel('reload');
-                        configureMedialistHandler();                        
-                    }
+                refreshplaylistCallback();
+                
+                $('#addnewplaylisticon').on('click', function()
+                {
+                    // here, we should add a new playlist to this 
+                    XiboFormRender('{{ urlFor("playlist.add.form") }}');
                 });
             });
+            /* end of document.ready() */
 
+            addNewRegionWithRegionId = function(regionId, originalLeft, originalTop,
+                                                originalWidth, originalHeight, designerScale, regionZIndex,
+                                                currentUsercheckEditable)
+            {
+                console.log(regionId + ' ' + originalLeft + ' ' + originalTop + ' ' + originalWidth + ' ' + originalHeight + ' ' + designerScale + ' ' + regionZIndex + ' ' + currentUsercheckEditable);
+                var newRegionHtml = "";
+                var currentUsercheckEditable = currentUsercheckEditable == 1 ? true : false;
+                console.log(currentUsercheckEditable);
+                var layoutid = "{{ layout.layoutId }}";
+                var layoutschemaVersion = {{ layout.schemaVersion}};
+                var urltimelineform = "{{ urlFor("region.timeline.form") }}";
+                urltimelineform.replace(':id', regionId);
+                var urlPreview = "{{ urlFor("region.preview") }}";
+                urlPreview.replace(':id', regionId);
+                var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
+                urlResetPlaylist.replace(':regionid', regionId);                
+                var regionWidth = originalWidth * designerScale;
+                var regionHeight = originalHeight * designerScale;
+                var regionLeft = originalLeft * designerScale;
+                var regionTop = originalTop * designerScale;
+
+                var urlRegionDeleteForm = "{{ urlFor("region.delete.form") }}";
+                urlRegionDeleteForm.replace(':id', regionId);
+                var urlRegionEditForm = "{{ urlFor("region.edit.form") }}";
+                urlRegionEditForm.replace(':id', regionId);
+                var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
+                urlRegionTimeLineForm.replace(':id', regionId);
+                var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
+                urlUserPermissionForm.replace(':id', regionId);                                                
+                var disabledCss = 'regionDis';
+                var transparencyCss = 'Disabled';
+                var previewCss = "regionPreview";                
+                if (currentUsercheckEditable)
+                {
+                    disabledCss = 'region';
+                    transparencyCss = '';
+                    previewCss = "regionPreview";
+                }
+
+                //<!-- region start -->
+                newRegionHtml = newRegionHtml + '<div id="region_' + regionId + '"'; 
+                newRegionHtml = newRegionHtml + ' regionEnabled="' + currentUsercheckEditable + '"';
+                newRegionHtml = newRegionHtml + ' regionid="' + regionId + '"'; 
+                newRegionHtml = newRegionHtml + ' layoutid="' + layoutid + '"';
+                newRegionHtml = newRegionHtml + ' zindex="' + regionId + '"';
+                newRegionHtml = newRegionHtml + ' tip_scale="1"';
+                newRegionHtml = newRegionHtml + ' designer_scale="' + designerScale + '"'; 
+                newRegionHtml = newRegionHtml + ' left = "' + originalLeft + '"';
+                newRegionHtml = newRegionHtml + ' top = "' + originalTop + '"';
+                newRegionHtml = newRegionHtml + ' width="' + originalWidth + '"'; 
+                newRegionHtml = newRegionHtml + ' height="' + originalHeight + '"'; 
+                newRegionHtml = newRegionHtml + ' href="' + urltimelineform + '"'; 
+                if (currentUsercheckEditable)
+                {
+                    newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
+                } 
+                newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem mediadroppable"'; 
+                newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
+                newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
+                newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
+                    //<!-- region transparency background -->                            
+                newRegionHtml = newRegionHtml + ' <div class="regionTransparency ' + transparencyCss + ' " style="width:100%; height:100%;"></div>';
+                if (currentUsercheckEditable)
+                { 
+                    newRegionHtml = newRegionHtml + ' <div class="btn-group regionInfo pull-right">';
+                    newRegionHtml = newRegionHtml + ' <button class="btn dropdown-toggle" data-toggle="dropdown">';
+                    newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+                    newRegionHtml = newRegionHtml + ' </button>';
+                    newRegionHtml = newRegionHtml + ' <ul class="dropdown-menu">';
+                    newRegionHtml = newRegionHtml + ' <li>';
+                    newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionTimeLineForm + '">{% trans "Edit Timeline" %}</a>';
+                    newRegionHtml = newRegionHtml + ' </li>';
+                    newRegionHtml = newRegionHtml + ' <li>';
+                    newRegionHtml = newRegionHtml + ' <a class="RegionOptionsMenuItem" href="' + urlRegionEditForm + '">{% trans "Options" %}</a>';
+                    newRegionHtml = newRegionHtml + ' </li>';
+                    newRegionHtml = newRegionHtml + ' <li>';
+                    newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionDeleteForm + '">{% trans "Delete" %}</a>';
+                    newRegionHtml = newRegionHtml + ' </li>';
+                    newRegionHtml = newRegionHtml + ' <li>';
+                    newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlUserPermissionForm + '">{% trans "Permissions" %}</a>';
+                    newRegionHtml = newRegionHtml + ' </li>';
+                    newRegionHtml = newRegionHtml + ' </ul>';
+                    newRegionHtml = newRegionHtml + ' </div>';
+                }
+                else if (currentUsercheckEditable && (layoutschemaVersion >= 2) )
+                {
+                    newRegionHtml = newRegionHtml + ' <div class="regionInfo">';
+                    newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+                    newRegionHtml = newRegionHtml + ' </div>';                            
+                }
+                //<!-- region preview panel -->
+                newRegionHtml = newRegionHtml + ' <div class="preview">';
+                newRegionHtml = newRegionHtml + ' <div class="previewContent">';
+
+                newRegionHtml = newRegionHtml + ' </div>';
+                newRegionHtml = newRegionHtml + ' <div class="previewNav label label-info"></div>';
+                newRegionHtml = newRegionHtml + ' </div>';
+                newRegionHtml = newRegionHtml + ' </div>';
+                return newRegionHtml;
+            };
             $("[name='my-checkbox']").bootstrapSwitch();
         </script>
 

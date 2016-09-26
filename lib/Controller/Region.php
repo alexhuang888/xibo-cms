@@ -69,6 +69,11 @@ class Region extends Base
     private $userGroupFactory;
 
     /**
+     * @var playlistFactory
+     */
+    private $playlistFactory;
+
+    /**
      * Set common dependencies.
      * @param LogServiceInterface $log
      * @param SanitizerServiceInterface $sanitizerService
@@ -86,7 +91,8 @@ class Region extends Base
      * @param UserGroupFactory $userGroupFactory
      */
     public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $session, $regionFactory, $permissionFactory,
-                                $transitionFactory, $moduleFactory, $layoutFactory, $userGroupFactory)
+                                $transitionFactory, $moduleFactory, $layoutFactory, $userGroupFactory,
+                                $playlistFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -97,6 +103,7 @@ class Region extends Base
         $this->layoutFactory = $layoutFactory;
         $this->moduleFactory = $moduleFactory;
         $this->userGroupFactory = $userGroupFactory;
+        $this->playlistFactory = $playlistFactory;
     }
 
     /**
@@ -123,7 +130,7 @@ class Region extends Base
 
             foreach ($playlist->widgets as $widget) {
                 /* @var Widget $widget */
-                $widget->module = $this->moduleFactory->createWithWidget($widget, $region);
+                $widget->module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget, $region->width, $region->height);
             }
         }
 
@@ -293,6 +300,7 @@ class Region extends Base
         }
 
         // Return
+        $this->getState()->extra['currentUserEditable'] = 1;
         $this->getState()->hydrate([
             'httpStatus' => 201,
             'message' => sprintf(__('Added region: %s'), $region->name),
@@ -432,6 +440,38 @@ class Region extends Base
         ]);
     }
 
+    public function resetPlaylist($regionId, $playlistId)
+    {
+        $region = $this->regionFactory->getById($regionId);
+        $playlist = $this->playlistFactory->getById($playlistId);
+
+        if (!$this->getUser()->checkEditable($region))
+            throw new AccessDeniedException();
+
+        // Load before we save
+        $region->load();
+        $region->clearAllPlaylist();
+        $region->assignPlaylist($playlist);
+
+        // Save
+        $region->save();
+
+        // Mark the layout as needing rebuild
+        $layout = $this->layoutFactory->getById($region->layoutId);
+        $layout->load(\Xibo\Entity\Layout::$loadOptionsMinimum);
+
+        $saveOptions = \Xibo\Entity\Layout::$saveOptionsMinimum;
+        $saveOptions['setBuildRequired'] = true;
+
+        $layout->save($saveOptions);
+
+        // Return
+        $this->getState()->hydrate([
+            'message' => sprintf(__('Reasign playlist:%s to region: %s'), $playlist->name, $region->name),
+            'id' => $region->regionId,
+            'data' => $region
+        ]);
+    }
     /**
      * Delete a region
      * @param int $regionId
@@ -610,7 +650,7 @@ class Region extends Base
             $widget->load();
 
             // Otherwise, output a preview
-            $module = $this->moduleFactory->createWithWidget($widget, $region);
+            $module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget, $region->width, $region->height);
 
             $this->getState()->extra['empty'] = false;
             $this->getState()->html = $module->preview($width, $height, $scaleOverride);

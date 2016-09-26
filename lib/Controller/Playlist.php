@@ -187,6 +187,7 @@ class Playlist extends Base
                     ];
         $playlists = $this->playlistFactory->query($this->gridRenderSort(), $this->gridRenderFilter($filter));
 
+        // here, we would like to add extra row content
         foreach ($playlists as $playlist) 
         {
             /* @var \Xibo\Entity\Playlist $playlist */
@@ -194,6 +195,27 @@ class Playlist extends Base
             if ($this->isApi())
                 continue;
 
+            // provide thumbnail url
+            $playlist->thumbnail = "";
+
+            if ($playlist->numberWidgets > 0)
+            {
+                $playlist->setChildObjectDependencies($this->regionFactory);
+                $playlist->load([
+                    'playlistIncludeRegionAssignments' => false,
+                    'loadPermissions' => false,
+                    'loadTags' => false,
+                    'loadWidgets' => true
+                ]);
+                $firstWidget = $playlist->widgets[0];
+                // then we need to create a widget module to get preview url?
+                $thumbmodule = $this->moduleFactory->createWithWidgetAndPreferredDim($firstWidget);
+                $playlist->thumbnail = $thumbmodule->getModulePreviewImgSrcPath(120, 120, 0);
+            }
+            else
+            {
+                $playlist->thumbnail = $this->getConfig()->uri('img/' . 'thumbnails/no-content.png');
+            }
             $playlist->includeProperty('buttons');
 
             if ($this->getUser()->checkEditable($playlist)) {
@@ -475,7 +497,7 @@ class Playlist extends Base
             foreach ($playlist->widgets as $widget) 
             {
                 /* @var Widget $widget */
-                $widget->module = $this->moduleFactory->createWithWidget($widget);
+                $widget->module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget);
             }
         }
 
@@ -527,7 +549,7 @@ class Playlist extends Base
             /* @var Widget $widget */
             $widget->load();
 
-            $widget->module = $this->moduleFactory->createWithWidget($widget);
+            $widget->module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget);
 
             // Add property for name
             $widget->name = $widget->module->getName();
@@ -827,5 +849,60 @@ class Playlist extends Base
                 array('id' => 'NW', 'name' => __('North West'))
             )
         ];
+    }    
+
+    /**
+     * Represents the Preview for playlist thumbnail
+     * @param int $regionId
+     */
+    public function preview($playlistId)
+    {
+        $seqGiven = $this->getSanitizer()->getInt('seq', 1);
+        $seq = $this->getSanitizer()->getInt('seq', 1);
+        $width = $this->getSanitizer()->getDouble('width', 0);
+        $height = $this->getSanitizer()->getDouble('height', 0);
+        $scaleOverride = $this->getSanitizer()->getDouble('scale_override', 0);
+
+        // Load our region
+        try {
+            $playlist = $this->playlistFactory->getById($playlistId);
+            $playlist->setChildObjectDependencies($this->regionFactory);
+            $playlist->load();
+
+            $countWidgets = count($playlist->widgets);
+
+            // We want to load the widget in the given sequence
+            if ($countWidgets <= 0) 
+            {
+                // No media to preview
+                throw new NotFoundException(__('No widgets to preview'));
+            }
+
+            $this->getLog()->debug('There are %d widgets.', count($playlist->widgets));
+
+            // Select the widget at the required sequence
+            $widget = $playlist->getWidgetAt($seq);
+            /* @var \Xibo\Entity\Widget $widget */
+            $widget->load();
+
+            // Otherwise, output a preview
+            $module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget);
+
+            $this->getState()->extra['empty'] = false;
+            $this->getState()->html = $module->preview($width, $height, $scaleOverride);
+            $this->getState()->extra['type'] = $widget->type;
+            $this->getState()->extra['duration'] = $widget->calculatedDuration;
+            $this->getState()->extra['number_items'] = $countWidgets;
+            $this->getState()->extra['current_item'] = $seqGiven;
+            $this->getState()->extra['moduleName'] = $module->getName();
+            $this->getState()->extra['regionDuration'] = $region->duration;
+            $this->getState()->extra['useDuration'] = $widget->useDuration;
+            $this->getState()->extra['zIndex'] = $region->zIndex;
+
+        } catch (NotFoundException $e) {
+            // No media to preview
+            $this->getState()->extra['empty'] = true;
+            $this->getState()->extra['text'] = __('Empty Region');
+        }
     }    
 }

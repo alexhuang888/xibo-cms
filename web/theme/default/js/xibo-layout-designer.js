@@ -65,6 +65,7 @@ $(document).ready(function(){
     // Preview
     $('.regionPreview', layout).each(function()
     {
+        //console.log("New Preview for " + $(this).attr('regionid'));
         new Preview(this);
     });
 
@@ -129,8 +130,7 @@ $(document).ready(function(){
         };
 
         var url = $(this).prop("href");
-
-        XiboFormRender(url, data);
+        XiboFormRender($(this), data);
     });
 
     // Bind to the save/revert buttons
@@ -163,7 +163,6 @@ $(document).ready(function(){
         layout = $("#layout");
         var oldDesignerScale = parseFloat(layout.attr("designer_scale"));
         curDesignerScale = oldDesignerScale - 0.3;
-
 
         if (curDesignerScale != oldDesignerScale)
         {
@@ -291,7 +290,26 @@ function configureMedialistHandler()
         stop: function (event, ui) {
             $(this).show();
         }
-    }).disableSelection();   
+    })
+    .disableSelection()
+    .hover(function()
+    {
+        $(this).find('.medialistitemsettingicon').removeClass('medialistitemsettingiconOff');
+        //$(this).find('.medialistitemsettingicon').addClass('medialistitemsettingiconOn');
+    },
+    function() {
+        $(this).find('.medialistitemsettingicon').addClass('medialistitemsettingiconOff');
+        //$(this).find('.medialistitemsettingicon').removeClass('medialistitemsettingiconOn');        
+    });
+
+    $('.medialistitemsettingicon').on('click', function()
+    {
+        // try to launch playlist editing form
+        var formurl = $(this).data().playlisteditformurl;
+        formurl = formurl.replace(':id', $(this).data().playlistid);
+        console.log(formurl);
+        XiboFormRender(formurl);
+    });
 }
 function configurePlaylistHandler()
 {
@@ -327,6 +345,7 @@ function configurePlaylistHandler()
 }
 function configureRegionHandler()
 {
+    console.log('configureRegionHandler');
     var thisLayout = $("#layout");
 
     // Hover functions for previews/info
@@ -349,7 +368,7 @@ function configureRegionHandler()
                 $(".mediadroppable").removeClass("ui-selected");
                 $(this).addClass("ui-selected");
             },
-            grid: [ 10, 10 ],
+            //grid: [ 10, 10 ],
             snap: false
         })
         .resizable({
@@ -366,8 +385,9 @@ function configureRegionHandler()
             greedy: true,               
             drop: function(event, ui) 
             {
+                console.log($(this).attr('id') + 'to be checked.');
                 var topElement = undefined;
-                var topElementArray = Array();
+                //var topElementArray = Array();
                 var zIndexHighest = 0;
                 // Change it as you want to write in your code
                 // For Container id or for your specific class for droppable or for both
@@ -381,21 +401,45 @@ function configureRegionHandler()
                         event.pageY >= _top && 
                         event.pageY <= _bottom) 
                     {   
-                        topElementArray.push($(this).attr('id'));
-                        z_index = $(this).attr("zindex");
+                        //topElementArray.push($(this).attr('id'));
+                        z_index = parseInt($(this).attr("zindex"));
+                        //console.log($(this).attr('id') + ' ' + $(this).attr("zindex") + 'highest:' + zIndexHighest);
                         if (z_index > zIndexHighest)
                         {
                             zIndexHighest = z_index;
                             topElement = $(this);
+                            //console.log('update higest' + z_index);;
                         }                    
-                        //console.log($(this).attr('id'));
+                        
                     }
                 });            
                     
                 if ($(this).attr('id') == $(topElement).attr('id')) 
                 {
-                    var thisP = $(this).find("p");
-                    thisP.html(thisP.html() + $(ui.draggable).attr("data-mediatype") + "[" + $(ui.draggable).attr('data-mediaid') + "]/");
+                    //console.log('topelement' + ' ' + $(topElement).attr('id') + ' ' + $(topElement).attr("zindex"));
+                    var thisregionid = $(this).attr('regionid');
+                    //console.log($(this).attr('id') + "received");
+                    //var thisP = $(this).find("p");
+                    //thisP.html(thisP.html() + $(ui.draggable).attr("data-mediatype") + "[" + $(ui.draggable).attr('data-mediaid') + "]/");
+                    // here, we would like to reset playlist
+                    resetallplaylisturl = $(this).data().resetPlaylistUrl;
+                    //console.log(resetallplaylisturl);
+                    //console.log($(ui.draggable).data().playlistid);
+                    resetallplaylisturl = resetallplaylisturl.replace(':playlistid', $(ui.draggable).data().playlistid);
+                    //console.log(resetallplaylisturl);
+                    $.ajax({
+                        type: "put",
+                        url: resetallplaylisturl,
+                        cache: false,
+                        dataType: "json"                        
+                    })
+                    .success(function(data) 
+                    {
+                        // 
+                        XiboSubmitResponse(data);
+                        //console.log(thisregionid);
+                        refreshPreview(thisregionid);
+                    });
                 }                       
             }
         });    

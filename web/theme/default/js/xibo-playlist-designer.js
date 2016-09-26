@@ -32,23 +32,33 @@ function configureDragAndDrop() {
     }
 }
 
+function refreshPreview(regionId) {
+    // Refresh the preview
+    var preview = Preview.instances[regionId];
+    preview.SetSequence(preview.seq);
 
+    // Clear the layout status
+    $("#layout-status").removeClass("alert-success alert-danger").addClass("alert-info").html("<span class='fa fa-cog fa-spin'></span> " + translations.statusPending);
+}
 var loadTimeLineCallback = function(dialog) {
 
     dialog.addClass("modal-big");
 
-    refreshPreview($('#timelineControl').attr('regionid'));
+    //refreshPreview($('#timelineControl').attr('regionid'));
 
     $("li.timelineMediaListItem").hover(function() {
 
         var position = $(this).position();
         var scale = $('#layout').attr('designer_scale');
-
+        //console.log('position' + position.top + " " + position.left);
+        //console.log('scrolltop' + $('#timelineControl').closest('.modal-body').scrollTop());
         // Change the hidden div's content
         $("div#timelinePreview")
             .html($("div.timelineMediaPreview", this).html())
             .css({
-                "margin-top": position.top + $('#timelineControl').closest('.modal-body').scrollTop()
+                "top": position.top,// + $('#timelineControl').closest('.modal-body').scrollTop(),
+                'position': 'fixed',
+                'left':  $('#rightpanel').position().left + position.left + $(this).width() + 20
             })
             .show();
 

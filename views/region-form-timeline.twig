@@ -51,7 +51,8 @@
             </div>
             <div class="col-md-10">
                 <div id="timelineControl" class="timelineColumn" layoutid="{{ region.layoutId }}" regionid="{{ region.regionId }}" 
-                                        data-order-url="{{ urlFor("playlist.order", {id: playlist.playlistId}) }}" >                    <div class="timelineMediaVerticalList">
+                                        data-order-url="{{ urlFor("playlist.order", {id: playlist.playlistId}) }}" >                    
+                    <div class="timelineMediaVerticalList">
                         <ul id="{{ random() }}" class="timelineSortableListOfMedia">
                             {% for widget in playlist.widgets %}
                                 {% set name = widget.module.getName() %}

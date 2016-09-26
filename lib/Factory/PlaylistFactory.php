@@ -200,10 +200,13 @@ class PlaylistFactory extends BaseFactory
         }               
         if (DBVERSION >= 210 && array_key_exists('isaitagmatchable', $filterBy))
         {
-            if ($this->getSanitizer()->getInt('isaitagmatchable',0, $filterBy) < 2) 
+            if ($this->getSanitizer()->getInt('isaitagmatchable', $filterBy) != null)
             {
-                $body .= ' AND `playlist`.isaitagmatchable = :isaitagmatchable ';
-                $params['isaitagmatchable'] = $this->getSanitizer()->getInt('isaitagmatchable', 0, $filterBy);
+                if ($this->getSanitizer()->getInt('isaitagmatchable',0, $filterBy) < 2) 
+                {
+                    $body .= ' AND `playlist`.isaitagmatchable = :isaitagmatchable ';
+                    $params['isaitagmatchable'] = $this->getSanitizer()->getInt('isaitagmatchable', 0, $filterBy);
+                }
             }
         }
         // filter by playlistid
@@ -211,7 +214,15 @@ class PlaylistFactory extends BaseFactory
         {
             $body .= ' AND `playlist`.isUserPlaylist = :isUserPlaylist ';
             $params['isUserPlaylist'] = $this->getSanitizer()->getInt('isUserPlaylist', $filterBy);
-        }        
+        }   
+        // filter by playlistid
+        if ($this->getSanitizer()->getInt('HasAnyWidget', $filterBy) != 0) 
+        {
+            if ($this->getSanitizer()->getInt('HasAnyWidget', $filterBy) == 1)
+            {
+                $body .= ' AND numberWidgets > 0 ';
+            }
+        }              
         // Sorting?
         $order = '';
         if (is_array($sortOrder))

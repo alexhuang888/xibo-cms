@@ -1205,7 +1205,7 @@
         },
         _reload: function() {
             var perPage = this.options('perPage');
-
+            
             this._pages = {};
             this._items = {};
 
@@ -1216,6 +1216,7 @@
 
             if (perPage == null) {
                 this._pages = this._calculatePages();
+                
             } else {
                 var pp    = parseInt(perPage, 10) || 0,
                     items = this._getCarouselItems(),
@@ -1252,7 +1253,7 @@
 
             $.each(this._pages, function(page, carouselItems) {
                 var currItem = self._items[page] = $(item.call(self, page, carouselItems));
-
+                console.log('currItem:' + currItem);
                 currItem.on(self.options('event') + '.jcarouselpagination', $.proxy(function() {
                     var target = carouselItems.eq(0);
 
@@ -1325,16 +1326,16 @@
                 pages    = {},
                 curr,
                 dim;
-
+            //console.log('items:' + items.length);
             while (true) {
                 curr = items.eq(idx++);
-
+                //console.log('curr:' + curr + ' ' + curr.length);
                 if (curr.length === 0) {
                     break;
                 }
 
                 dim = carousel.dimension(curr);
-
+                //console.log('curr_dim:' + dim);
                 if ((wh + dim) > clip) {
                     page++;
                     wh = 0;

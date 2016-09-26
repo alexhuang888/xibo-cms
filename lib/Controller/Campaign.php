@@ -616,7 +616,7 @@ class Campaign extends Base
                                   'duration' => $layout->duration,
                                   'previewOptions' => [
                                       'getXlfUrl' => $this->urlFor('layout.getXlf', ['id' => $layout->layoutId]),
-                                      'getResourceUrl' => $this->urlFor('module.getResource'),
+                                      'getResourceUrl' => $this->urlFor('module.getResourceWithPreferredDim'),
                                       'libraryDownloadUrl' => $this->urlFor('library.download'),
                                       'loaderUrl' => $this->getConfig()->uri('img/loader.gif')]
                                  ];

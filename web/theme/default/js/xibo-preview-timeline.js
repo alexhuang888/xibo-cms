@@ -74,6 +74,10 @@ function Preview(regionElement)
 }
 
 Preview.instances = {};
+Preview.prototype.ResetMaxSeq = function(maxCount)
+{
+	$('.preview-media-information', this.previewElement).data("maxSeq", maxCount);
+};
 
 Preview.prototype.SetSequence = function(seq)
 {
@@ -84,7 +88,7 @@ Preview.prototype.SetSequence = function(seq)
 
 	this.width	= $(this.regionElement).width();
 	this.height = $(this.regionElement).height();
-	
+	//console.log(this.url);
 	// Get the sequence via AJAX
 	$.ajax({
         type:"get",
@@ -98,11 +102,16 @@ Preview.prototype.SetSequence = function(seq)
 			"scale_override": $(this.regionElement).attr("designer_scale")
 		},
 		success: function(response) {
-		
+			//console.log('success');
 			if (response.success) {
 
-                if (response.extra.empty) {
+                if (response.extra.empty) 
+				{
                     $('.preview-media-information', previewElement).html(response.extra.text);
+					// Get the extra
+					$('.preview-media-information', previewElement)
+						.data("maxSeq", 0);	
+					$(previewContent).html("<div class=\"regionPreviewOverlay\"></div>" + ((response.html == null) ? "" : response.html));				
                     return;
                 }
 

@@ -1349,7 +1349,6 @@ class Soap
 
         return true;
     }
-
     /**
      * @param $serverKey
      * @param $hardwareKey
@@ -1359,15 +1358,16 @@ class Soap
      * @return mixed
      * @throws \SoapFault
      */
-    protected function doGetResource($serverKey, $hardwareKey, $layoutId, $regionId, $mediaId)
+    protected function doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, $preferredDisplayWidth, $preferredDisplayHeight, $mediaId)
     {
-        $this->logProcessor->setRoute('GetResource');
+        $this->logProcessor->setRoute('doGetResourceWithPreferredDisplayDim');
 
         // Sanitize
         $serverKey = $this->getSanitizer()->string($serverKey);
         $hardwareKey = $this->getSanitizer()->string($hardwareKey);
         $layoutId = $this->getSanitizer()->int($layoutId);
-        $regionId = $this->getSanitizer()->string($regionId);
+        $preferredDisplayWidth = $this->getSanitizer()->string($preferredDisplayWidth);
+        $preferredDisplayHeight = $this->getSanitizer()->string($preferredDisplayHeight);
         $mediaId = $this->getSanitizer()->string($mediaId);
 
         // Check the serverKey matches
@@ -1388,8 +1388,8 @@ class Soap
         // The MediaId is actually the widgetId
         try {
             $requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
-
-            $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($mediaId), $this->regionFactory->getById($regionId));
+            //$thisregion = $this->regionFactory->getById($regionId);
+            $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($mediaId), $preferredDisplayWidth, $preferredDisplayHeight);
             $resource = $module->getResource($this->display->displayId);
 
             $requiredFile->bytesRequested = $requiredFile->bytesRequested + strlen($resource);
@@ -1414,6 +1414,34 @@ class Soap
         $this->logBandwidth($this->display->displayId, Bandwidth::$GETRESOURCE, strlen($resource));
 
         return $resource;
+    }
+    /**
+     * @param $serverKey
+     * @param $hardwareKey
+     * @param $layoutId
+     * @param $regionId
+     * @param $mediaId
+     * @return mixed
+     * @throws \SoapFault
+     */
+    protected function doGetResource($serverKey, $hardwareKey, $layoutId, $regionId, $mediaId)
+    {
+        // The MediaId is actually the widgetId
+        try {
+            $thisregion = $this->regionFactory->getById($regionId);
+            return doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, 
+                $thisregion == null ? 0 : $thisregion->width,
+                $thisregion == null ? 0 : $thisregino->height,
+                $mediaId);
+        }
+        catch (NotFoundException $notEx) {
+            throw new \SoapFault('Receiver', 'Requested an invalid file.');
+        }
+        catch (\Exception $e) {
+            $this->getLog()->error('Unknown error during getResource. E = ' . $e->getMessage());
+            $this->getLog()->debug($e->getTraceAsString());
+            throw new \SoapFault('Receiver', 'Unable to get the media resource');
+        }
     }
 
     /**

@@ -320,7 +320,8 @@ class Playlist implements \JsonSerializable
         }
 
         return false;
-    }            
+    }
+
     /**
      * Load
      * @param array $loadOptions

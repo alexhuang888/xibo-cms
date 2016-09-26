@@ -65,7 +65,7 @@ class Pdf extends ModuleWidget
         }
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         $duration = $this->getCalculatedDurationForGetResource();
 
@@ -74,8 +74,8 @@ class Pdf extends ModuleWidget
             'type' => $this->getModuleType(),
             'duration' => $duration,
             'durationIsPerItem' => false,
-            'originalWidth' => $this->region->width,
-            'originalHeight' => $this->region->height,
+            'originalWidth' => $this->preferredDisplayWidth,
+            'originalHeight' => $this->preferredDisplayHeight,
             'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
             'previewHeight' => $this->getSanitizer()->getDouble('height', 0),
             'scaleOverride' => $this->getSanitizer()->getDouble('scale_override', 0)

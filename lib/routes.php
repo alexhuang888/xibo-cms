@@ -124,6 +124,7 @@ $app->post('/region/:id', '\Xibo\Controller\Region:add')->name('region.add');
 $app->put('/region/:id', '\Xibo\Controller\Region:edit')->name('region.edit');
 $app->delete('/region/:id', '\Xibo\Controller\Region:delete')->name('region.delete');
 $app->put('/region/position/all/:id', '\Xibo\Controller\Region:positionAll')->name('region.position.all');
+$app->put('/region/resetplaylist/:regionid/:playlistid', '\Xibo\Controller\Region:resetPlaylist')->name('region.resetplaylist');
 
 /**
  * playlist

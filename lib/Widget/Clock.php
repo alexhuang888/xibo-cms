@@ -165,8 +165,8 @@ class Clock extends ModuleWidget
                 $options = array(
                     'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
                     'previewHeight' => $this->getSanitizer()->getDouble('height', 0),
-                    'originalWidth' => $this->region->width,
-                    'originalHeight' => $this->region->height,
+                    'originalWidth' => $this->preferredDisplayWidth,//region->width,
+                    'originalHeight' => $this->preferredDisplayHeight,//region->height,
                     'scaleOverride' => $this->getSanitizer()->getDouble('scale_override', 0)
                 );
 
@@ -228,7 +228,7 @@ class Clock extends ModuleWidget
         $data['previewHeight'] = $this->getSanitizer()->getDouble('height', 0);
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         // Return that content.
         return $this->renderTemplate($data, $template);

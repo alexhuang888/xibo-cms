@@ -475,7 +475,7 @@ class ForecastIo extends ModuleWidget
         $isPreview = ($this->getSanitizer()->getCheckbox('preview') == 1);
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         $headContent = '
             <link href="' . $this->getResourceUrl('forecastio/weather-icons.min.css') . '" rel="stylesheet" media="screen">
@@ -541,8 +541,8 @@ class ForecastIo extends ModuleWidget
         $options = array(
             'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
             'previewHeight' => $this->getSanitizer()->getDouble('height', 0),
-            'originalWidth' => $this->region->width,
-            'originalHeight' => $this->region->height,
+            'originalWidth' => $this->preferredDisplayWidth,
+            'originalHeight' => $this->preferredDisplayHeight,
             'scaleOverride' => $this->getSanitizer()->getDouble('scale_override', 0)
         );
 

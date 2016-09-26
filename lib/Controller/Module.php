@@ -446,7 +446,7 @@ class Module extends Base
      */
     public function editWidgetForm($widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkEditable($module->widget))
             throw new AccessDeniedException();
@@ -466,7 +466,7 @@ class Module extends Base
      */
     public function editWidget($widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkEditable($module->widget))
             throw new AccessDeniedException();
@@ -491,7 +491,7 @@ class Module extends Base
      */
     public function deleteWidgetForm($widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkDeleteable($module->widget))
             throw new AccessDeniedException();
@@ -513,7 +513,7 @@ class Module extends Base
      */
     public function deleteWidget($widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkDeleteable($module->widget))
             throw new AccessDeniedException();
@@ -561,7 +561,7 @@ class Module extends Base
      */
     public function editWidgetTransitionForm($type, $widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkEditable($module->widget))
             throw new AccessDeniedException();
@@ -638,7 +638,7 @@ class Module extends Base
      */
     public function widgetAudioForm($widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkEditable($module->widget))
             throw new AccessDeniedException();
@@ -728,7 +728,7 @@ class Module extends Base
      */
     public function getTab($tab, $widgetId)
     {
-        $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId));
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId));
 
         if (!$this->getUser()->checkViewable($module->widget))
             throw new AccessDeniedException();
@@ -744,6 +744,7 @@ class Module extends Base
      * @param $widgetId
      * @throws \Xibo\Exception\NotFoundException
      */
+     /*
     public function getResource($regionId, $widgetId)
     {
         $module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($widgetId), $this->regionFactory->getById($regionId));
@@ -755,7 +756,24 @@ class Module extends Base
         echo $module->getResource();
         $this->setNoOutput(true);
     }
+    */
+    /**
+     * Get getResourceWithPreferredDim
+     * @param $regionId
+     * @param $widgetId
+     * @throws \Xibo\Exception\NotFoundException
+     */
+    public function getResourceWithPreferredDim($preferredWidth, $preferredHeight, $widgetId)
+    {
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId), $preferredWidth, $preferredHeight);
 
+        if (!$this->getUser()->checkViewable($module->widget))
+            throw new AccessDeniedException();
+
+        // Call module GetResource
+        echo $module->getResource();
+        $this->setNoOutput(true);
+    }
     /**
      * @param $moduleId
      * @param $formName

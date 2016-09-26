@@ -125,13 +125,22 @@ h1 .pagetitle {
     font-size:.3em;
     z-index:1000;
 }
+.medialistitemsettingicon {
+    position:absolute; 
+    right:2px; 
+
+    font-size:.3em;
+    z-index:1000;
+}
+
+.medialistitemsettingiconOff {
+    display:none;
+}
 .regionitem  {
     position:absolute; 
-    border: 2px solid #000;
 }
 .ui-selected  {
     position:absolute; 
-    border: 2px solid #ff0000;
 }
 .regionitemsettingicon {
     position:absolute; 
@@ -395,4 +404,9 @@ h1 .pagetitle {
     color: #fff;
     opacity: 1;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);
+}
+
+.previewNav {
+    left:0px;
+    bottom:0px;
 }

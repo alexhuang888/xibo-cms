@@ -355,7 +355,7 @@ class DataSetView extends ModuleWidget
         $this->clearMedia();
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         // Get the embedded HTML out of RAW
         $styleSheet = $this->parseLibraryReferences($isPreview, $this->getRawNode('styleSheet', ''));
@@ -366,8 +366,8 @@ class DataSetView extends ModuleWidget
         $options = array(
             'type' => $this->getModuleType(),
             'duration' => $this->getCalculatedDurationForGetResource(),
-            'originalWidth' => $this->region->width,
-            'originalHeight' => $this->region->height,
+            'originalWidth' => $this->preferredDisplayWidth,
+            'originalHeight' => $this->preferredDisplayHeight,
             'rowsPerPage' => $this->getOption('rowsPerPage'),
             'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
             'previewHeight' => $this->getSanitizer()->getDouble('height', 0),

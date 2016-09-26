@@ -308,6 +308,18 @@ class Region implements \JsonSerializable
     }
 
     /**
+     * Unassign a Playlist
+     * @param $playlist
+     */
+    public function clearAllPlaylist()
+    {
+        $this->load();
+
+        unset($this->playlists);
+        $this->playlists = [];
+
+    }
+    /**
      * Load
      * @param array $options
      */
@@ -563,9 +575,10 @@ class Region implements \JsonSerializable
             $sql .= ' AND ( ';
 
             $i++;
-            $sql .= ' (playlistId <> :playlistId' . $i . ' AND displayOrder <> :displayOrder' . $i . '))';
+            //$sql .= ' (playlistId <> :playlistId' . $i . ' AND displayOrder <> :displayOrder' . $i . '))';
+            $sql .= ' (playlistId <> :playlistId' . $i . '))';
             $params['playlistId' . $i] = $playlist->playlistId;
-            $params['displayOrder' . $i] = $playlist->displayOrder;
+            //$params['displayOrder' . $i] = $playlist->displayOrder;
         }
 
 

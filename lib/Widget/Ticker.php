@@ -369,7 +369,7 @@ class Ticker extends ModuleWidget
         $this->clearMedia();
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         // What is the data source for this ticker?
         $sourceId = $this->getOption('sourceId', 1);
@@ -410,8 +410,8 @@ class Ticker extends ModuleWidget
             'takeItemsFrom' => $takeItemsFrom,
             'itemsPerPage' => $itemsPerPage,
             'speed' => $this->getOption('speed'),
-            'originalWidth' => $this->region->width,
-            'originalHeight' => $this->region->height,
+            'originalWidth' => $this->preferredDisplayWidth,
+            'originalHeight' => $this->preferredDisplayHeight,
             'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
             'previewHeight' => $this->getSanitizer()->getDouble('height', 0),
             'scaleOverride' => $this->getSanitizer()->getDouble('scale_override', 0)
@@ -661,7 +661,7 @@ class Ticker extends ModuleWidget
                                 $this->assignMedia($file->mediaId);
 
                                 $replace = ($isPreview)
-                                    ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->region->width . '&height=' . $this->region->height . '" ' . $attribute . '/>'
+                                    ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->preferredDisplayWidth . '&height=' . $this->preferredDisplayHeight . '" ' . $attribute . '/>'
                                     : '<img src="' . $file->storedAs . '" ' . $attribute . ' />';
                             }
                         } else {
@@ -946,7 +946,7 @@ class Ticker extends ModuleWidget
                             $this->assignMedia($file->mediaId);
 
                             $replace = ($isPreview)
-                                ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->region->width . '&height=' . $this->region->height . '" />'
+                                ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->preferredDisplayWidth . '&height=' . $this->preferredDisplayHeight . '" />'
                                 : '<img src="' . $file->storedAs . '" />';
 
                         } else if ($mappings[$header]['dataTypeId'] == 5) {
@@ -964,7 +964,7 @@ class Ticker extends ModuleWidget
                             $this->assignMedia($file->mediaId);
 
                             $replace = ($isPreview)
-                                ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->region->width . '&height=' . $this->region->height . '" />'
+                                ? '<img src="' . $this->getApp()->urlFor('library.download', ['id' => $file->mediaId, 'type' => 'image']) . '?preview=1&width=' . $this->preferredDisplayWidth . '&height=' . $this->preferredDisplayHeight . '" />'
                                 : '<img src="' . $file->storedAs . '" />';
                         }
                     }

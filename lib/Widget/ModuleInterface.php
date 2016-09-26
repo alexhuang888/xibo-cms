@@ -42,11 +42,13 @@ interface ModuleInterface
     // Return the name of the media as input by the user
     public function getName();
     public function getSetting($setting, $default = NULL);
-
+    public function getModuleIconImgSrcPath();
+    public function getModulePreviewImgSrcPath($width, $height, $scaleOption);
     /**
      * HTML Content to completely render this module.
      */
     public function getTab($tab);
+    // to get full module content without any other html decorator
     public function getResource();
     public function preview($width, $height, $scaleOverride = 0);
 
@@ -66,17 +68,4 @@ interface ModuleInterface
     public function installModule();
 
     public function settings();
-
-    //public function hasAttributes($checkOpt);
-
-    // tags, location, exif
-    // all data are in array in format of
-    // ['result': ret_code, 'data1': ....']
-    // for tags:
-    //      ['result': ret_code, 'tags': [tag string elements], 'tagsscore': [tags score elements]]
-    // for location:
-    //      ['result': ret_code, 'location': [lat, long]]
-    // for exif:
-    //      ['result': ret_code, "exif_tag_name": [exif-values], ....]
-    //public function getMediaAttributes($attrOpt, $media);
 }
