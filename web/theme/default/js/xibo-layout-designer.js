@@ -21,7 +21,164 @@ var layout;
 var lockPosition;
 var hideControls;
 var lowDesignerScale;
+var currentSelectedIdx = 0;
+function updateRegionInfoBase(element) 
+{
+    var pos = $(element).position();
+    var scale = ($(element).closest('.layout').attr("version") == 1) ? (1 / $(element).attr("tip_scale")) : $(element).attr("designer_scale");
+    $('.region-tip', element).html(Math.round($(element).width() / scale, 0) + 
+                                " x " + 
+                                Math.round($(element).height() / scale, 0) + 
+                                " (" + 
+                                    Math.round(pos.left / scale, 0) + 
+                                    "," + 
+                                    Math.round(pos.top / scale, 0) + ")");
+}
+function regionPositionUpdateBase(element, refreshPreview)
+ {
+    var curDesignerScale = parseFloat($(element).attr("designer_scale"));
+    var width   = parseFloat($(element).css("width"));
+    var height  = parseFloat($(element).css("height"));
+    var left   = parseFloat($(element).css("left"));
+    var top  = parseFloat($(element).css("top"));
+    var pos = $(element).position();
+    var regionid = $(element).attr("regionid");
 
+    // Update the region width / height attributes
+    $(element).attr("width", $(element).width() / curDesignerScale).attr("element", $(element).height() / curDesignerScale).attr("left", pos.left / curDesignerScale).attr("top", pos.top / curDesignerScale);
+
+    // Update the Preview for the new sizing
+    if (refreshPreview)
+    {
+        console.log("refresh preview");
+        var preview = Preview.instances[regionid];
+        preview.SetSequence(preview.seq);
+    }
+    // Expose a new button to save the positions
+    $("#layout-save-all").removeClass("disabled");
+    $("#layout-revert").removeClass("disabled");
+}
+toggleRegionSelectedIcon = function(regionitem)
+{
+    if ($(regionitem).hasClass('ui-selected'))
+    {
+        $(regionitem).removeClass("ui-selected");
+        $(regionitem).find('.regionitemselectedicon').addClass('regionselectediconOff');
+        $(regionitem).attr('selectedindex', -1);
+    }
+    else
+    {
+        $(regionitem).addClass("ui-selected");
+        $(regionitem).find('.regionitemselectedicon').removeClass('regionselectediconOff');
+        $(regionitem).attr('selectedindex', currentSelectedIdx++);
+    }    
+};
+DeSelecteAllRegion = function() {
+    $('.regionitem.ui-selected').each(function()
+    {
+        toggleRegionSelectedIcon($(this));
+    });
+};
+AdjustSelectedRegionPosition = function(postype)
+{
+    console.log('adjustpos: type=' + postype);
+    var anchoritem = undefined;
+    var minselectedIdx = 99999999;
+    var totalitems = 0;
+    $('.regionitem.ui-selected').each(function()
+    {
+        var thisselectedidx = parseInt($(this).attr('selectedindex'));
+        if (thisselectedidx < minselectedIdx)
+        {
+            minselectedIdx = thisselectedidx;
+            anchoritem = $(this);
+        }
+        totalitems++;
+    });
+    console.log('totalitems: ' + totalitems);
+    if (anchoritem != undefined && postype < 10 && totalitems > 1)
+    {
+        if (postype == 0)   // align top
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('top', $(anchoritem).css('top'));
+            });
+        }
+        if (postype == 1)   // align bottom
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('bottom', $(anchoritem).css('bottom'));
+            });
+        }        
+        if (postype == 2)   // align left
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('left', $(anchoritem).css('left'));
+            });
+        }        
+        if (postype == 3)   // align right
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('right', $(anchoritem).css('right'));
+            });
+        }   
+        if (postype == 4)   // align v-center
+        {
+            var v_center = $(anchoritem).css('top') + $(anchoritem).height() / 2;
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('top', v_center - $(anchoritem).height() / 2);
+            });
+        }         
+        if (postype == 5)   // align h-center
+        {
+            var h_center = $(anchoritem).css('left') + $(anchoritem).width() / 2;
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('left', h_center - $(anchoritem).width() / 2);
+            });
+        }
+        $('.regionitem.ui-selected').each(function()
+        {           
+            regionPositionUpdateBase($(this), false);
+            updateRegionInfoBase($(this));
+        });            
+    }
+    if (anchoritem != undefined && (postype > 10 && postype < 20) && totalitems > 1)
+    {
+        if (postype == 11)   // V-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('width', $(anchoritem).css('width'));
+            });
+        }
+        if (postype == 12)   // H-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('height', $(anchoritem).css('height'));
+            });
+        }  
+        if (postype == 13)   // H&V-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('height', $(anchoritem).css('height'));
+                $(this).css('width', $(anchoritem).css('width'));
+            });
+        }              
+        $('.regionitem.ui-selected').each(function()
+        {           
+            regionPositionUpdateBase($(this), true);
+            updateRegionInfoBase($(this));
+        });        
+    }
+};
 $(document).ready(function(){
     
     // Set the height of the grid to be something sensible for the current screen resolution
@@ -154,7 +311,7 @@ $(document).ready(function(){
         updateUserPref([{
             option: "defaultDesignerZoom",
             value: $(this).data().designerSize
-        }]);
+        }]);each
     });
 
     // Bind to the save size button
@@ -173,7 +330,7 @@ $(document).ready(function(){
             layout.css('width', layoutWidth * curDesignerScale);
             layout.css('height', layoutHeight * curDesignerScale);
 
-            layout.find(".region").each(function()
+            leachayout.find(".region").each(function()
             {
                 var regionWidth = parseFloat($(this).attr("width"));
                 var regionHeight = parseFloat($(this).attr("height"));
@@ -247,8 +404,7 @@ $(document).ready(function(){
     // alex: region item
     $(".layoutitem").on('click', '.mediadroppable', function()
     {
-        $(".mediadroppable").removeClass("ui-selected");
-        $(this).addClass("ui-selected");
+        toggleRegionSelectedIcon($(this));        
     }); 
     /* vertical media list, draggable */
     configureMedialistHandler();
@@ -345,7 +501,7 @@ function configurePlaylistHandler()
 }
 function configureRegionHandler()
 {
-    console.log('configureRegionHandler');
+    //console.log('configureRegionHandler');
     var thisLayout = $("#layout");
 
     // Hover functions for previews/info
@@ -365,8 +521,8 @@ function configureRegionHandler()
             stop: regionPositionUpdate,
             drag: updateRegionInfo,
             start: function(event, ui) {
-                $(".mediadroppable").removeClass("ui-selected");
-                $(this).addClass("ui-selected");
+                //toggleRegionSelectedIcon($(this));
+
             },
             //grid: [ 10, 10 ],
             snap: false
@@ -444,6 +600,7 @@ function configureRegionHandler()
             }
         });    
 }
+
 /**
  * Update Region Information with Latest Width/Position
  * @param  {[type]} e  [description]

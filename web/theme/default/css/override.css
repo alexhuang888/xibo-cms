@@ -128,12 +128,18 @@ h1 .pagetitle {
 .medialistitemsettingicon {
     position:absolute; 
     right:2px; 
-
-    font-size:.3em;
+    font-size:0.3em;
     z-index:1000;
+    text-align: center;
+    line-height:0.3em;
+    background: #666;
+    color: #0000ff;
 }
 
 .medialistitemsettingiconOff {
+    display:none;
+}
+.regionselectediconOff {
     display:none;
 }
 .regionitem  {
@@ -148,6 +154,11 @@ h1 .pagetitle {
     bottom: 5px;
     font-size:1em;
     z-index:1000;
+    text-align: center;
+    line-height: 1em;
+    background: #666;
+    color: #fff;
+    border-radius: 0.5em; /* or 50% width & line-height */     
 }
 .regionitemdeleteicon {
     position:absolute; 
@@ -155,6 +166,24 @@ h1 .pagetitle {
     top: 5px;
     font-size:1em;
     z-index:1000;
+    text-align: center;
+    line-height: 1em;
+    background: #666;
+    color: #fff;
+    border-radius: 0.5em; /* or 50% width & line-height */     
+}
+.regionitemselectedicon {
+    position:absolute; 
+    left:5px; 
+    top: 5px;
+    font-size:1em;
+    z-index:1000;
+    width: 1em;
+    text-align: center;
+    line-height: 1em;
+    background: #666;
+    color: #fff;
+    border-radius: 0.5em; /* or 50% width & line-height */    
 }
 .ui-resizable-se {
     position: absolute;
