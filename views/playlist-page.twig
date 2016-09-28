@@ -28,7 +28,7 @@
                             {% set tags %}{% trans "Tags" %}{% endset %}
                             {{ inline.input("tags", tags) }}
 
-                            {% set title %}{% trans "AI Tags aware" %}{% endset %}
+                            {% set title %}{% trans "AI-aware" %}{% endset %}
                             {% set values = [{id: 2, value: "All"}, {id: 1, value: "Yes"}, {id: 0, value: "No"}]%}
                             {{ inline.dropdown("isaitagmatchable", "single", title, 2, values, "id", "value") }}                             
                         </form>
@@ -41,8 +41,9 @@
                                 <th>{% trans "ID" %}</th>
                                 <th>{% trans "Name" %}</th>
                                 <th>{% trans "Descriptions" %} </th>
-                                <th>{% trans "AI Tags aware" %} </th>
+                                <th>{% trans "AI-aware" %} </th>
                                 <th>{% trans "# Widgets" %} </th>
+                                <th>{% trans "Thumbnail" %} </th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -75,9 +76,18 @@
                 "columns": [
                     {"data": "playlistId"},
                     {"data": "name"},
-                    {"data": "description"},
+                    {
+                        "name": "description",
+                        "data": null,
+                        "render": {"_": "description", "display": "description", "sort": "description"}
+                    },
                     {"data": "isaitagmatchable", "visible": true, "render": dataTableTickCrossColumn},
                     {"data": "numberWidgets"},
+                    {
+                        "name": "layoutId",
+                        "data": null,
+                        "render": {"_": "gridThumbnail", "display": "gridThumbnail", "sort": "playlistId"}
+                    },                    
                     {
                         "orderable": false,
                         "data": dataTableButtonsColumn
@@ -330,10 +340,20 @@
 
                 var timelineWidgetTabel = $("#timelineWidgets").DataTable({
                     "language": dataTablesLanguage,
-                    serverSide: true, stateSave: true,
+                    serverSide: true, 
+                    stateSave: true,
                     filter: false,
+                    'ordering': false,
                     searchDelay: 3000,
-                    "order": [[0, "asc"]],
+                    //"order": [[0, "asc"]],
+                    //rowReorder: true,
+                    "createdRow": function( row, data, dataIndex ) {
+                        //console.log($(row));
+                        //console.log(data);
+                        $(row).attr('widgetid', data['widgetId']);
+                        $(row).attr('displayorder', data['displayOrder']);
+                        //$(row).append('<td id="playlistdatacell" style="display:none;" widgetid="' + data['widgetId'] + '">' + data['widgetId'] + '</td>');
+                    },                    
                     ajax: {
                         url: "{{ urlFor("playlist.widget.search") }}",
                         "data": function (d) {
@@ -341,18 +361,19 @@
                         }
                     },
                     "columns": [
-                        {"data": "displayOrder"},
+                        {"data": "displayOrder", "orderable": false},
                         {"data": "name", "orderable": false},
-                        {"data": "type"},
-                        {"data": "duration"},
-                        {"data": "transition"},
+                        {"data": "type", "orderable": false},
+                        {"data": "duration", "orderable": false},
+                        {"data": "transition", "orderable": false},
+                        {"data": "widgetId", "visible": false, "orderable": false},
                         {
                             "orderable": false,
                             "data": dataTableButtonsColumn
                         }
                     ]
                 });
-
+                $("#timelineWidgets tbody").sortable();
                 timelineWidgetTabel.on('draw', dataTableDraw);
                 timelineWidgetTabel.on('processing.dt', dataTableProcessing);
                 // Hook up the library Upload Buttons

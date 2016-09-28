@@ -867,7 +867,7 @@ class Layout implements \JsonSerializable
                 /* @var Playlist $playlist */
                 foreach ($playlist->widgets as $widget) {
                     /* @var Widget $widget */
-                    $module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget, $region.width, $region.height);
+                    $module = $this->moduleFactory->createWithWidgetAndPreferredDim($widget, $region->width, $region->height);
 
                     // Set the Layout Status
                     $moduleStatus = $module->isValid();

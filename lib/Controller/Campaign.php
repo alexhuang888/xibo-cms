@@ -178,7 +178,7 @@ class Campaign extends Base
                 $group->buttons[] = array(
                     'id' => 'layout_button_editaitag',
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Campaign::ItemType(), 'itemid' => $campaign->campaignId]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit AI-Aware info')
                 );                
             }
 

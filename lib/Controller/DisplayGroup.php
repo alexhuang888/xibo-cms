@@ -216,7 +216,7 @@ class DisplayGroup extends Base
                 $group->buttons[] = array(
                     'id' => 'displaygroup_button_editaitag',
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\DisplayGroup::ItemType(), 'itemid' => $group->displayGroupId]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit AI-Aware info')
                 );
             }
 

@@ -20,8 +20,9 @@
 {% block formButtons %}
     {% trans "Help" %}, XiboHelpRender("{{ help }}")
     {% trans "Close" %}, XiboDialogClose()
-    {% trans "Edit AI Tags" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")
+    {% trans "Edit AI-Aware Info" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")
     {% trans "Switch to Timeline" %}, XiboSwapDialog("{{ urlFor("region.timeline.form", {id: region.regionId}) }}?view=timeline")
+    {% trans "Save Order" %}, XiboTimelineGridSaveOrder("timelineWidgets")
 
 {% endblock %}
 
@@ -56,7 +57,7 @@
                         </div>
                     </div>
                     <div class="XiboData">
-                        <table id="timelineWidgets" class="table table-striped" data-region-id="{{ region.regionId }}" data-playlist-id="{{ playlist.playlistId }}"
+                        <table id="timelineWidgets" class="table table-striped" data-region-id="{{ region.regionId }}" data-playlist-id="{{ playlist.playlistId }}" data-order-url="{{ urlFor("playlist.order", {id: playlist.playlistId}) }}"
                                 >
                             <thead>
                             <tr>
@@ -65,6 +66,7 @@
                                 <th>{% trans "Type" %}</th>
                                 <th>{% trans "Duration" %}</th>
                                 <th>{% trans "Transition" %}</th>
+                                <th>{% trans "widgetId" %}</th>
                                 <th></th>
                             </tr>
                             </thead>

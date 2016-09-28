@@ -428,7 +428,7 @@ class Display extends Base
                 $display->buttons[] = array(
                     'id' => 'display_button_editaitag',
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Display::ItemType(), 'itemid' => $display->displayId]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit AI-Aware info')
                 );
             }
 

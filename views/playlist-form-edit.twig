@@ -46,16 +46,18 @@
                         {% set title %}{% trans "Tags" %}{% endset %}
                         {% set helpText %}{% trans "Tags for this playlist - used when searching for it. Comma delimited. (1 - 250 characters)" %}{% endset %}
                         {{ forms.input("tags", title, tagscvs, helpText) }}
+
+                        {% set title %}{% trans "AI-Aware?" %}{% endset %}
+                        {% set helpText %}{% trans "Is this an AI-tag aware playlist?" %}{% endset %}
+                        {{ forms.checkbox("isaitagmatchable", title, playlist.isaitagmatchable, helpText) }}                        
+                                            
                     </div>
                     <div class="tab-pane" id="description">
                         {% set title %}{% trans "Description" %}{% endset %}
                         {% set helpText %}{% trans "An optional description of the Layout. (1 - 250 characters)" %}{% endset %}
                         {{ forms.textarea("description", title, playlist.description, helpText) }}
 
-                        {% set title %}{% trans "AITag matchable?" %}{% endset %}
-                        {% set helpText %}{% trans "Is this a AI-tag aware playlist?" %}{% endset %}
-                        {{ forms.checkbox("isaitagmatchable", title, playlist.isaitagmatchable, helpText) }}                        
-                    </div>
+                        </div>
                     <script type="text/javascript">
                         $('#playlistEditForm #tags').tagEditor({
                             delimiter: ',', /* comma */

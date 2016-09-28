@@ -17,7 +17,7 @@
 {% block formButtons %}
     {% trans "Help" %}, XiboHelpRender("{{ help }}")
     {% trans "Close" %}, XiboDialogClose(refreshplaylistCallback)
-    {% trans "Edit AI Tags" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")    
+    {% trans "Edit AI-Aware Info" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")    
     {% trans "Switch to Grid" %}, XiboSwapDialog("{{ urlFor("playlist.timeline.form", {id: playlist.playlistId}) }}?view=grid")
     {% trans "Save Order" %}, XiboTimelineSaveOrder("timelineControl")
 {% endblock %}
@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="col-md-10" id='rightpanel'>
-                <div id="timelineControl" class="timelineColumn" " 
+                <div id="timelineControl" class="timelineColumn" 
                                         data-order-url="{{ urlFor("playlist.order", {id: playlist.playlistId}) }}" >                    
                     <div class="timelineMediaVerticalList">
                         <ul id="{{ random() }}" class="timelineSortableListOfMedia">

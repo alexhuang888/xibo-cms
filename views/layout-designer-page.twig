@@ -89,14 +89,14 @@
                                 <div class="btn-group btn-group-justified" role="group" aria-label="...">
                                     <div class="btn-group" role="group">
 
-                                        <a id="layoutzoomout" class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
+                                        <a id="layoutzoomout" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
                                     </div>
                                     <div class="btn-group" role="group">
 
-                                        <a id="layoutzoomin" class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+                                        <a id="layoutzoomin" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
                                     </div>
                                     <div class="btn-group" role="group">
-                                        <button id="saveDesignerSize" data-toggle="tooltip" data-placement="bottom" title="{% trans "Save canvas size as default" %}" class="btn btn-success btn-sm " role="button" data-designer-size="{{ zoom }}">
+                                        <button id="saveDesignerSize" data-toggle="" data-placement="bottom" title="{% trans "Save canvas size as default" %}" class="btn btn-success btn-sm " role="button" data-designer-size="{{ zoom }}">
                                             <i class="fa fa-floppy-o" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
@@ -122,11 +122,11 @@
                             <div class="col-md-2 text-center">
                                 <div class="btn-group" role="group" aria-label="...">
                                 <div class="btn-group" role="group">
-                                    <button id="layout-revert" class="btn btn-warning btn-sm disabled btn-block">
-                                        <i class="fa fa-undo" aria-hidden="true" title="{% trans "Undo position change" %}"></i> {% trans "" %}</button>
+                                    <button id="layout-revert" class="btn btn-warning btn-sm disabled btn-block"  title="{% trans "Undo position change" %}">
+                                        <i class="fa fa-undo" aria-hidden="true"></i> {% trans "" %}</button>
                                 </div>
                                 <div class="btn-group" role="group">
-                                    <button id="layout-save-all" class="btn btn-success btn-sm disabled btn-block">
+                                    <button id="layout-save-all" class="btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Positions" %}">
                                         <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Positions" %}
                                     </button>
                                 </div>
@@ -185,7 +185,7 @@
                        
                     </div>
                     <div id="medialisttoolpanel">
-                        <i id='addnewplaylisticon' class="fa fa-plus fa-fw" title='{% trans "Add a new playlist" %}' style="width:10%;text-size:1em;"></i>
+                        <i id='addnewplaylisticon' class="fa fa-plus fa-fw playlistitemaddicon" title='{% trans "Add a new playlist" %}' style="width:10%;text-size:1em;"></i>
                     </div>
                 </div>
             -->
@@ -196,7 +196,7 @@
                             <a href="#" class="medialistcarousel-control-first">&lsaquo;&lsaquo;</a>
                             -->
                             <a href="#" class="medialistcarousel-control-prev">&lsaquo;</a>
-                            <i id='addnewplaylisticon' class="fa fa-plus fa-fw" title='{% trans "Add a new playlist" %}' style="position:absolute;top:-20px;right:-20px;text-size:1em;"></i>
+                            <i id='addnewplaylisticon' class="fa fa-plus fa-fw playlistitemaddicon" title="{% trans "Add a new playlist" %}" ></i>
                             <div class="medialistcarousel" id='medialistcarousel-droppable'>
                                 <ul id="medialist-draggable">
 
@@ -646,8 +646,16 @@
                     "language": dataTablesLanguage,
                     serverSide: true, stateSave: true,
                     filter: false,
+                    'ordering': false,
                     searchDelay: 3000,
-                    "order": [[0, "asc"]],
+                    //"order": [[0, "asc"]],
+                    //rowReorder: true,
+                    "createdRow": function( row, data, dataIndex ) {
+                        //console.log($(row));
+                        //console.log(data);
+                        $(row).attr('widgetid', data['widgetId']);
+                        $(row).attr('displayorder', data['displayOrder']);
+                    },         
                     ajax: {
                         url: "{{ urlFor("playlist.widget.search") }}",
                         "data": function (d) {
@@ -655,18 +663,19 @@
                         }
                     },
                     "columns": [
-                        {"data": "displayOrder"},
+                        {"data": "displayOrder", "orderable": false},
                         {"data": "name", "orderable": false},
-                        {"data": "type"},
-                        {"data": "duration"},
-                        {"data": "transition"},
+                        {"data": "type", "orderable": false},
+                        {"data": "duration", "orderable": false},
+                        {"data": "transition", "orderable": false},
+                        {"data": "widgetId", "visible": false, "orderable": false},
                         {
                             "orderable": false,
                             "data": dataTableButtonsColumn
                         }
                     ]
                 });
-
+                $("#timelineWidgets tbody").sortable();
                 timelineWidgetTabel.on('draw', dataTableDraw);
                 timelineWidgetTabel.on('processing.dt', dataTableProcessing);
                 // Hook up the library Upload Buttons
@@ -723,6 +732,7 @@
                             html = html + '<i class="fa fa-cog fa-fw medialistitemsettingicon medialistitemsettingiconOff"';
                             html = html + ' data-playlistid=' + playlist.playlistId;
                             html = html + ' data-playlisteditformurl="' + '{{ urlFor('playlist.timeline.form')}}' + '?view=grid"'
+                            html = html + ' title="{% trans "Edit this playlist" %}"';
                             html = html + ' ></i>';
                             html = html + ' </li>';
                             $("#medialist-draggable").append(html);
@@ -780,7 +790,7 @@
 
                             if (xhr.success) 
                             {
-                                console.log("add new region: " + xhr.id);
+                                console.log("added new region: " + xhr.id);
                                 var regionIDElement = '.region_' + xhr.id;
                                 // Reload the designer
                                 //window.location.reload();
@@ -793,7 +803,7 @@
                                                                     $('#layout').attr('designer_scale'),
                                                                     xhr.data.zIndex,
                                                                     xhr.extra['currentUserEditable']);
-                                console.log(newHtml);
+                                //console.log(newHtml);
                                 var regionItem = $(newHtml).appendTo('#layout');
                                 configureRegionHandler();
                                 //console.log($(regionItem));

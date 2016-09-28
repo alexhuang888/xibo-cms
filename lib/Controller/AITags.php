@@ -136,7 +136,7 @@ class AITags extends Base
     {
         $this->getState()->template = 'aitags-edit';
         $this->getState()->setData([
-            'help' => $this->getHelp()->link('AITags', 'Add')
+            'help' => $this->getHelp()->link('AI-Aware information', 'Add')
         ]);
     }
 
@@ -163,7 +163,7 @@ class AITags extends Base
             'aitagscvs' => $tagstr,
             'itemtype' => $itemtype,
             'itemid' => $itemid,
-            'help' => $this->getHelp()->link('AITags', 'EditTags')
+            'help' => $this->getHelp()->link('AI-Aware information', 'EditTags')
         ]);
     }
     public function retrieveMediaTagForm($itemtype, $itemid)
@@ -185,7 +185,7 @@ class AITags extends Base
             'aitagscvs' => $tagstr,
             'itemtype' => $itemtype,
             'itemid' => $itemid,
-            'help' => $this->getHelp()->link('AITags', 'EditTags')
+            'help' => $this->getHelp()->link('AI-Aware information', 'EditTags')
         ]);
     }
     // to edit tags from edit tag form (need to find all related items and update to their tags database link)
@@ -270,7 +270,7 @@ class AITags extends Base
         }
         // Return
         $this->getState()->hydrate([
-            'message' => sprintf(__('Edited %s'), 'AI tags'),
+            'message' => sprintf(__('Edited %s'), 'AI-Aware information'),
             'itemtype' => $itemtype,
             'itemid' => $itemid,
             'data' => $item

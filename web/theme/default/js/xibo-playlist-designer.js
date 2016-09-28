@@ -84,6 +84,7 @@ function XiboPlaylistSaveAITags(formUrl)
     bootbox.hideAll();
     XiboFormRender(formUrl);
 };
+// playlist save order from timeline view (playlist editing)
 var XiboTimelineSaveOrder = function(timelineDiv) {
 
     var url = $("#" + timelineDiv).data().orderUrl;
@@ -113,6 +114,36 @@ var XiboTimelineSaveOrder = function(timelineDiv) {
         ]
     });
 };
+// playlist save order from grid view (playlist editing)
+var XiboTimelineGridSaveOrder = function(timelinetable) {
+
+    var url = $("#" + timelinetable).data().orderUrl;
+    var i = 0;
+    var widgets = {};
+
+    $('#' + timelinetable + ' tr').each(function() 
+    {
+        i++;
+        widgets[$(this).attr("widgetid")] = i;
+    });
+
+    console.log('new order: ');
+    console.log(widgets);
+    // Call the server to do the reorder
+    $.ajax({
+        type:"post",
+        url: url,
+        cache:false,
+        dataType:"json",
+        data:{
+            "widgets": widgets
+        },
+        success: [
+            XiboSubmitResponse
+        ]
+    });
+};
+
 
 var LibraryAssignSubmit = function() {
     // Collect our media

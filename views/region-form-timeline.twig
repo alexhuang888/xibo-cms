@@ -18,7 +18,7 @@
 {% block formButtons %}
     {% trans "Help" %}, XiboHelpRender("{{ help }}")
     {% trans "Close" %}, XiboDialogClose()
-    {% trans "Edit AI Tags" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")    
+    {% trans "Edit AI-Aware Info" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")    
     {% trans "Switch to Grid" %}, XiboSwapDialog("{{ urlFor("region.timeline.form", {id: region.regionId}) }}?view=grid")
     {% trans "Save Order" %}, XiboTimelineSaveOrder("timelineControl")
 {% endblock %}

@@ -87,12 +87,13 @@ h1 .pagetitle {
 
 /* for designer playlist/medialist */
 .mediaitem,
-.playlistitem{
+.playlistitem {
+    position:relative;
     margin: 2px;
     padding: 1px;
     width: 96px;
     height: 72px;
-    font-size: 4em;
+    font-size: 12px;
     text-align: center;
     list-style: none;
 }
@@ -111,29 +112,42 @@ h1 .pagetitle {
 .playlistitem {
     position: relative;
 }
+.playlistitemaddicon {
+    position:relative;
+    top:-20px;
+    right:-84px;
+    font-size:12px;
+    z-index:10000;
+    color:#ffffff;
+}
 .playlistitemdeleteicon {
     position:absolute; 
     right:5px; 
     top: 5px;
-    font-size:.3em;
+    font-size:12px;
     z-index:1000;
 }
 .playlistitemsettingicon {
     position:absolute; 
+    top:3px;
     right:5px; 
     bottom: 5px;
-    font-size:.3em;
+    font-size:12px;
     z-index:1000;
+    color:#ffffff;
 }
 .medialistitemsettingicon {
-    position:absolute; 
-    right:2px; 
-    font-size:0.3em;
+    position:relative; 
+    right:-40px; 
+    top:-74px;
+    font-size:12px;
     z-index:1000;
+    width: 12px;
     text-align: center;
-    line-height:0.3em;
-    background: #666;
-    color: #0000ff;
+    line-height: 12px;
+    background: #5555ff;
+    color: #ffffff;
+    border-radius: 6px; /* or 50% width & line-height */         
 }
 
 .medialistitemsettingiconOff {
@@ -152,38 +166,38 @@ h1 .pagetitle {
     position:absolute; 
     right:5px; 
     bottom: 5px;
-    font-size:1em;
+    font-size:12px;
     z-index:1000;
     text-align: center;
-    line-height: 1em;
+    line-height: 12px;
     background: #666;
     color: #fff;
-    border-radius: 0.5em; /* or 50% width & line-height */     
+    border-radius: 6px; /* or 50% width & line-height */     
 }
 .regionitemdeleteicon {
     position:absolute; 
     right:5px; 
     top: 5px;
-    font-size:1em;
+    font-size:12px;
     z-index:1000;
     text-align: center;
-    line-height: 1em;
+    line-height: 12px;
     background: #666;
     color: #fff;
-    border-radius: 0.5em; /* or 50% width & line-height */     
+    border-radius: 6px; /* or 50% width & line-height */     
 }
 .regionitemselectedicon {
     position:absolute; 
     left:5px; 
     top: 5px;
-    font-size:1em;
+    font-size:12px;
     z-index:1000;
-    width: 1em;
+    width: 12px;
     text-align: center;
-    line-height: 1em;
+    line-height: 12px;
     background: #666;
     color: #fff;
-    border-radius: 0.5em; /* or 50% width & line-height */    
+    border-radius: 6px; /* or 50% width & line-height */    
 }
 .ui-resizable-se {
     position: absolute;
@@ -194,6 +208,7 @@ h1 .pagetitle {
     margin: 20px 0px;
     position: relative;
     border: 2px solid #8f8f8f;
+    border-top-width:20px;
     width: 104px;
     height: 500px;
     -webkit-border-radius: 5px;
@@ -209,12 +224,12 @@ h1 .pagetitle {
 .medialistcarousel {
     position: relative;
     overflow: hidden;
-    height: 490px;
+    height: 470px;
+    top:-20px;/*compensate top 20 border */
 }
 
 .medialistcarousel ul {
     width: 100%;
-    height: 20000em;
     position: relative;
     list-style: none;
     margin: 0;
@@ -256,12 +271,12 @@ h1 .pagetitle {
 .medialistcarousel-control-prev
  {
     left: 40px;
-    top: -60px;
+    top: -80px;
 }
 .medialistcarousel-control-next
 {
     left: 40px;
-    top: 465px;
+    top: 445px;
 }
 .medialistcarousel-control-first {
     left: 10px;
@@ -438,4 +453,15 @@ h1 .pagetitle {
 .previewNav {
     left:0px;
     bottom:0px;
+}
+
+.playlistgridthumbnail
+{
+    width: 100px;
+    height: 56px;
+}
+.layoutgridthumbnail
+{
+    width: 100px;
+    height: 56px;
 }

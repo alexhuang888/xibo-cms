@@ -402,9 +402,19 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 
     // alex: region item
-    $(".layoutitem").on('click', '.mediadroppable', function()
+    $(".mediadroppable").on('click', function(e)
     {
-        toggleRegionSelectedIcon($(this));        
+        console.log(e.target);
+        console.log(this);
+        console.log($(e.target).hasClass('regionPreviewOverlay'));
+        if ($(e.target).hasClass('regionPreviewOverlay') || 
+            $(e.target).hasClass('previewContent') ||
+            $(e.target).hasClass('preview') || 
+            $(e.target).hasClass('regionTransparency')  || 
+            $(e.target).hasClass('mediadroppable'))
+        {       
+            toggleRegionSelectedIcon($(this));     
+        }   
     }); 
     /* vertical media list, draggable */
     configureMedialistHandler();
@@ -518,7 +528,7 @@ function configureRegionHandler()
         })
         .draggable({
             containment: thisLayout,
-            stop: regionPositionUpdate,
+            stop: regionPositionUpdateNoRefreshPreview,
             drag: updateRegionInfo,
             start: function(event, ui) {
                 //toggleRegionSelectedIcon($(this));
@@ -640,7 +650,26 @@ function regionPositionUpdate(e, ui) {
     $("#layout-save-all").removeClass("disabled");
     $("#layout-revert").removeClass("disabled");
 }
+function regionPositionUpdateNoRefreshPreview(e, ui) {
+    var curDesignerScale = parseFloat($(this).attr("designer_scale"));
+    var width   = parseFloat($(this).css("width"));
+    var height  = parseFloat($(this).css("height"));
+    var left   = parseFloat($(this).css("left"));
+    var top  = parseFloat($(this).css("top"));
+    var pos = $(this).position();
+    var regionid = $(this).attr("regionid");
 
+    // Update the region width / height attributes
+    $(this).attr("width", $(this).width() / curDesignerScale).attr("height", $(this).height() / curDesignerScale).attr("left", pos.left / curDesignerScale).attr("top", pos.top / curDesignerScale);
+
+    // Update the Preview for the new sizing
+    //var preview = Preview.instances[regionid];
+    //preview.SetSequence(preview.seq);
+
+    // Expose a new button to save the positions
+    $("#layout-save-all").removeClass("disabled");
+    $("#layout-revert").removeClass("disabled");
+}
 function savePositions() {
 
     // Update all layouts
@@ -743,6 +772,7 @@ function XiboPlaylistSaveAITags(formUrl)
     bootbox.hideAll();
     XiboFormRender(formUrl);
 };
+// playlist save order from timeline view (layout editing page)
 var XiboTimelineSaveOrder = function(timelineDiv) {
 
     var url = $("#" + timelineDiv).data().orderUrl;
@@ -772,7 +802,36 @@ var XiboTimelineSaveOrder = function(timelineDiv) {
         ]
     });
 };
+// playlist save order from grid view (layout editing)
+var XiboTimelineGridSaveOrder = function(timelinetable) {
 
+    var url = $("#" + timelinetable).data().orderUrl;
+    var i = 0;
+    var widgets = {};
+
+    $('#' + timelinetable + ' tr').each(function() 
+    {
+        i++;
+        widgets[$(this).attr("widgetid")] = i;
+    });
+
+    console.log(widgets);
+
+    // Call the server to do the reorder
+    $.ajax({
+        type:"post",
+        url: url,
+        cache:false,
+        dataType:"json",
+        data:{
+            "widgets": widgets
+        },
+        success: [
+            XiboSubmitResponse,
+            afterDesignerSave
+        ]
+    });
+};
 function afterDesignerSave() {
     // Region Preview Refresh
     $('.regionPreview').each(function(idx, el) {

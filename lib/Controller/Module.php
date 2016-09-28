@@ -775,6 +775,25 @@ class Module extends Base
         $this->setNoOutput(true);
     }
     /**
+     * Get getResourceWithPreferredDim
+     * @param $regionId
+     * @param $widgetId
+     * @throws \Xibo\Exception\NotFoundException
+     */
+    public function getMediaResource($mediaId)
+    {
+        $media = $this->mediaFactory->GetById($mediaId);
+
+        $module = $this->moduleFactory->createWithMedia($media);
+
+        if (!$this->getUser()->checkViewable($media))
+            throw new AccessDeniedException();
+
+        // Call module GetResource
+        echo $module->getResource();
+        $this->setNoOutput(true);
+    }    
+    /**
      * @param $moduleId
      * @param $formName
      * @throws ConfigurationException

@@ -210,12 +210,17 @@ class Playlist extends Base
                 $firstWidget = $playlist->widgets[0];
                 // then we need to create a widget module to get preview url?
                 $thumbmodule = $this->moduleFactory->createWithWidgetAndPreferredDim($firstWidget);
-                $playlist->thumbnail = $thumbmodule->getModulePreviewImgSrcPath(120, 120, 0);
+                $playlist->thumbnail = $thumbmodule->getModulePreviewImgSrcPath(100, 56, 0);
+                $fullpreview = $thumbmodule->getModuleImgSrcPath(0,0,0);
+                $playlist->gridThumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $fullpreview . '"><img class="playlistgridthumbnail" src="' . $playlist->thumbnail . '" /></a>';                
+
             }
             else
             {
                 $playlist->thumbnail = $this->getConfig()->uri('img/' . 'thumbnails/no-content.png');
+                $playlist->gridThumbnail = '<img class="playlistgridthumbnail" src="' . $playlist->thumbnail . '" />';                
             }
+            
             $playlist->includeProperty('buttons');
 
             if ($this->getUser()->checkEditable($playlist)) {
@@ -224,20 +229,14 @@ class Playlist extends Base
                 $playlist->buttons[] = array(
                     'id' => 'playlist_button_edit',
                     'url' => $this->urlFor('playlist.edit.form', ['id' => $playlist->getId()]),
-                    'text' => __('Edit')
-                );
-                // Edit AI Tags
-                $playlist->buttons[] = array(
-                    'id' => 'playlist_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit Properties')
                 );
 
                 // Edit Widgets list
                 $playlist->buttons[] = array(
                     'id' => 'playlist_button_editwidgets',
                     'url' => $this->urlFor('playlist.timeline.form', ['id' => $playlist->getId()]),
-                    'text' => __('Edit Widgets')
+                    'text' => __('Edit Timeline')
                 );                
                 // Copy Button
                 $playlist->buttons[] = array(
@@ -246,7 +245,12 @@ class Playlist extends Base
                     'url' => $this->urlFor('playlist.clone', ['id' => $playlist->getId()]),
                     'text' => __('Copy')
                 );
-
+                // Edit AI Tags
+                $playlist->buttons[] = array(
+                    'id' => 'playlist_button_editaitag',
+                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
+                    'text' => __('Edit AI-Aware Info')
+                );
                 // Preview
                 $playlist->buttons[] = array(
                     'id' => 'layout_button_preview',

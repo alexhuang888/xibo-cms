@@ -635,12 +635,25 @@ abstract class ModuleWidget implements ModuleInterface
     public function getModulePreviewImgSrcPath($previewWidth, $previewHeight, $scaleOverride)
     {
         if ($this->module->previewEnabled == 0)
-            return getModuleIconImgSrcPath();
-
-        $url = $this->getApp()->urlFor('module.getResourceWithPreferredDim', ['preferredDisplayWidth' => ($this->preferredDisplayWidth == 0 ? $previewWidth : $this->preferredDisplayWidth), 'preferredDisplayHeight' => ($this->preferredDisplayHeight == 0 ? $previewHeight : $this->preferredDisplayHeight), 'id' => $this->getWidgetId()]);
-
-        return $url . '?raw=true&preview=true&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;
+            return $this->getModuleIconImgSrcPath();
+        // check if widget is temporarily? then it is from library assignMedia
+        if ($this->widget->widgetId == 0 || $this->widget->widgetId == null)
+        {
+            $url = $this->getApp()->urlFor('module.getMediaResource', ['id' => $this->widget->mediaIds[0]]);
+                    
+            return $url . '?raw=true&preview=1&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;            
+        }
+        else
+        {
+            $url = $this->getApp()->urlFor('module.getResourceWithPreferredDim', ['preferredDisplayWidth' => ($this->preferredDisplayWidth == 0 ? $previewWidth : $this->preferredDisplayWidth), 'preferredDisplayHeight' => ($this->preferredDisplayHeight == 0 ? $previewHeight : $this->preferredDisplayHeight), 'id' => $this->getWidgetId()]);
+            return $url . '?raw=true&preview=1&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;            
+        }
     }
+    public function getModuleImgSrcPath($previewWidth, $previewHeight, $scaleOverride)
+    {
+        $url = $this->getApp()->urlFor('library.download', ['id' => $this->widget->mediaIds[0]]);
+        return $url;
+    }    
     /**
      * Preview code for a module.
      * it will either return previewicon, or a html codes to embedded module's content

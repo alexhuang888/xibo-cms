@@ -372,12 +372,16 @@ class Library extends Base
 
             // Thumbnail URL
             $media->thumbnail = '';
-
+            $mediaModule = $this->moduleFactory->createWithMedia($media);
+            $mediathumburl = $mediaModule->getModulePreviewImgSrcPath(100, 56, 0);
+            $mediafullurl = $mediaModule->getModuleImgSrcPath(0, 0, 0);
+            $media->thumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $mediafullurl . '"><img src="' . $mediathumburl . '" /></i></a>';
+/*
             if ($media->mediaType == 'image') {
                 $download = $this->urlFor('library.download', ['id' => $media->mediaId]) . '?preview=1';
                 $media->thumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $download . '"><img src="' . $download . '&width=100&height=56" /></i></a>';
             }
-
+*/
             $media->fileSizeFormatted = ByteFormatter::format($media->fileSize);
 
             if ($this->isApi())
@@ -399,7 +403,7 @@ class Library extends Base
                 $media->buttons[] = array(
                     'id' => 'content_button_editaitag',
                     'url' => $this->urlFor('aitags.mediatagretrieve.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit AI-Aware Info')
                 );                
             }
 

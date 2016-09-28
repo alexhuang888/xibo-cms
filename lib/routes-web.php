@@ -144,6 +144,7 @@ $app->get('/playlist/widget/form/audio/:id', '\Xibo\Controller\Module:widgetAudi
 $app->get('/playlist/widget/tab/:tab/:id', '\Xibo\Controller\Module:getTab')->name('module.widget.tab.form');
 //$app->get('/playlist/widget/resource/:regionId/:id', '\Xibo\Controller\Module:getResource')->name('module.getResource');
 $app->get('/playlist/widget/resource/:preferredDisplayWidth/:preferredDisplayHeight/:id', '\Xibo\Controller\Module:getResourceWithPreferredDim')->name('module.getResourceWithPreferredDim');
+$app->get('/playlist/media/resource/:id', '\Xibo\Controller\Module:getMediaResource')->name('module.getMediaResource');
 
 //
 // library
@@ -346,7 +347,7 @@ $app->get('/command/form/edit/:id', '\Xibo\Controller\Command:editForm')->name('
 $app->get('/command/form/delete/:id', '\Xibo\Controller\Command:deleteForm')->name('command.delete.form');
 
 //
-// AI Tags/AIProfile
+// AI-Aware Info/AIProfile
 
 $app->get('/aitags/form/edittags/:itemtype/:itemid', '\Xibo\Controller\AITags:editTagForm')->name('aitags.edittag.form');
 $app->get('/aitags/form/mediatagretrieve/:itemtype/:itemid', '\Xibo\Controller\AITags:retrieveMediaTagForm')->name('aitags.mediatagretrieve.form');

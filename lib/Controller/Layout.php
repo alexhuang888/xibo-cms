@@ -653,7 +653,7 @@ class Layout extends Base
 
             if ($layout->backgroundImageId != 0) {
                 $download = $this->urlFor('library.download', ['id' => $layout->backgroundImageId]) . '?preview=1';
-                $layout->thumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $download . '"><img src="' . $download . '&width=100&height=56" /></i></a>';
+                $layout->thumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $download . '"><img src="' . $download . '&width=100&height=56" /></a>';
             }
 
             // Fix up the description
@@ -728,7 +728,7 @@ class Layout extends Base
                 $layout->buttons[] = array(
                     'id' => 'layout_button_editaitag',
                     'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Layout::ItemType(), 'itemid' => $layout->layoutId]),
-                    'text' => __('Edit AI Tags')
+                    'text' => __('Edit AI-Aware info')
                 );
                 // Copy Button
                 $layout->buttons[] = array(
@@ -803,7 +803,7 @@ class Layout extends Base
     {
         $this->getState()->template = 'layout-form-add';
         $this->getState()->setData([
-            'layouts' => $this->layoutFactory->query(['layout'], ['excludeTemplates' => 0, 'tags' => 'template']),
+            'layouts' => $this->layoutFactory->query(['layout'], ['excludeTemplates' => 0]),
             'resolutions' => $this->resolutionFactory->query(['resolution']),
             'help' => $this->getHelp()->link('Layout', 'Add')
         ]);
