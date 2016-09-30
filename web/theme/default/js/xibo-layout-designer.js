@@ -25,6 +25,7 @@ var currentSelectedIdx = 0;
 function updateRegionInfoBase(element) 
 {
     var pos = $(element).position();
+
     var scale = ($(element).closest('.layout').attr("version") == 1) ? (1 / $(element).attr("tip_scale")) : $(element).attr("designer_scale");
     $('.region-tip', element).html(Math.round($(element).width() / scale, 0) + 
                                 " x " + 
@@ -32,7 +33,7 @@ function updateRegionInfoBase(element)
                                 " (" + 
                                     Math.round(pos.left / scale, 0) + 
                                     "," + 
-                                    Math.round(pos.top / scale, 0) + ")");
+                                    Math.round(pos.top / scale, 0) + ") ");
 }
 function regionPositionUpdateBase(element, refreshPreview)
  {
@@ -180,7 +181,10 @@ AdjustSelectedRegionPosition = function(postype)
     }
 };
 $(document).ready(function(){
-    
+    $('.regionitem').each(function()
+    {
+        updateRegionInfoBase($(this));
+    });
     // Set the height of the grid to be something sensible for the current screen resolution
     var jumpList = $("#layoutJumpList");
 
@@ -404,9 +408,9 @@ $(document).ready(function(){
     // alex: region item
     $(".mediadroppable").on('click', function(e)
     {
-        console.log(e.target);
-        console.log(this);
-        console.log($(e.target).hasClass('regionPreviewOverlay'));
+//        console.log(e.target);
+//        console.log(this);
+//        console.log($(e.target).hasClass('regionPreviewOverlay'));
         if ($(e.target).hasClass('regionPreviewOverlay') || 
             $(e.target).hasClass('previewContent') ||
             $(e.target).hasClass('preview') || 
@@ -620,6 +624,7 @@ function configureRegionHandler()
 function updateRegionInfo(e, ui) 
 {
     var pos = $(this).position();
+    //console.log(regiondurationhtml);
     var scale = ($(this).closest('.layout').attr("version") == 1) ? (1 / $(this).attr("tip_scale")) : $(this).attr("designer_scale");
     $('.region-tip', this).html(Math.round($(this).width() / scale, 0) + 
                                 " x " + 
@@ -627,7 +632,7 @@ function updateRegionInfo(e, ui)
                                 " (" + 
                                     Math.round(pos.left / scale, 0) + 
                                     "," + 
-                                    Math.round(pos.top / scale, 0) + ")");
+                                    Math.round(pos.top / scale, 0) + ") ");
 }
 
 function regionPositionUpdate(e, ui) {
@@ -941,6 +946,12 @@ function layoutStatus(url) {
 
                 // Duration
                 $("#layout-duration").html(moment().startOf("day").seconds(response.extra.duration).format("HH:mm:ss"));
+                $.each(response.extra.regionduration, function(index, value) 
+                {
+                    console.log('idx[' + index + '] = ' + value);
+                    var regionid = 'region_' + index;
+                    $('#' + regionid).attr('duration') = value;
+                });
             }
             else {
                 // Login Form needed?

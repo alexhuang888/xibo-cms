@@ -398,13 +398,16 @@ class Library extends Base
                     'url' => $this->urlFor('library.edit.form', ['id' => $media->mediaId]),
                     'text' => __('Edit')
                 );
-
-                // Edit AI Tags
-                $media->buttons[] = array(
-                    'id' => 'content_button_editaitag',
-                    'url' => $this->urlFor('aitags.mediatagretrieve.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
-                    'text' => __('Edit AI-Aware Info')
-                );                
+                if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_ALLOW_USEREDITING', 0) == 1)
+                {
+                    // Edit AI Tags
+                    $media->buttons[] = array(
+                        'id' => 'content_button_editaitag',
+                        'url' => $this->urlFor('aitags.mediatagretrieve.form', ['itemtype' => \Xibo\Entity\MEdia::ItemType(), 'itemid' => $media->mediaId]),
+                        'text' => __('Edit AI-Aware Info')
+                    );     
+                }           
             }
 
             if ($user->checkDeleteable($media)) {

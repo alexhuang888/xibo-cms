@@ -424,12 +424,16 @@ class Display extends Base
                     'url' => $this->urlFor('display.edit.form', ['id' => $display->displayId]),
                     'text' => __('Edit')
                 );
-                // Edit AI Tags
-                $display->buttons[] = array(
-                    'id' => 'display_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Display::ItemType(), 'itemid' => $display->displayId]),
-                    'text' => __('Edit AI-Aware info')
-                );
+                if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_ALLOW_USEREDITING', 0) == 1)
+                {
+                    // Edit AI Tags
+                    $display->buttons[] = array(
+                        'id' => 'display_button_editaitag',
+                        'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Display::ItemType(), 'itemid' => $display->displayId]),
+                        'text' => __('Edit AI-Aware info')
+                    );
+                }
             }
 
             // Delete

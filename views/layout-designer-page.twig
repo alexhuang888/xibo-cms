@@ -103,9 +103,9 @@
                             </div>
                             {% set alignposinfo = {'Align Top': 0, 'Align Bottom': 1, 'Align Left': 2, 'Align Right': 3, 'Align V-Center': 4, 'Align H-Center': 5, 'Same Width':11, 'Same Height': 12, 'Same Dim': 13} %}                            
                             <div class="col-md-2 text-center">
-                                <div class="btn-group regionInfo pull-right">
+                                <div class="btn-group regionAligmentDropdown pull-right">
                                     <button class="btn dropdown-toggle" data-toggle="dropdown">
-                                        <span class="region-tip" title="{% trans "Align region position/size" %}">{% trans "Region aligment" %}</span> <span class="caret"></span>
+                                        <span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size" %}">{% trans "Region aligment" %}</span> <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu">
                                     <li>
@@ -190,12 +190,12 @@
                 </div>
             -->
                 <!-- actually a playlist panel -->
-                <div id="medialistpanel">
+                <div id="medialistpanel" title="{% trans "Playlist collections" %}">
                     <div class="medialistcarousel-wrapper">
                         <!--
                             <a href="#" class="medialistcarousel-control-first">&lsaquo;&lsaquo;</a>
                             -->
-                            <a href="#" class="medialistcarousel-control-prev">&lsaquo;</a>
+                            <a href="#" class="medialistcarousel-control-prev" title="{% trans "Scroll up one playlist" %}">&lsaquo;</a>
                             <i id='addnewplaylisticon' class="fa fa-plus fa-fw playlistitemaddicon" title="{% trans "Add a new playlist" %}" ></i>
                             <div class="medialistcarousel" id='medialistcarousel-droppable'>
                                 <ul id="medialist-draggable">
@@ -205,7 +205,7 @@
                             <!--
                             <a href="#" class="medialistcarousel-control-last">&rsaquo;&rsaquo;</a>
                             -->
-                            <a href="#" class="medialistcarousel-control-next"on>&rsaquo;</a>
+                            <a href="#" class="medialistcarousel-control-next" title="{% trans "Scroll down one playlist" %}">&rsaquo;</a>
                             <p class="medialistcarousel-pagination" 
                             </p>                            
                     </div>
@@ -258,6 +258,7 @@
                                 top = "{{ region.top }}",
                                 width="{{ region.width }}" 
                                 height="{{ region.height }}" 
+                                duration={{ region.duration }}
                                 href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}" 
                                 {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this))"{% endif %} 
                                 class="{{ disabledCss }} {{ previewCss }} regionitem mediadroppable" 
@@ -829,6 +830,7 @@
                     // here, we should add a new playlist to this 
                     XiboFormRender('{{ urlFor("playlist.add.form") }}');
                 });
+
             });
             /* end of document.ready() */
 
@@ -883,6 +885,7 @@
                 newRegionHtml = newRegionHtml + ' top = "' + originalTop + '"';
                 newRegionHtml = newRegionHtml + ' width="' + originalWidth + '"'; 
                 newRegionHtml = newRegionHtml + ' height="' + originalHeight + '"'; 
+                newRegionHtml = newRegionHtml + ' duration=0';
                 newRegionHtml = newRegionHtml + ' href="' + urltimelineform + '"'; 
                 if (currentUsercheckEditable)
                 {

@@ -210,9 +210,10 @@ class Playlist extends Base
                 $firstWidget = $playlist->widgets[0];
                 // then we need to create a widget module to get preview url?
                 $thumbmodule = $this->moduleFactory->createWithWidgetAndPreferredDim($firstWidget);
+                // here, we preferred to get first widget content (image or icon)
                 $playlist->thumbnail = $thumbmodule->getModulePreviewImgSrcPath(100, 56, 0);
                 $fullpreview = $thumbmodule->getModuleImgSrcPath(0,0,0);
-                $playlist->gridThumbnail = '<a class="img-replace" data-toggle="lightbox" data-type="image" href="' . $fullpreview . '"><img class="playlistgridthumbnail" src="' . $playlist->thumbnail . '" /></a>';                
+                $playlist->gridThumbnail = '<img class="playlistgridthumbnail" src="' . $playlist->thumbnail . '" />';                
 
             }
             else
@@ -245,12 +246,16 @@ class Playlist extends Base
                     'url' => $this->urlFor('playlist.clone', ['id' => $playlist->getId()]),
                     'text' => __('Copy')
                 );
-                // Edit AI Tags
-                $playlist->buttons[] = array(
-                    'id' => 'playlist_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
-                    'text' => __('Edit AI-Aware Info')
-                );
+                if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_ALLOW_USEREDITING', 0) == 1)
+                {
+                    // Edit AI Tags
+                    $playlist->buttons[] = array(
+                        'id' => 'playlist_button_editaitag',
+                        'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Playlist::ItemType(), 'itemid' => $playlist->getId()]),
+                        'text' => __('Edit AI-Aware Info')
+                    );
+                }
                 // Preview
                 $playlist->buttons[] = array(
                     'id' => 'layout_button_preview',

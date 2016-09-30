@@ -775,9 +775,8 @@ class Module extends Base
         $this->setNoOutput(true);
     }
     /**
-     * Get getResourceWithPreferredDim
-     * @param $regionId
-     * @param $widgetId
+     * Get getMediaResource
+     * @param $widgemediaIdtId
      * @throws \Xibo\Exception\NotFoundException
      */
     public function getMediaResource($mediaId)
@@ -793,6 +792,40 @@ class Module extends Base
         echo $module->getResource();
         $this->setNoOutput(true);
     }    
+    /**
+     * Get getMediaIconResource
+     * @param $mediaId
+     * @throws \Xibo\Exception\NotFoundException
+     */
+    public function getMediaIconResource($mediaId)
+    {
+        $media = $this->mediaFactory->GetById($mediaId);
+
+        $module = $this->moduleFactory->createWithMedia($media);
+
+        if (!$this->getUser()->checkViewable($media))
+            throw new AccessDeniedException();
+
+        // Call module GetResource
+        echo $module->getPreviewIconResource();
+        $this->setNoOutput(true);
+    } 
+    /**
+     * Get getWidgetIconResource
+     * @param $widgetId
+     * @throws \Xibo\Exception\NotFoundException
+     */
+    public function getWidgetIconResource($widgetId)
+    {
+        $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($widgetId), 0, 0);
+
+        if (!$this->getUser()->checkViewable($module->widget))
+            throw new AccessDeniedException();
+
+        // Call module GetResource
+        echo $module->getPreviewIconResource();
+        $this->setNoOutput(true);
+    }         
     /**
      * @param $moduleId
      * @param $formName

@@ -85,6 +85,7 @@ Preview.prototype.SetSequence = function(seq)
 	
 	var previewContent 	= this.previewContent;
 	var previewElement = this.previewElement;
+	var regionElement = this.regionElement;
 
 	this.width	= $(this.regionElement).width();
 	this.height = $(this.regionElement).height();
@@ -119,6 +120,7 @@ Preview.prototype.SetSequence = function(seq)
 				$(previewContent).html("<div class=\"regionPreviewOverlay\"></div>" + ((response.html == null) ? "" : response.html));
 
 				var infoText = "";
+				var regiondurationhtml = moment().startOf("day").seconds($(regionElement).attr('duration')).format("HH:mm:ss");
 
 				if (response.extra.zIndex != 0)
 					infoText = "[" + response.extra.zIndex + "] ";
@@ -128,7 +130,8 @@ Preview.prototype.SetSequence = function(seq)
 
 				if (response.extra.duration > 0 && response.extra.useDuration != 0)
                     infoText += " (" + moment().startOf("day").seconds(response.extra.duration).format("H:mm:ss") + " / " + moment().startOf("day").seconds(response.extra.regionDuration).format("H:mm:ss") + ")";
-
+				else
+					infoText += " (" + regiondurationhtml + ")";
 				// Get the extra
 				$('.preview-media-information', previewElement)
 					.html(infoText)

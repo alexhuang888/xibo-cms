@@ -39,8 +39,10 @@
 
                 {% set title %}{% trans "Update AI-Aware information to all its child items?" %}{% endset %}
                 {% set helpText %}{% trans "Note: It will only be updated in items you have permission to edit." %}{% endset %}
-                {% if settings.AITAGS_UPDATEALLCHILDITEMS_CHECKB == "Checked" %}
+                {% if settings.GLOBAL_AIAWARE_DEFAULT_PROPAGATE_TO_CHILDITEMS == 1 %}
                     {% set checked = 1 %}
+                {% else %}
+                    {% set checked = 0 %}                
                 {% endif %}
                 {{ forms.checkbox("updateInChildItems", title, checked, helpText) }}
 

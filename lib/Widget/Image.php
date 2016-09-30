@@ -98,7 +98,10 @@ class Image extends ModuleWidget
 
         return $output;
     }
-
+    public function getPreviewIconResource()
+    {
+        return $this->getResource();
+    }    
     /**
      * Get Resource
      * @param int $displayId

@@ -61,7 +61,9 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     // call a service to match two set of tags (in string format)
     public function matchtagsscore($tags1, $tags2)
     {
-        $url = 'http://localhost:35370/tagsmatch/n_similarity';
+        //$url = 'http://localhost:35370/tagsmatch/n_similarity';
+        $url = $this->configService->GetSetting('GLOBAL_AIAWARE_MATCHING_SERVICE_URL',
+                                                'http://localhost:35370/tagsmatch/n_similarity');
         $ch = curl_init();
 
 
@@ -97,6 +99,13 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     // see if it needs to get smart ai-tags, then match all related playlists
     public function processnewmedia($userId, $media, $filePath)
     {
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }
+        $minScore = $this->configService->GetSetting('GLOBAL_AIAWARE_MATCHING_SERVICE_MINIMUM_SCORE_URL', 0.5);               
         // in this function, we just insert a media, and check if this media
         // can be insert to any Playlist
         // first, check if this media has ai-tag generated, or generate it now.
@@ -175,7 +184,16 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     // given a profile text, try to extract entity and key phrases
     public function profiletextextractor($profileText, $withScore)
     {
-        $url = 'http://localhost:35360/profileaitags/profiletextextractor';
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }         
+        //$url = 'http://localhost:35360/profileaitags/profiletextextractor';
+        $url = $this->configService->GetSetting('GLOBAL_AIAWARE_PROFILE_EXTRACTOR_SERVICE_URL',
+                            'http://localhost:35360/profileaitags/profiletextextractor');
+
         $ch = curl_init($url);
  
         $result = "{'result': 100}";
@@ -201,6 +219,13 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     // given media object and its content filePath, try to get smart-ai-tags and updates to this media
     public function mediasmarttagextractorProc($media, $filePath) 
     {
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        } 
+
         $module = $this->moduleFactory->getByExtension(strtolower(substr(strrchr($media->fileName, '.'), 1)));
         $module = $this->moduleFactory->create($module->type);
         $module->setChildObjectDependencies(null, null, null, $this);
@@ -231,6 +256,12 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
     // by giving a media ID (itemtype, itemid) and the system will get the smart tags of this media   
     public function mediasmarttagextractorToStringArray($filePath)
     {
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }         
         // here, we would like to send this media file to google cloud vision to get smart Tag
         // first, make sure it is an image type (or it is already?)
         $ch = curl_init();
@@ -239,7 +270,11 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
         try {
             $cfile = curl_file_create($filePath, mime_content_type($filePath), 'mediafile');
             $data = array('cmdtype'=> '4:10 6:10', 'filename' => $filePath, 'mediafile' => $cfile);
-            curl_setopt($ch, CURLOPT_URL, 'http://localhost:35360/profileaitags/mediasmarttagretriever');
+            $url = $this->configService->GetSetting('GLOBAL_AIAWARE_MEDIASMARTTAG_EXTRACTOR_SERVICE_URL',
+                            'http://localhost:35360/profileaitags/mediasmarttagretriever');
+
+            //curl_setopt($ch, CURLOPT_URL, 'http://localhost:35360/profileaitags/mediasmarttagretriever');
+            curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, 1);
             //CURLOPT_SAFE_UPLOAD defaulted to true in 5.6.0
             //So next line is required as of php >= 5.6.0
@@ -270,6 +305,12 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
    // will get smart ai-tags and match to all related playlist.
     public function processaitagsmediaqueue()
     {
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }                 
         // get all entry from mediaaitagsprocessqueue
 
         // for every entry, call function to make it
@@ -312,6 +353,18 @@ class AITagsHelper extends \Xibo\Factory\BaseFactory
 
     public function addToMediaPlayListProcessorQueue($userid, $itemtype, $itemid, $filePath)
     {
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_ENABLE', 0);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }  
+        $proceeded = $this->configService->GetSetting('GLOBAL_AIAWARE_DEFAULT_PUT_UPLOADED_MEDIA_IN_MATCH', 1);
+        if ($proceeded != 1)
+        {
+            // do not do it
+            return;
+        }                  
         $sql = "INSERT INTO mediaaitagsprocessqueue (itemtype, itemid, userid) VALUES (:itemtype, :itemid, :userid) ";
 
         $params = [];

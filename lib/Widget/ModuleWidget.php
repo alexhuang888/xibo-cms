@@ -43,6 +43,7 @@ use Xibo\Service\FactoryServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Service\SanitizerServiceInterface;
 use Xibo\Storage\StorageServiceInterface;
+use Intervention\Image\ImageManagerStatic as Img;
 
 /**
  * Class ModuleWidget
@@ -635,23 +636,26 @@ abstract class ModuleWidget implements ModuleInterface
     public function getModulePreviewImgSrcPath($previewWidth, $previewHeight, $scaleOverride)
     {
         if ($this->module->previewEnabled == 0)
-            return $this->getModuleIconImgSrcPath();
+            return $this->getModuleIconImgSrcPath();            
         // check if widget is temporarily? then it is from library assignMedia
         if ($this->widget->widgetId == 0 || $this->widget->widgetId == null)
         {
-            $url = $this->getApp()->urlFor('module.getMediaResource', ['id' => $this->widget->mediaIds[0]]);
+            $url = $this->getApp()->urlFor('module.getMediaIconResource', ['id' => $this->widget->mediaIds[0]]);
                     
             return $url . '?raw=true&preview=1&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;            
         }
         else
         {
-            $url = $this->getApp()->urlFor('module.getResourceWithPreferredDim', ['preferredDisplayWidth' => ($this->preferredDisplayWidth == 0 ? $previewWidth : $this->preferredDisplayWidth), 'preferredDisplayHeight' => ($this->preferredDisplayHeight == 0 ? $previewHeight : $this->preferredDisplayHeight), 'id' => $this->getWidgetId()]);
+            $url = $this->getApp()->urlFor('module.getWidgetIconResource', ['id' => $this->getWidgetId()]);
             return $url . '?raw=true&preview=1&scale_override=' . $scaleOverride . '&width=' . $previewWidth . '&height=' . $previewHeight;            
         }
     }
     public function getModuleImgSrcPath($previewWidth, $previewHeight, $scaleOverride)
     {
-        $url = $this->getApp()->urlFor('library.download', ['id' => $this->widget->mediaIds[0]]);
+        if ($this->widget->mediaIds == null || empty($this->widget->mediaIds))
+            $url = $this->getModuleIconImgSrcPath();
+        else
+            $url = $this->getApp()->urlFor('library.download', ['id' => $this->widget->mediaIds[0]]);
         return $url;
     }    
     /**
@@ -729,7 +733,57 @@ abstract class ModuleWidget implements ModuleInterface
     {
         throw new ControllerNotImplemented();
     }
+    public function getPreviewIconResource()
+    {
+        $moduleiconpath = PROJECT_ROOT . '/web/' . $this->getConfig()->uri('img/' . $this->getModule()->imageUri);
+        //echo $this->getConfig()->uri('img/' . $this->getModule()->imageUri);
+        //$img = Img::make(moduleiconpath);
+        $proportional = $this->getSanitizer()->getInt('proportional', 1) == 1;
+        $preview = $this->getSanitizer()->getInt('preview', 0) == 1;
+        $width = intval($this->getSanitizer()->getDouble('width'));
+        $height = intval($this->getSanitizer()->getDouble('height'));
 
+        // Work out the eTag first
+        $this->getApp()->etag($moduleiconpath . $width . $height . $proportional . $preview);
+        $this->getApp()->expires('+1 week');
+
+        // Preview or download?
+        if ($this->getSanitizer()->getInt('preview', 0) == 1) {
+
+            // Preview (we output the file to the browser with image headers
+            Img::configure(array('driver' => 'gd'));
+
+            $this->getLog()->debug('Preview Requested with Width and Height %d x %d', $width, $height);
+
+            // Output a thumbnail?
+            if ($width != 0 || $height != 0) {
+                // Make a thumb
+                $img = Img::make($moduleiconpath)->resize($width, $height, function($constraint) use ($proportional) {
+                    if ($proportional)
+                        $constraint->aspectRatio();
+                });
+            }
+            else {
+                // Load the whole image
+                $this->getLog()->debug('Loading %s', $filePath);
+                $eTag = $media->md5;
+                $img = Img::make($moduleiconpath);
+            }
+
+            $this->getLog()->debug('Outputting Image Response');
+
+            // Output the file
+            echo $img->response();
+        }
+        else
+        {
+            Img::configure(array('driver' => 'gd'));
+            $eTag = $media->md5;
+            $img = Img::make($moduleiconpath);
+            echo $img->response();
+        }
+        //throw new ControllerNotImplemented();
+    }
     /**
      * Gets a Tab
      * @param string $tab

@@ -49,7 +49,11 @@ interface ModuleInterface
      */
     public function getTab($tab);
     // to get full module content without any other html decorator
+    // it returns raw data via http protocol
     public function getResource();
+    // to get icon of this module content without any other html decorator
+    // it returns raw data via http protocol    
+    public function getPreviewIconResource();
     public function preview($width, $height, $scaleOverride = 0);
 
     /**

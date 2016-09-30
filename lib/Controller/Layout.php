@@ -724,12 +724,16 @@ class Layout extends Base
                     'url' => $this->urlFor('layout.edit.form', ['id' => $layout->layoutId]),
                     'text' => __('Edit')
                 );
-                // Edit AI Tags
-                $layout->buttons[] = array(
-                    'id' => 'layout_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Layout::ItemType(), 'itemid' => $layout->layoutId]),
-                    'text' => __('Edit AI-Aware info')
-                );
+                if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_ALLOW_USEREDITING', 0) == 1)
+                {
+                    // Edit AI Tags
+                    $layout->buttons[] = array(
+                        'id' => 'layout_button_editaitag',
+                        'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\Layout::ItemType(), 'itemid' => $layout->layoutId]),
+                        'text' => __('Edit AI-Aware info')
+                    );
+                }
                 // Copy Button
                 $layout->buttons[] = array(
                     'id' => 'layout_button_copy',
@@ -1154,11 +1158,16 @@ class Layout extends Base
             ]);
 
         } else {
-
+            $regiondurations = array();
+            foreach ($layout->regions as $thisregion)
+            {
+                $regiondurations[$thisregion->regionId] = $thisregion->duration;
+            }
             $this->getState()->html = $status;
             $this->getState()->extra = [
                 'status' => $layout->status,
                 'duration' => $layout->duration,
+                'regionduration' => $regiondurations,
                 'statusMessage' => $layout->getStatusMessage()
             ];
 

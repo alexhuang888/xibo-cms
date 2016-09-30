@@ -73,12 +73,14 @@ class AIImage extends \Xibo\Widget\Image
     public function postProcess($media)
     {
         // we'd like to push it to maintain stage
+        if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_PUT_UPLOADED_MEDIA_IN_MATCHQUEUE', 0) == 1)
+        {
+            $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
 
-        $filePath = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . $media->storedAs;
-
-        $this->aitagshelper->addToMediaPlayListProcessorQueue($this->getUser()->getId(),
-                                                                \Xibo\Entity\Media::ItemType(),
-                                                                $media->getId(),
-                                                                $filePath);      
+            $this->aitagshelper->addToMediaPlayListProcessorQueue($this->getUser()->getId(),
+                                                                    \Xibo\Entity\Media::ItemType(),
+                                                                    $media->getId(),
+                                                                    $filePath);      
     }    
 }

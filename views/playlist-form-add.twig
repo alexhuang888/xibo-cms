@@ -52,10 +52,15 @@
                         {% set title %}{% trans "Description" %}{% endset %}
                         {% set helpText %}{% trans "An optional description of the Layout. (1 - 250 characters)" %}{% endset %}
                         {{ forms.textarea("description", title, "", helpText) }}
-
-                        {% set title %}{% trans "AITag matchable?" %}{% endset %}
-                        {% set helpText %}{% trans "Is this a AI-tag aware playlist?" %}{% endset %}
-                        {{ forms.checkbox("isaitagmatchable", title, 0, helpText) }}                        
+{% if settings.GLOBAL_AIAWARE_ENABLE == 1%}
+                        {% set title %}{% trans "AI-wared?" %}{% endset %}
+                        {% set helpText %}{% trans "Is this a AI-awared playlist?" %}{% endset %}
+                    {% if settings.GLOBAL_AIAWARE_DEFAULT_PLAYLIST_IS_AIAWARE == 1 %}
+                        {% set checked = 1 %}
+                    {% else %}
+                    {% endif %}
+                        {{ forms.checkbox("isaitagmatchable", title, checked, helpText) }}   
+{% endif %}                                             
                     </div>
                     <script type="text/javascript">
                         $('#playlistAddForm #tags').tagEditor({

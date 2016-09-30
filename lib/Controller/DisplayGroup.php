@@ -211,13 +211,16 @@ class DisplayGroup extends Base
                     'url' => $this->urlFor('displayGroup.edit.form', ['id' => $group->displayGroupId]),
                     'text' => __('Edit')
                 );
-
-                // Edit AI Tags
-                $group->buttons[] = array(
-                    'id' => 'displaygroup_button_editaitag',
-                    'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\DisplayGroup::ItemType(), 'itemid' => $group->displayGroupId]),
-                    'text' => __('Edit AI-Aware info')
-                );
+                if ($this->getConfig()->GetSetting('GLOBAL_AIAWARE_ENABLE', 0) == 1 &&
+                    $this->getConfig()->GetSetting('GLOBAL_AIAWARE_ALLOW_USEREDITING', 0) == 1)
+                {
+                    // Edit AI Tags
+                    $group->buttons[] = array(
+                        'id' => 'displaygroup_button_editaitag',
+                        'url' => $this->urlFor('aitags.edittag.form', ['itemtype' => \Xibo\Entity\DisplayGroup::ItemType(), 'itemid' => $group->displayGroupId]),
+                        'text' => __('Edit AI-Aware info')
+                    );
+                }
             }
 
             if ($this->getUser()->checkDeleteable($group)) {

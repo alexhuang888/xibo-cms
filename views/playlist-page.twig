@@ -27,10 +27,11 @@
 
                             {% set tags %}{% trans "Tags" %}{% endset %}
                             {{ inline.input("tags", tags) }}
-
+{% if settings.GLOBAL_AIAWARE_ENABLE == 1 %}
                             {% set title %}{% trans "AI-aware" %}{% endset %}
                             {% set values = [{id: 2, value: "All"}, {id: 1, value: "Yes"}, {id: 0, value: "No"}]%}
-                            {{ inline.dropdown("isaitagmatchable", "single", title, 2, values, "id", "value") }}                             
+                            {{ inline.dropdown("isaitagmatchable", "single", title, 2, values, "id", "value") }}
+{% endif %}                                                         
                         </form>
                     </div>
                 </div>
@@ -41,7 +42,9 @@
                                 <th>{% trans "ID" %}</th>
                                 <th>{% trans "Name" %}</th>
                                 <th>{% trans "Descriptions" %} </th>
+{% if settings.GLOBAL_AIAWARE_ENABLE == 1 %}                                
                                 <th>{% trans "AI-aware" %} </th>
+{% endif %}                                
                                 <th>{% trans "# Widgets" %} </th>
                                 <th>{% trans "Thumbnail" %} </th>
                                 <th></th>
@@ -81,7 +84,9 @@
                         "data": null,
                         "render": {"_": "description", "display": "description", "sort": "description"}
                     },
+{% if settings.GLOBAL_AIAWARE_ENABLE == 1 and  settings.GLOBAL_AIAWARE_ALLOW_USEREDITING == 1 %}                    
                     {"data": "isaitagmatchable", "visible": true, "render": dataTableTickCrossColumn},
+{% endif %}                    
                     {"data": "numberWidgets"},
                     {
                         "name": "layoutId",

@@ -465,3 +465,17 @@ h1 .pagetitle {
     width: 100px;
     height: 56px;
 }
+
+.region-tip {
+    font-size: 12px;
+}
+
+.regionInfo{
+    height:20px;
+}
+
+.regionInfo > .btn {
+    padding: 2px;
+    margin: initial;
+    line-height:initial;
+}

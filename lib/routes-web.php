@@ -145,6 +145,8 @@ $app->get('/playlist/widget/tab/:tab/:id', '\Xibo\Controller\Module:getTab')->na
 //$app->get('/playlist/widget/resource/:regionId/:id', '\Xibo\Controller\Module:getResource')->name('module.getResource');
 $app->get('/playlist/widget/resource/:preferredDisplayWidth/:preferredDisplayHeight/:id', '\Xibo\Controller\Module:getResourceWithPreferredDim')->name('module.getResourceWithPreferredDim');
 $app->get('/playlist/media/resource/:id', '\Xibo\Controller\Module:getMediaResource')->name('module.getMediaResource');
+$app->get('/playlist/media/icon/resource/:id', '\Xibo\Controller\Module:getMediaIconResource')->name('module.getMediaIconResource');
+$app->get('/playlist/widget/icon/resource/:id', '\Xibo\Controller\Module:getWidgetIconResource')->name('module.getWidgetIconResource');
 
 //
 // library
