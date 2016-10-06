@@ -6,7 +6,12 @@ settings.php
 .idea/
 cache/
 web/swagger-ui/
-
+web/testpage
+web/config.json
+web/phpinfo.log
+phpinfo.log
+phpinfo.txt
+results.xml
 .DS_Store
 .vscode
 web/install_log.txt
