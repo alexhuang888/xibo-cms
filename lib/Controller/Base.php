@@ -30,7 +30,7 @@ use Xibo\Service\DateServiceInterface;
 use Xibo\Service\FactoryServiceInterface;
 use Xibo\Service\LogServiceInterface;
 use Xibo\Service\SanitizerServiceInterface;
-
+use Xibo\Middleware\ApiView;
 /**
  * Class Base
  * @package Xibo\Controller
@@ -227,7 +227,14 @@ class Base
     {
         return ($this->getApp()->getName() != 'web');
     }
-
+    /**
+     * Is this the Api?
+     * @return bool
+     */
+    protected function isXMDS()
+    {
+        return ($this->getApp()->getName() == 'xmds');
+    }
     /**
      * Get Url For Route
      * @param string $route
@@ -299,7 +306,21 @@ class Base
         }
 
         // API Request
-        if ($this->isApi()) {
+        if ($this->isXMDS()) {
+
+            // Envelope by default - the APIView will un-pack if necessary
+            $data = [
+                'grid' => $grid,
+                'success' => $state->success,
+                'status' => $state->httpStatus,
+                'message' => $state->message,
+                'id' => $state->id,
+                'data' => $data
+            ];
+            $apiview = new \Xibo\Middleware\ApiView();
+            $apiview->render('', $data, $state->httpStatus);
+        }
+        else if ($this->isApi()) {
 
             // Envelope by default - the APIView will un-pack if necessary
             $data = [

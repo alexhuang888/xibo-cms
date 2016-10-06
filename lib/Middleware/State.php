@@ -989,7 +989,33 @@ class State extends Middleware
                 $container->layoutFactory,
                 $container->tagFactory
             );
-        });       
+        });     
+
+        $app->container->singleton('\Xibo\Controller\XMDSHandler', function($container) {
+            return new \Xibo\Controller\XMDSHandler(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->pool,
+                $container->store,
+                $container->requiredFileFactory,
+                $container->moduleFactory, 
+                $container->layoutFactory,
+                $container->dataSetFactory, 
+                $container->displayFactory, 
+                $container->userGroupFactory, 
+                $container->bandwidthFactory, 
+                $container->mediaFactory, 
+                $container->widgetFactory, 
+                $container->regionFactory, 
+                $container->notificationFactory, 
+                $container->displayEventFactory
+            );
+        });            
     }
 
     /**

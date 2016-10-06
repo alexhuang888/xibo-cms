@@ -72,7 +72,7 @@ class LocalWebTestCase extends WebTestCase
         Environment::mock([
             'REQUEST_METHOD' => 'GET',
             'PATH_INFO'      => '/',
-            'SERVER_NAME'    => 'local.dev'
+            'SERVER_NAME'    => 'localhost'
         ]);
 
         // Create a logger

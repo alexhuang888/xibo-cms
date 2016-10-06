@@ -91,7 +91,7 @@ class Error extends Base
             case 'auth':
             case 'api':
             case 'test':
-
+            case 'xmds':
                 $this->getState()->hydrate([
                     'httpStatus' => 404,
                     'success' => false,
@@ -175,6 +175,7 @@ class Error extends Base
 
             case 'auth':
             case 'api':
+            case 'xmds':
 
                 $status = 500;
 

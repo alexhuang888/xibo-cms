@@ -26,6 +26,11 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} ^.*/maint/.*$
 RewriteRule ^ maint/index.php [QSA,L]
 
+# maintenance
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} ^.*/xmds/.*$
+RewriteRule ^ xmdshandler.php [QSA,L]
+
 # all others - i.e. web
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [QSA,L]

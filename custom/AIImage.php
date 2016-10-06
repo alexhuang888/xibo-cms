@@ -81,6 +81,7 @@ class AIImage extends \Xibo\Widget\Image
             $this->aitagshelper->addToMediaPlayListProcessorQueue($this->getUser()->getId(),
                                                                     \Xibo\Entity\Media::ItemType(),
                                                                     $media->getId(),
-                                                                    $filePath);      
+                                                                    $filePath);
+        }      
     }    
 }
