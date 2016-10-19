@@ -105,6 +105,17 @@ class DisplayGroup implements \JsonSerializable
     public $displaycount = 0;
     // end of new members
 
+    /**
+     * Minimum save options
+     * @var array
+     */
+    public static $saveOptionsMinimum = [
+        'validate' => false,
+        'saveGroup' => true,
+        'manageLinks' => false,
+        'manageDisplayLinks' => false
+    ];
+
     // Child Items the Display Group is linked to
     private $displays = [];
     public $displayGroups = [];

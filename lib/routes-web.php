@@ -364,3 +364,10 @@ $app->get('/daypart/form/delete/:id', '\Xibo\Controller\DayPart:deleteForm')->na
 // Init Setup Wizard
 //
 $app->get('/init/setup/wizard', '\Xibo\Controller\InitSetupWizard:displayPage')->name('init.setup.wizard');
+// Tasks
+//
+$app->get('/task/view', '\Xibo\Controller\Task:displayPage')->name('task.view');
+$app->get('/task/form/add', '\Xibo\Controller\Task:addForm')->name('task.add.form');
+$app->get('/task/form/edit/:id', '\Xibo\Controller\Task:editForm')->name('task.edit.form');
+$app->get('/task/form/delete/:id', '\Xibo\Controller\Task:deleteForm')->name('task.delete.form');
+$app->get('/task/form/runNow/:id', '\Xibo\Controller\Task:runNowForm')->name('task.runNow.form');

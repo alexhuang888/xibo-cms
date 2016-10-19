@@ -25,6 +25,8 @@ namespace Xibo\Entity;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Respect\Validation\Validator as v;
 use Xibo\Exception\ConfigurationException;
 use Xibo\Exception\DuplicateEntityException;
@@ -469,12 +471,14 @@ class Media implements \JsonSerializable
     /**
      * Save this media
      * @param array $options
+     * @return null|PromiseInterface
      */
     public function save($options = [])
     {
         $options = array_merge([
             'validate' => true,
-            'oldMedia' => null
+            'oldMedia' => null,
+            'deferred' => false
         ], $options);
 
         if ($options['validate'] && $this->mediaType != 'module')
@@ -482,14 +486,21 @@ class Media implements \JsonSerializable
 
         // Add or edit
         if ($this->mediaId == null || $this->mediaId == 0) {
-            $this->add();
+            $promise = $this->add();
         }
         else {
             // If the media file is invalid, then force an update (only applies to module files)
             if ($this->valid == 0)
                 $this->force = true;
 
-            $this->edit();
+            $promise = $this->edit();
+        }
+
+        if (!$options['deferred']) {
+            $this->getLog()->debug('Handling promise immediately.');
+            $promise->wait();
+        } else {
+            $this->getLog()->debug('Async Upload, returning promise');
         }
 
         // Save the tags
@@ -511,6 +522,22 @@ class Media implements \JsonSerializable
                 $tag->save();
             }
         }
+
+        return $options['deferred'] ? $promise : null;
+    }
+
+    /**
+     * Save Async
+     * @param array $options
+     * @return PromiseInterface
+     */
+    public function saveAsync($options = [])
+    {
+        $options = array_merge([
+            'deferred' => true
+        ], $options);
+
+        return $this->save($options);
     }
 
     /**
@@ -609,6 +636,7 @@ class Media implements \JsonSerializable
 
     /**
      * Add
+     * @return PromiseInterface
      * @throws ConfigurationException
      */
     private function add()
@@ -629,63 +657,98 @@ class Media implements \JsonSerializable
             'apiRef' => $this->apiRef
         ]);
 
-        $this->saveFile();
+        // Store $this
+        $media = $this;
 
-        // Update the MD5 and storedAs to suit
-        $this->getStore()->update('UPDATE `media` SET md5 = :md5, fileSize = :fileSize, storedAs = :storedAs, duration = :duration WHERE mediaId = :mediaId', [
-            'fileSize' => $this->fileSize,
-            'md5' => $this->md5,
-            'storedAs' => $this->storedAs,
-            'duration' => $this->duration,
-            'mediaId' => $this->mediaId
-        ]);
+        // Create a promise
+        $promise = new Promise(function() use (&$promise) {
+            $promise->resolve('Waited');
+        });
+        $promise->then(function ($value) use (&$media) {
+            $media->getLog()->debug('Media save promise resolved ' . $value);
+
+            $media->saveFile();
+
+            // Update the MD5 and storedAs to suit
+            $media->getStore()->update('UPDATE `media` SET md5 = :md5, fileSize = :fileSize, storedAs = :storedAs, duration = :duration WHERE mediaId = :mediaId', [
+                'fileSize' => $this->fileSize,
+                'md5' => $this->md5,
+                'storedAs' => $this->storedAs,
+                'duration' => $this->duration,
+                'mediaId' => $this->mediaId
+            ]);
+
+        }, function ($reason) use (&$media)  {
+            // Promise rejected - that's bad.
+            $media->getLog()->error('Unable to download media because ' . $reason);
+        });
+
+        return $promise;
     }
 
     /**
      * Edit
+     * @return PromiseInterface
      * @throws ConfigurationException
      */
     private function edit()
     {
-        // Do we need to pull a new update?
-        // Is the file either expired or is force set
-        if ($this->force || ($this->expires > 0 && $this->expires < time())) {
-            $this->getLog()->debug('Media %s has expired: %s. Force = %d', $this->name, date('Y-m-d H:i', $this->expires), $this->force);
-            $this->saveFile();
-        }
+        // Store $this
+        $media = $this;
+        // Create a promise
+        $promise = new Promise(function() use (&$promise) {
+            $promise->resolve('Waited');
+        });
+        $promise->then(function ($value) use (&$media) {
+            $media->getLog()->debug('Media save promise resolved ' . $value);
 
-        $this->getStore()->update('
-          UPDATE `media`
-              SET `name` = :name,
-                duration = :duration,
-                retired = :retired,
-                md5 = :md5,
-                filesize = :fileSize,
-                expires = :expires,
-                moduleSystemFile = :moduleSystemFile,
-                editedMediaId = :editedMediaId,
-                isEdited = :isEdited,
-                userId = :userId,
-                released = :released,
-                apiRef = :apiRef,
-                isaitagsgenerated = :isaitagsgenerated
-           WHERE mediaId = :mediaId
-        ', [
-            'name' => $this->name,
-            'duration' => $this->duration,
-            'retired' => $this->retired,
-            'fileSize' => $this->fileSize,
-            'md5' => $this->md5,
-            'expires' => $this->expires,
-            'moduleSystemFile' => $this->moduleSystemFile,
-            'editedMediaId' => $this->parentId,
-            'isEdited' => $this->isEdited,
-            'userId' => $this->ownerId,
-            'released' => $this->released,
-            'apiRef' => $this->apiRef,
-            'mediaId' => $this->mediaId,
-            'isaitagsgenerated' => $this->isaitagsgenerated
-        ]);
+            // Do we need to pull a new update?
+            // Is the file either expired or is force set
+            if ($media->force || ($media->expires > 0 && $media->expires < time())) {
+                $media->getLog()->debug('Media %s has expired: %s. Force = %d', $media->name, date('Y-m-d H:i', $media->expires), $media->force);
+
+                $media->saveFile();
+            }
+
+            $media->getStore()->update('
+              UPDATE `media`
+                  SET `name` = :name,
+                    duration = :duration,
+                    retired = :retired,
+                    md5 = :md5,
+                    filesize = :fileSize,
+                    expires = :expires,
+                    moduleSystemFile = :moduleSystemFile,
+                    editedMediaId = :editedMediaId,
+                    isEdited = :isEdited,
+                    userId = :userId,
+                    released = :released,
+                    apiRef = :apiRef,
+                    isaitagsgenerated = :isaitagsgenerated
+               WHERE mediaId = :mediaId
+            ', [
+                'name' => $this->name,
+                'duration' => $this->duration,
+                'retired' => $this->retired,
+                'fileSize' => $this->fileSize,
+                'md5' => $this->md5,
+                'expires' => $this->expires,
+                'moduleSystemFile' => $this->moduleSystemFile,
+                'editedMediaId' => $this->parentId,
+                'isEdited' => $this->isEdited,
+                'userId' => $this->ownerId,
+                'released' => $this->released,
+                'apiRef' => $this->apiRef,
+                'mediaId' => $this->mediaId,
+                'isaitagsgenerated' => $this->isaitagsgenerated
+            ]);
+
+        }, function ($reason) use (&$media)  {
+            // Promise rejected - that's bad.
+            $media->getLog()->error('Unable to download media because ' . $reason);
+        });
+
+        return $promise;
     }
 
     /**
@@ -694,7 +757,7 @@ class Media implements \JsonSerializable
      *  over the web ui
      * @throws ConfigurationException
      */
-    private function saveFile()
+    public function saveFile()
     {
         // If we are a remote media item, we want to download the newFile and save it to a temporary location
         if ($this->isRemote) {

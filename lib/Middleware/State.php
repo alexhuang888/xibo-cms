@@ -60,11 +60,23 @@ class State extends Middleware
         $this->app->hook('slim.before.dispatch', function() use ($app) {
 
             // Do we need SSL/STS?
-            if ($app->request()->getScheme() == 'https') {
+            // If we are behind a load balancer we should look at HTTP_X_FORWARDED_PROTO
+            // if a whitelist of IP address is provided, we should check it, otherwise trust
+            $whiteListLoadBalancers = $app->configService->GetSetting('WHITELIST_LOAD_BALANCERS');
+            $originIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+            $forwardedProtoHttps = (
+                strtolower($app->request()->headers('HTTP_X_FORWARDED_PROTO', 'http')) === 'https'
+                && $originIp != ''
+                && (
+                    $whiteListLoadBalancers === '' || in_array($originIp, explode(',', $whiteListLoadBalancers))
+                )
+            );
+
+            if ($app->request()->getScheme() == 'https' || $forwardedProtoHttps) {
                 if ($app->configService->GetSetting('ISSUE_STS', 0) == 1)
                     $app->response()->header('strict-transport-security', 'max-age=' . $app->configService->GetSetting('STS_TTL', 600));
-            }
-            else {
+
+            } else {
                 if ($app->configService->GetSetting('FORCE_HTTPS', 0) == 1) {
                     $redirect = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                     header("Location: $redirect");
@@ -81,8 +93,9 @@ class State extends Middleware
                 throw new UpgradePendingException();
 
             // Reset the ETAGs for GZIP
-            if ($requestEtag = $app->request->headers->get('IF_NONE_MATCH')) {
-                $app->request->headers->set('IF_NONE_MATCH', str_replace('-gzip', '', $requestEtag));
+            $requestEtag = $app->request()->headers->get('IF_NONE_MATCH');
+            if ($requestEtag) {
+                $app->request()->headers->set('IF_NONE_MATCH', str_replace('-gzip', '', $requestEtag));
             }
         });
 
@@ -668,7 +681,8 @@ class State extends Middleware
                 $container->mediaFactory,
                 $container->notificationFactory,
                 $container->userNotificationFactory,
-                $container->aitagshelper
+                $container->aitagshelper,
+                $container->taskFactory
             );
         });
 
@@ -839,7 +853,8 @@ class State extends Middleware
                 $container->dateService,
                 $container->configService,
                 $container->pool,
-                $container->settingsFactory
+                $container->settingsFactory,
+                $container->layoutFactory
             );
         });
 
@@ -874,6 +889,29 @@ class State extends Middleware
                 $container->displayFactory,
                 $container->displayGroupFactory,
                 $container->mediaFactory
+            );
+        });
+
+        $app->container->singleton('\Xibo\Controller\Task', function($container) {
+            return new \Xibo\Controller\Task(
+                $container->logService,
+                $container->sanitizerService,
+                $container->state,
+                $container->user,
+                $container->helpService,
+                $container->dateService,
+                $container->configService,
+                $container->store,
+                $container->pool,
+                $container->taskFactory,
+                $container->userFactory,
+                $container->userGroupFactory,
+                $container->layoutFactory,
+                $container->displayFactory,
+                $container->upgradeFactory,
+                $container->mediaFactory,
+                $container->notificationFactory,
+                $container->userNotificationFactory
             );
         });
 
@@ -1363,6 +1401,14 @@ class State extends Middleware
 
         $container->singleton('tagFactory', function($container) {
             return new \Xibo\Factory\TagFactory(
+                $container->store,
+                $container->logService,
+                $container->sanitizerService
+            );
+        });
+
+        $container->singleton('taskFactory', function($container) {
+            return new \Xibo\Factory\TaskFactory(
                 $container->store,
                 $container->logService,
                 $container->sanitizerService

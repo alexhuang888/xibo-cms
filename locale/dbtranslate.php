@@ -64,6 +64,7 @@ echo __('Commands');
 echo __('Notification Drawer');
 echo __('Notifications');
 echo __('Dayparting');
+echo __('Tasks');
 
 // Settings translations
 echo __('Media Permissions');
@@ -150,6 +151,12 @@ echo __('Elevate Log Until');
 echo __('Elevate the log level until this date.');
 echo __('Resting Log Level');
 echo __('Set the level of the resting log level. The CMS will revert to this log level after an elevated period ends. In production systems "error" is recommended.');
+echo __('Lock Task Config');
+echo __('Is the task config locked? Useful for Service providers.');
+echo __('Whitelist Load Balancers');
+echo __('If the CMS is behind a load balancer, what are the load balancer IP addresses, comma delimited.');
+echo __('Default Layout');
+echo __('The default layout to assign for new displays and displays which have their current default deleted.');
 
 // Transitions
 echo __('Fade In');

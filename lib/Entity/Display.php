@@ -310,6 +310,12 @@ class Display implements \JsonSerializable
     public $lastCommandSuccess = 0;
 
     /**
+     * @SWG\Property(description="The Device Name for the device hardware associated with this Display")
+     * @var string
+     */
+    public $deviceName;
+
+    /**
      * Collect required on save?
      * @var bool
      */
@@ -321,7 +327,7 @@ class Display implements \JsonSerializable
      */
     private $commands = null;
 
-    public static $saveOptionsMinimum = ['validate' => false, 'audit' => false, 'triggerDynamicDisplayGroupAssessment' => false];
+    public static $saveOptionsMinimum = ['validate' => false, 'audit' => false, 'triggerDynamicDisplayGroupAssessment' => false, 'enableActions' => false];
 
     /**
      * @var ConfigServiceInterface
@@ -675,7 +681,8 @@ class Display implements \JsonSerializable
                     xmrChannel = :xmrChannel,
                     xmrPubKey = :xmrPubKey,
                     `lastCommandSuccess` = :lastCommandSuccess,
-                    `version_instructions` = :versionInstructions
+                    `version_instructions` = :versionInstructions,
+                    `deviceName` = :deviceName
              WHERE displayid = :displayId
         ', [
             'display' => $this->display,
@@ -712,14 +719,19 @@ class Display implements \JsonSerializable
             'xmrPubKey' => $this->xmrPubKey,
             'lastCommandSuccess' => $this->lastCommandSuccess,
             'versionInstructions' => $this->versionInstructions,
+            'deviceName' => $this->deviceName,
             'displayId' => $this->displayId
         ]);
 
         // Maintain the Display Group
-        $displayGroup = $this->displayGroupFactory->getById($this->displayGroupId);
-        $displayGroup->displayGroup = $this->display;
-        $displayGroup->description = $this->description;
-        $displayGroup->save(['validate' => false, 'manageDisplayLinks' => false]);
+        if ($this->hasPropertyChanged('display') || $this->hasPropertyChanged('description')) {
+            $this->getLog()->debug('Display specific DisplayGroup properties need updating');
+
+            $displayGroup = $this->displayGroupFactory->getById($this->displayGroupId);
+            $displayGroup->displayGroup = $this->display;
+            $displayGroup->description = $this->description;
+            $displayGroup->save(DisplayGroup::$saveOptionsMinimum);
+        }
     }
 
     /**

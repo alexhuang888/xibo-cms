@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS `display` (
   `xmrChannel` varchar(254) DEFAULT NULL,
   `xmrPubKey` text,
   `lastCommandSuccess` tinyint(4) NOT NULL DEFAULT '2',
+  `deviceName` VARCHAR(254) DEFAULT NULL,
   PRIMARY KEY (`displayid`),
   KEY `defaultplaylistid` (`defaultlayoutid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -1121,3 +1122,22 @@ CREATE TABLE `daypart` (
   `exceptions` TEXT NULL,
   PRIMARY KEY (`dayPartId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=2;
+
+CREATE TABLE `task` (
+  `taskId` INT(11) NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(254) NOT NULL,
+  `class` VARCHAR(254) NOT NULL,
+  `status` TINYINT(4) DEFAULT '2' NOT NULL,
+  `pid` INT(11),
+  `options` TEXT,
+  `schedule` VARCHAR(254),
+  `lastRunDt` INT(11),
+  `lastRunMessage` VARCHAR(254),
+  `lastRunStatus` TINYINT(4) DEFAULT '0' NOT NULL,
+  `lastRunDuration` SMALLINT(6),
+  `lastRunExitCode` SMALLINT(6),
+  `isActive` TINYINT(4) DEFAULT '1' NOT NULL,
+  `runNow` TINYINT(4) DEFAULT '1' NOT NULL,
+  `configFile` VARCHAR(254) NOT NULL,
+  PRIMARY KEY (`taskId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=6;
