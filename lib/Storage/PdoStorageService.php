@@ -206,10 +206,13 @@ class PdoStorageService implements StorageServiceInterface
 	{
         if ($this->log != null)
             $this->log->sql($sql, $params);
+        $test = $this->conn->inTransaction();
 
         if (!$this->conn->inTransaction())
+        {
             $this->conn->beginTransaction();
-
+            $test2 = 'alex here';
+        }
         $sth = $this->conn->prepare($sql);
 
         $sth->execute($params);
@@ -232,8 +235,9 @@ class PdoStorageService implements StorageServiceInterface
             $this->log->sql($sql, $params);
 
         if (!$this->conn->inTransaction())
+        {
             $this->conn->beginTransaction();
-
+        }
         $sth = $this->conn->prepare($sql);
 
         $sth->execute($params);
@@ -268,7 +272,9 @@ class PdoStorageService implements StorageServiceInterface
     public function commitIfNecessary()
     {
         if ($this->conn->inTransaction())
+        {
             $this->conn->commit();
+        }
     }
 
 	/**

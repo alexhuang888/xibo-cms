@@ -17,6 +17,7 @@ use Xibo\Entity\UserGroup;
 use Xibo\Entity\Widget;
 use Xibo\Exception\ControllerNotImplemented;
 use Xibo\Exception\NotFoundException;
+use Xibo\Exception\XMDSFault;
 use Xibo\Factory\BandwidthFactory;
 use Xibo\Factory\DataSetFactory;
 use Xibo\Factory\DisplayEventFactory;
@@ -174,7 +175,7 @@ class XMDSHandler extends Base
      * @param $hardwareKey
      * @param bool $httpDownloads
      * @return string
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doRequiredFiles($serverKey, $hardwareKey, $httpDownloads)
     {
@@ -187,17 +188,17 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         $libraryLocation = $this->getConfig()->GetSetting("LIBRARY_LOCATION");
 
         // auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Sender', 'This display is not licensed.');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'This display is not licensed.');
 
         // Check the cache
         $cache = $this->getPool()->getItem($this->display->getCacheKey() . '/requiredFiles');
@@ -289,7 +290,7 @@ class XMDSHandler extends Base
 
         } catch (\Exception $e) {
             $this->getLog()->error('Unable to get a list of layouts. ' . $e->getMessage());
-            return new \SoapFault('Sender', 'Unable to get a list of layouts');
+            return new \Xibo\Exception\XMDSFault('Sender', 'Unable to get a list of layouts');
         }
 
         // Create a comma separated list to pass into the query which gets file nodes
@@ -317,7 +318,7 @@ class XMDSHandler extends Base
                     ON lkmediadisplaygroup.mediaid = media.MediaID
                     INNER JOIN `lkdgdg`
                     ON `lkdgdg`.parentId = `lkmediadisplaygroup`.displayGroupId
-                    INdoRequiredNER JOIN `lkdisplaydg`
+                    INNER JOIN `lkdisplaydg`
                     ON lkdisplaydg.DisplayGroupID = `lkdgdg`.childId
                  WHERE lkdisplaydg.DisplayID = :displayId
                 UNION ALL
@@ -354,7 +355,7 @@ class XMDSHandler extends Base
             $mediaSth = $dbh->prepare('UPDATE media SET `MD5` = :md5, FileSize = :size WHERE MediaID = :mediaid');
 
             // Keep a list of path names added to RF to prevent duplicates
-            $pathsAddedoRequiredd = array();
+            $pathsAdded = array();
 
             foreach ($sth->fetchAll() as $row) {
                 // Media
@@ -408,7 +409,7 @@ class XMDSHandler extends Base
         } catch (\Exception $e) {
             $this->getLog()->error('Unable to get a list of required files. ' . $e->getMessage());
             $this->getLog()->debug($e->getTraceAsString());
-            return new \SoapFault('Sender', 'Unable to get a list of files');
+            return new \Xibo\Exception\XMDSFault('Sender', 'Unable to get a list of files');
         }
 
         // Get an array of modules to use
@@ -542,7 +543,7 @@ class XMDSHandler extends Base
             }
         } catch (\Exception $e) {
             $this->getLog()->error('Unable to get a list of blacklisted files. ' . $e->getMessage());
-            return new \SoapFault('Sender', 'Unable to get a list of blacklisted files');
+            return new \Xibo\Exception\XMDSFault('Sender', 'Unable to get a list of blacklisted files');
         }
 
         // Phone Home?
@@ -577,7 +578,7 @@ class XMDSHandler extends Base
      * @param $hardwareKey
      * @param array $options
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doSchedule($serverKey, $hardwareKey, $options = [])
     {
@@ -592,15 +593,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Sender', "This display client is not licensed");
+            throw new \Xibo\Exception\XMDSFault('Sender', "This display client is not licensed");
 
         // Check the cache
         $cache = $this->getPool()->getItem($this->display->getCacheKey() . '/schedule');
@@ -852,7 +853,7 @@ class XMDSHandler extends Base
 
         } catch (\Exception $e) {
             $this->getLog()->error('Error getting a list of layouts for the schedule. ' . $e->getMessage());
-            return new \SoapFault('Sender', 'Unable to get A list of layouts for the schedule');
+            return new \Xibo\Exception\XMDSFault('Sender', 'Unable to get A list of layouts for the schedule');
         }
 
         // Are we interleaving the default?
@@ -933,8 +934,8 @@ class XMDSHandler extends Base
      * @param $mediaId
      * @param $type
      * @param $reason
-     * @return bool|\SoapFault
-     * @throws \SoapFault
+     * @return bool|\Xibo\Exception\XMDSFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doBlackList($serverKey, $hardwareKey, $mediaId, $type, $reason)
     {
@@ -949,15 +950,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Authenticate this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', "This display client is not licensed", $hardwareKey);
+            throw new \Xibo\Exception\XMDSFault('Receiver', "This display client is not licensed", $hardwareKey);
 
         if ($this->display->isAuditing())
             $this->getLog()->debug('Blacklisting ' . $mediaId . ' for ' . $reason);
@@ -1009,7 +1010,7 @@ class XMDSHandler extends Base
             }
         } catch (\Exception $e) {
             $this->getLog()->error('Unable to query for Blacklist records. ' . $e->getMessage());
-            return new \SoapFault('Sender', "Unable to query for BlackList records.");
+            return new \Xibo\Exception\XMDSFault('Sender', "Unable to query for BlackList records.");
         }
 
         $this->logBandwidth($this->display->displayId, Bandwidth::$BLACKLIST, strlen($reason));
@@ -1022,7 +1023,7 @@ class XMDSHandler extends Base
      * @param $hardwareKey
      * @param $logXml
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doSubmitLog($serverKey, $hardwareKey, $logXml)
     {
@@ -1034,15 +1035,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Sender', 'This display client is not licensed.');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'This display client is not licensed.');
 
         if ($this->display->isAuditing())
             $this->getLog()->debug('XML log: ' . $logXml);
@@ -1122,7 +1123,7 @@ class XMDSHandler extends Base
      * @param $hardwareKey
      * @param $statXml
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doSubmitStats($serverKey, $hardwareKey, $statXml)
     {
@@ -1134,21 +1135,21 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', "This display client is not licensed");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "This display client is not licensed");
 
         if ($this->display->isAuditing())
             $this->getLog()->debug('Received XML. ' . $statXml);
 
         if ($statXml == "")
-            throw new \SoapFault('Receiver', "Stat XML is empty.");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Stat XML is empty.");
 
         // Load the XML into a DOMDocument
         $document = new \DOMDocument("1.0");
@@ -1219,7 +1220,7 @@ class XMDSHandler extends Base
      * @param $hardwareKey
      * @param $inventory
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doMediaInventory($serverKey, $hardwareKey, $inventory)
     {
@@ -1231,22 +1232,22 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', 'This display client is not licensed');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
 
         if ($this->display->isAuditing())
             $this->getLog()->debug($inventory);
 
         // Check that the $inventory contains something
         if ($inventory == '')
-            throw new \SoapFault('Receiver', 'Inventory Cannot be Empty');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Inventory Cannot be Empty');
 
         // Load the XML into a DOMDocument
         $document = new \DOMDocument("1.0");
@@ -1311,9 +1312,9 @@ class XMDSHandler extends Base
      * @param $regionId
      * @param $mediaId
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
-    protected function doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, $preferredDisplayWidth, $preferredDisplayHeight, $mediaId)
+    protected function doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, $regionId, $preferredDisplayWidth, $preferredDisplayHeight, $mediaId)
     {
         //$this->logProcessor->setRoute('doGetResourceWithPreferredDisplayDim');
 
@@ -1321,21 +1322,21 @@ class XMDSHandler extends Base
         $serverKey = $this->getSanitizer()->string($serverKey);
         $hardwareKey = $this->getSanitizer()->string($hardwareKey);
         $layoutId = $this->getSanitizer()->int($layoutId);
-        $preferredDisplayWidth = $this->getSanitizer()->int($preferredDisplayWidth);
-        $preferredDisplayHeight = $this->getSanitizer()->int($preferredDisplayHeight);
+        $preferredDisplayWidth = $this->getSanitizer()->int(floor($preferredDisplayWidth));
+        $preferredDisplayHeight = $this->getSanitizer()->int(floor($preferredDisplayHeight));
         $mediaId = $this->getSanitizer()->int($mediaId);
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', "This display client is not licensed");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "This display client is not licensed");
 
         // Update the last accessed date/logged in
         $this->touchDisplay();
@@ -1343,7 +1344,6 @@ class XMDSHandler extends Base
         // The MediaId is actually the widgetId
         try {
             $requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
-            //$thisregion = $this->regionFactory->getById($regionId);
             $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($mediaId), $preferredDisplayWidth, $preferredDisplayHeight);
             $resource = $module->getResource($this->display->displayId);
 
@@ -1354,12 +1354,12 @@ class XMDSHandler extends Base
                 throw new ControllerNotImplemented();
         }
         catch (NotFoundException $notEx) {
-            throw new \SoapFault('Receiver', 'Requested an invalid file.');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Requested an invalid file.');
         }
         catch (\Exception $e) {
             $this->getLog()->error('Unknown error during getResource. E = ' . $e->getMessage());
             $this->getLog()->debug($e->getTraceAsString());
-            throw new \SoapFault('Receiver', 'Unable to get the media resource');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Unable to get the media resource');
         }
 
         // Commit the touch
@@ -1377,25 +1377,27 @@ class XMDSHandler extends Base
      * @param $regionId
      * @param $mediaId
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     protected function doGetResource($serverKey, $hardwareKey, $layoutId, $regionId, $mediaId)
     {
         // The MediaId is actually the widgetId
         try {
             $thisregion = $this->regionFactory->getById($regionId);
-            return doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, 
-                $thisregion == null ? 0 : $thisregion->width,
-                $thisregion == null ? 0 : $thisregino->height,
+            $regionwidth = $thisregion == null ? 0 : floor($thisregion->width);
+            $regionheight = $thisregion == null ? 0 : floor($thisregion->height);
+            return $this->doGetResourceWithPreferredDisplayDim($serverKey, $hardwareKey, $layoutId, $regionId,
+               $regionwidth,
+                $regionheight,
                 $mediaId);
         }
         catch (NotFoundException $notEx) {
-            throw new \SoapFault('Receiver', 'Requested an invalid file.');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Requested an invalid file.');
         }
         catch (\Exception $e) {
             $this->getLog()->error('Unknown error during getResource. E = ' . $e->getMessage());
             $this->getLog()->debug($e->getTraceAsString());
-            throw new \SoapFault('Receiver', 'Unable to get the media resource');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Unable to get the media resource');
         }
     }
 
@@ -1669,7 +1671,7 @@ class XMDSHandler extends Base
      * @param string $xmrChannel
      * @param string $xmrPubKey
      * @return string
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     public function doRegisterDisplay($serverKey, $hardwareKey, $displayName, $clientType, $clientVersion, $clientCode, $operatingSystem, $macAddress, $xmrChannel, $xmrPubKey)
     {
@@ -1693,11 +1695,11 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Check the Length of the hardwareKey
         if (strlen($hardwareKey) > 40)
-            throw new \SoapFault('Sender', 'The Hardware Key you sent was too long. Only 40 characters are allowed (SHA1).');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Hardware Key you sent was too long. Only 40 characters are allowed (SHA1).');
 
         // Return an XML formatted string
         $return = new \DOMDocument('1.0');
@@ -1820,7 +1822,7 @@ class XMDSHandler extends Base
                 $display->xmrPubKey = $xmrPubKey;
             }
             catch (\InvalidArgumentException $e) {
-                throw new \SoapFault('Sender', $e->getMessage());
+                throw new \Xibo\Exception\XMDSFault('Sender', $e->getMessage());
             }
 
             $displayElement->setAttribute('status', 1);
@@ -1855,9 +1857,9 @@ class XMDSHandler extends Base
      * @param string $regionId
      * @param string $mediaId
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
-    function GetResource($serverKey, $hardwareKey, $layoutId, $preferredDisplayWidth, $preferredDisplayHeight, $mediaId)
+    function GetResource()
     {
         //return $this->doGetResource($serverKey, $hardwareKey, $layoutId, $regionId, $mediaId);
 
@@ -1876,7 +1878,8 @@ class XMDSHandler extends Base
                 'httpState' => 201,
                 'message' => sprintf(__('GetResource: %s'), $this->display->getId()),
                 'id' => $this->display->displayId,
-                'data' => $retData
+                'data' => $retData,
+                'extra' => ['base64encoded' => 0]
             ]);        
         } catch (\Exception $e)
         {
@@ -1895,7 +1898,7 @@ class XMDSHandler extends Base
      * @return string
      * @param string $serverKey
      * @param string $hardwareKey
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function Schedule()
     {
@@ -1930,7 +1933,7 @@ class XMDSHandler extends Base
      * @param string $serverKey The Server Key
      * @param string $hardwareKey Display Hardware Key
      * @return string $requiredXml Xml Formatted String
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function RequiredFiles()
     {
@@ -1977,7 +1980,8 @@ class XMDSHandler extends Base
                 'httpState' => 201,
                 'message' => sprintf(__('Get files for display: %s'), $this->display->getId()),
                 'id' => $this->display->displayId,
-                'data' => base64_encode($retData)
+                'data' => base64_encode($retData),
+                'extra' => ['base64encoded' => 1]
             ]);        
         } catch (\Exception $e)
         {
@@ -2000,7 +2004,7 @@ class XMDSHandler extends Base
      * @param int $chunkOffset The Offset of the Chunk Requested
      * @param string $chunkSize The Size of the Chunk Requested
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function doGetFile($serverKey, $hardwareKey, $fileId, $fileType, $chunkOffset, $chunkSize)
     {
@@ -2018,15 +2022,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Authenticate this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', "This display client is not licensed");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "This display client is not licensed");
 
         if ($this->display->isAuditing())
             $this->getLog()->debug('hardwareKey: ' . $hardwareKey . ', fileId: ' . $fileId . ', fileType: ' . $fileType . ', chunkOffset: ' . $chunkOffset . ', chunkSize: ' . $chunkSize);
@@ -2073,7 +2077,7 @@ class XMDSHandler extends Base
         }
         catch (NotFoundException $e) {
             $this->getLog()->error($e->getMessage());
-            throw new \SoapFault('Receiver', 'Requested an invalid file.');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'Requested an invalid file.');
         }
 
         // Log Bandwidth
@@ -2086,7 +2090,7 @@ class XMDSHandler extends Base
      * @return string
      * @param string $serverKey
      * @param string $hardwareKey
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function Schedule4($serverKey, $hardwareKey)
     {
@@ -2101,7 +2105,7 @@ class XMDSHandler extends Base
      * @param string $type
      * @param string $reason
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function BlackList()
     {
@@ -2139,7 +2143,7 @@ class XMDSHandler extends Base
      * @param string $serverKey
      * @param string $hardwareKey
      * @param string $logXml
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function SubmitLog()
     {
@@ -2176,7 +2180,7 @@ class XMDSHandler extends Base
      * @param string $serverKey
      * @param string $hardwareKey
      * @param string $statXml
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function SubmitStats()
     {
@@ -2213,7 +2217,7 @@ class XMDSHandler extends Base
      * @param string $hardwareKey
      * @param string $inventory
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     public function MediaInventory()
     {
@@ -2252,7 +2256,7 @@ class XMDSHandler extends Base
      * @param string $regionId
      * @param string $mediaId
      * @return mixed
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     function GetResource5($serverKey, $hardwareKey, $layoutId, $regionId, $mediaId)
     {
@@ -2293,7 +2297,7 @@ class XMDSHandler extends Base
      * @param string $hardwareKey
      * @param string $status
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     public function doNotifyStatus($serverKey, $hardwareKey, $status)
     {
@@ -2305,15 +2309,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', 'This display client is not licensed');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
 
         // Update the last accessed date/logged in
         $this->touchDisplay();
@@ -2370,7 +2374,7 @@ class XMDSHandler extends Base
      * @param string $hardwareKey
      * @param string $screenShot
      * @return bool
-     * @throws \SoapFault
+     * @throws \Xibo\Exception\XMDSFault
      */
     public function doSubmitScreenShot($serverKey, $hardwareKey, $screenShot)
     {
@@ -2389,15 +2393,15 @@ class XMDSHandler extends Base
 
         // Check the serverKey matches
         if ($serverKey != $this->getConfig()->GetSetting('SERVER_KEY'))
-            throw new \SoapFault('Sender', 'The Server key you entered does not match with the server key at this address');
+            throw new \Xibo\Exception\XMDSFault('Sender', 'The Server key you entered does not match with the server key at this address');
 
         // Make sure we are sticking to our bandwidth limit
         if (!$this->checkBandwidth())
-            throw new \SoapFault('Receiver', "Bandwidth Limit exceeded");
+            throw new \Xibo\Exception\XMDSFault('Receiver', "Bandwidth Limit exceeded");
 
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
-            throw new \SoapFault('Receiver', 'This display client is not licensed');
+            throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
 
         // Update the last accessed date/logged in
         $this->touchDisplay();
@@ -2443,7 +2447,7 @@ class XMDSHandler extends Base
         // return early with false, keep screenShotRequested intact, let the Player retry.
         if ($needConversion && !$converted) {
             $this->logBandwidth($this->display->displayId, Bandwidth::$SCREENSHOT, filesize($location));
-            throw new \SoapFault('Receiver', __('Incorrect Screen shot Format'));
+            throw new \Xibo\Exception\XMDSFault('Receiver', __('Incorrect Screen shot Format'));
         }
 
         $fp = fopen($location, 'wb');

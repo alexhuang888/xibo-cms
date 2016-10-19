@@ -175,6 +175,12 @@ class DisplayProfile
         $this->getLog()->debug('Config loaded [%d]: %s', count($this->config), json_encode($this->config, JSON_PRETTY_PRINT));
 
         $this->configDefault = $this->loadFromFile();
+        // temporarily solution
+        $this->configDefault['ubuntu'] = $this->configDefault['android'];
+        $this->configDefault['debian'] = $this->configDefault['android'];
+        $this->configDefault['osx'] = $this->configDefault['android'];
+        $this->configDefault['unknown'] = $this->configDefault['android'];
+
         $this->configTabs = $this->configDefault[$this->type]['tabs'];
         $this->configDefault = $this->configDefault[$this->type]['settings'];
 

@@ -45,6 +45,9 @@ $app->configService = \Xibo\Service\ConfigService::Load(PROJECT_ROOT . '/web/set
 \Xibo\Middleware\Storage::setStorage($app->container);
 // Set state
 \Xibo\Middleware\State::setState($app);
+//$app->add(new \Xibo\Middleware\State());
+$app->add(new \Xibo\Middleware\Storage());
+
 // Handle additional Middleware
 \Xibo\Middleware\State::setMiddleWare($app);
 

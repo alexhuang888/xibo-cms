@@ -34,9 +34,21 @@ In theory it is fine, although  it may be better to user clientTypes from contro
                 {% set helpText %}{% trans "What type of display client is this profile intended for?" %}{% endset %}
                 {% set windows %}{% trans "Windows" %}{% endset %}
                 {% set android %}{% trans "Android" %}{% endset %}
+                {% set ubuntu %}{% trans "Ubuntu" %}{% endset %}
+                {% set osx %}{% trans "OSX" %}{% endset %}
+                {% set debian %}{% trans "Debian" %}{% endset %}
+                {% set darwin %}{% trans "MacOS" %}{% endset %}
+                {% set unknown %}{% trans "Unknown" %}{% endset %}
                 {% set options = [
                 { typeid: "windows", type: windows },
-                { typeid: "android", type: android }
+                { typeid: "android", type: android },
+                { typeid: "ubuntu", type: ubuntu },
+                { typeid: "mac", type: mac },
+                { typeid: "osx", type: osx },
+                { typeid: "darwin", type: darwin },
+                { typeid: "debian", type: debian },
+                { typeid: "linux", type: linux },
+                { typeid: "unknown", type: unknown }
                 ] %}
                 {{ forms.dropdown("type", "single", title,"", options, "typeid","type", helpText) }} 
 

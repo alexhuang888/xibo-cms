@@ -566,20 +566,24 @@ class Schedule implements \JsonSerializable
         }
 
         // Load the dates into a date object for parsing
+        // normal schedule start-end
         $start = $this->getDate()->parse($this->fromDt, 'U');
         $end = $this->getDate()->parse($this->toDt, 'U');
+        $ScheduleEndDate = $this->getDate()->parse($this->toDt, 'U');
 
         // If we are a daypart event, look up the start/end times for the event
         $this->calculateDayPartTimes($start, $end);
 
-        // Add the detail for the main event (this is the event that originally triggered the generation)
-        $this->addDetail($start->format('U'), $end->format('U'));
-
+        if ($this->recurrenceType != "Week")
+        {
+            // Add the detail for the main event (this is the event that originally triggered the generation)
+            $this->addDetail($start->format('U'), $end->format('U'));
+        }
         // If we don't have any recurrence, we are done
         if (empty($this->recurrenceType))
             return;
 
-        // Set the temp starts
+        // Set the temp starts (repeat ends)
         $range = $this->getDate()->parse($this->recurrenceRange, 'U');
 
         // loop until we have added the recurring events for the schedule
@@ -635,7 +639,8 @@ class Schedule implements \JsonSerializable
 
                             // If we go over the recurrence range, stop
                             // if we go over the start of the week, stop
-                            if ($start > $range || $start > $endOfWeek) {
+                            if ($start > $range || $start > $endOfWeek || ($this->toDt != null && $start > $ScheduleEndDate))
+                             {
                                 break;
                             }
 
@@ -646,12 +651,13 @@ class Schedule implements \JsonSerializable
                             if ($this->toDt == null)
                                 $this->addDetail($start->format('U'), null);
                             else {
+                                /* not sure what it is. just break the function
                                 // Check to make sure that our from/to date isn't longer than the first repeat
                                 if ($start->format('U') < $this->toDt) {
                                     $this->getLog()->debug($start->toDateTimeString() . ' is before ' . $this->getDate()->parse($this->toDt, 'U')->toDateTimeString());
                                     throw new \InvalidArgumentException(__('The first event repeat is inside the event from/to dates.'));
                                 }
-
+                                */
                                 // If we are a daypart event, look up the start/end times for the event
                                 $this->calculateDayPartTimes($start, $end);
 
@@ -692,7 +698,7 @@ class Schedule implements \JsonSerializable
             }
 
             // after we have added the appropriate amount, are we still valid
-            if ($start > $range)
+            if ($start > $range || ($this->toDt != null && $start > $ScheduleEndDate))
                 break;
 
             // Don't add if we are weekly recurrency (handles it's own adding)
@@ -703,8 +709,9 @@ class Schedule implements \JsonSerializable
                 $this->addDetail($start->format('U'), null);
             else {
                 // Check to make sure that our from/to date isn't longer than the first repeat
-                if ($start->format('U') < $this->toDt)
-                    throw new \InvalidArgumentException(__('The first event repeat is inside the event from/to dates.'));
+                // not sure what it is?
+                //if ($start->format('U') < $this->toDt)
+                //    throw new \InvalidArgumentException(__('The first event repeat is inside the event from/to dates.'));
 
                 // If we are a daypart event, look up the start/end times for the event
                 $this->calculateDayPartTimes($start, $end);

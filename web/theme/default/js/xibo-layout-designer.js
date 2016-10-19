@@ -110,7 +110,8 @@ AdjustSelectedRegionPosition = function(postype)
         {
             $('.regionitem.ui-selected').each(function()
             {
-                $(this).css('bottom', $(anchoritem).css('bottom'));
+                console.log(parseInt($(anchoritem).css('top'))+ $(anchoritem).height() - $(this).height());
+                $(this).css('top', parseInt($(anchoritem).css('top')) + $(anchoritem).height() - $(this).height());
             });
         }        
         if (postype == 2)   // align left
@@ -124,23 +125,23 @@ AdjustSelectedRegionPosition = function(postype)
         {
             $('.regionitem.ui-selected').each(function()
             {
-                $(this).css('right', $(anchoritem).css('right'));
+                $(this).css('left', parseInt($(anchoritem).css('left'))+$(anchoritem).width()-$(anchoritem).width());
             });
         }   
         if (postype == 4)   // align v-center
         {
-            var v_center = $(anchoritem).css('top') + $(anchoritem).height() / 2;
+            var v_center = parseInt($(anchoritem).css('top')) + $(anchoritem).height() / 2;
             $('.regionitem.ui-selected').each(function()
             {
-                $(this).css('top', v_center - $(anchoritem).height() / 2);
+                $(this).css('top', v_center - $(this).height() / 2);
             });
         }         
         if (postype == 5)   // align h-center
         {
-            var h_center = $(anchoritem).css('left') + $(anchoritem).width() / 2;
+            var h_center = parseInt($(anchoritem).css('left')) + $(anchoritem).width() / 2;
             $('.regionitem.ui-selected').each(function()
             {
-                $(this).css('left', h_center - $(anchoritem).width() / 2);
+                $(this).css('left', h_center - $(this).width() / 2);
             });
         }
         $('.regionitem.ui-selected').each(function()
@@ -405,21 +406,6 @@ $(document).ready(function(){
     // Hook up toggle
     $('[data-toggle="tooltip"]').tooltip();
 
-    // alex: region item
-    $(".mediadroppable").on('click', function(e)
-    {
-//        console.log(e.target);
-//        console.log(this);
-//        console.log($(e.target).hasClass('regionPreviewOverlay'));
-        if ($(e.target).hasClass('regionPreviewOverlay') || 
-            $(e.target).hasClass('previewContent') ||
-            $(e.target).hasClass('preview') || 
-            $(e.target).hasClass('regionTransparency')  || 
-            $(e.target).hasClass('mediadroppable'))
-        {       
-            toggleRegionSelectedIcon($(this));     
-        }   
-    }); 
     /* vertical media list, draggable */
     configureMedialistHandler();
 
@@ -612,7 +598,24 @@ function configureRegionHandler()
                     });
                 }                       
             }
-        });    
+        });
+
+    // alex: region item
+    $(".mediadroppable").on('click', function(e)
+    {
+        //console.log(e.target);
+        //console.log($(e.target).attr('class'));
+//        console.log(this);
+//        console.log($(e.target).hasClass('regionPreviewOverlay'));
+        if ($(e.target).hasClass('regionPreviewOverlay') || 
+            $(e.target).hasClass('previewContent') ||
+            $(e.target).hasClass('preview') || 
+            $(e.target).hasClass('regionTransparency')  || 
+            $(e.target).hasClass('mediadroppable'))
+        {       
+            toggleRegionSelectedIcon($(this));     
+        }   
+    });             
 }
 
 /**
@@ -949,8 +952,8 @@ function layoutStatus(url) {
                 $.each(response.extra.regionduration, function(index, value) 
                 {
                     console.log('idx[' + index + '] = ' + value);
-                    var regionid = 'region_' + index;
-                    $('#' + regionid).attr('duration') = value;
+                    var regionid = '#region_' + index;
+                    $(regionid).attr('duration', value);
                 });
             }
             else {

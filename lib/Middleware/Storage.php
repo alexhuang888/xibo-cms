@@ -34,6 +34,7 @@ use Xibo\Storage\PdoStorageService;
  */
 class Storage extends Middleware
 {
+    public static $my_setStorageSet = false;
     public function call()
     {
         $app = $this->app;
@@ -69,6 +70,9 @@ class Storage extends Middleware
      */
     public static function setStorage($container)
     {
+        if (self::$my_setStorageSet == true)
+            return;
+
         // Register the log service
         $container->singleton('logService', function($container) {
             return new LogService($container->log, $container->mode);
@@ -78,5 +82,7 @@ class Storage extends Middleware
         $container->singleton('store', function($container) {
             return (new PdoStorageService($container->logService))->setConnection();
         });
+
+        self::$my_setStorageSet = true;
     }
 }

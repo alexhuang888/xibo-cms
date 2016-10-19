@@ -17,12 +17,14 @@
 
 {% block formButtons %}
     {% trans "Help" %}, XiboHelpRender("{{ help }}")
-    {% trans "Close" %}, XiboDialogClose(refreshplaylistCallback)
+    {% trans "Switch to Timeline" %}, XiboSwapDialog("{{ urlFor("playlist.timeline.form", {id: playlist.playlistId}) }}?view=timeline")
+    {% trans "Save Order" %}, XiboTimelineGridSaveOrder("timelineWidgets")
+
 {% if settings.GLOBAL_AIAWARE_ENABLE == 1 and  settings.GLOBAL_AIAWARE_ALLOW_USEREDITING == 1 %}   
     {% trans "Edit AI-Aware Info" %}, XiboPlaylistSaveAITags("{{ urlFor("aitags.edittag.form", {itemtype: playlist.getItemType(), itemid: playlist.playlistId}) }}")
 {% endif %}
-    {% trans "Switch to Timeline" %}, XiboSwapDialog("{{ urlFor("playlist.timeline.form", {id: playlist.playlistId}) }}?view=timeline")
-    {% trans "Save Order" %}, XiboTimelineGridSaveOrder("timelineWidgets")
+        
+    {% trans "Close" %}, XiboDialogClose(refreshplaylistCallback)
 {% endblock %}
 
 {% block callBack %}timelineGridCallback{% endblock %}

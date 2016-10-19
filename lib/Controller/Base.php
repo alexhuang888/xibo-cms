@@ -462,7 +462,7 @@ class Base
             $buttons = explode("\n", $view['buttons']);
 
             foreach ($buttons as $button) {
-                if ($button == '')
+                if ($button == '' || trim($button) == '')
                     continue;
 
                 $button = explode(',', trim($button));
