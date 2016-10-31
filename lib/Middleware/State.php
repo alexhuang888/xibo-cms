@@ -25,7 +25,6 @@ use Slim\Helper\Set;
 use Slim\Middleware;
 use Slim\Slim;
 use Stash\Driver\Composite;
-use Stash\Driver\Ephemeral;
 use Stash\Driver\FileSystem;
 use Stash\Pool;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -315,9 +314,6 @@ class State extends Middleware
             $drivers[] = new FileSystem(['path' => $cachePath]);
         }
 
-        // Always add the Ephemeral driver
-        $drivers[] = new Ephemeral();
-
         // Create a composite driver
         $composite = new Composite(['drivers' => $drivers]);
 
@@ -490,7 +486,8 @@ class State extends Middleware
                 $container->displayProfileFactory,
                 $container->mediaFactory,
                 $container->scheduleFactory,
-                $container->displayEventFactory
+                $container->displayEventFactory,
+                $container->requiredFileFactory
             );
         });
 
@@ -644,7 +641,8 @@ class State extends Middleware
                 $container->configService,
                 $container->store,
                 $container->logFactory,
-                $container->displayFactory
+                $container->displayFactory,
+                $container->userFactory
             );
         });
 
@@ -720,7 +718,8 @@ class State extends Middleware
                 $container->regionFactory,
                 $container->layoutFactory,
                 $container->displayGroupFactory,
-                $container->widgetAudioFactory
+                $container->widgetAudioFactory,
+                $container->aitagshelper
             );
         });
 
@@ -818,6 +817,7 @@ class State extends Middleware
                 $container->dateService,
                 $container->configService,
                 $container->session,
+                $container->pool,
                 $container->scheduleFactory,
                 $container->displayGroupFactory,
                 $container->campaignFactory,
@@ -1051,7 +1051,9 @@ class State extends Middleware
                 $container->widgetFactory, 
                 $container->regionFactory, 
                 $container->notificationFactory, 
-                $container->displayEventFactory
+                $container->displayEventFactory,
+                $container->scheduleFactory,
+                $container->dayPartFactory
             );
         });            
     }
@@ -1186,9 +1188,8 @@ class State extends Middleware
                 $container->sanitizerService,
                 $container->user,
                 $container->userFactory,
+                $container->displayNotifyService,
                 $container->configService,
-                $container->pool,
-                $container->playerActionService,
                 $container->displayGroupFactory,
                 $container->displayProfileFactory
             );
@@ -1360,7 +1361,8 @@ class State extends Middleware
             return new \Xibo\Factory\RequiredFileFactory(
                 $container->store,
                 $container->logService,
-                $container->sanitizerService
+                $container->sanitizerService,
+                $container->pool
             );
         });
 
@@ -1378,6 +1380,7 @@ class State extends Middleware
                 $container->logService,
                 $container->sanitizerService,
                 $container->configService,
+                $container->pool,
                 $container->displayGroupFactory
             );
         });

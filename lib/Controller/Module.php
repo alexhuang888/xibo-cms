@@ -100,6 +100,7 @@ class Module extends Base
     /** @var  WidgetAudioFactory */
     protected $widgetAudioFactory;
 
+    protected $aiTagHelper;
     /**
      * Set common dependencies.
      * @param LogServiceInterface $log
@@ -122,7 +123,7 @@ class Module extends Base
      * @param DisplayGroupFactory $displayGroupFactory
      * @param WidgetAudioFactory $widgetAudioFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $moduleFactory, $playlistFactory, $mediaFactory, $permissionFactory, $userGroupFactory, $widgetFactory, $transitionFactory, $regionFactory, $layoutFactory, $displayGroupFactory, $widgetAudioFactory)
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $moduleFactory, $playlistFactory, $mediaFactory, $permissionFactory, $userGroupFactory, $widgetFactory, $transitionFactory, $regionFactory, $layoutFactory, $displayGroupFactory, $widgetAudioFactory, $aiTagHelper)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -138,6 +139,7 @@ class Module extends Base
         $this->layoutFactory = $layoutFactory;
         $this->displayGroupFactory = $displayGroupFactory;
         $this->widgetAudioFactory = $widgetAudioFactory;
+        $this->aiTagHelper = $aiTagHelper;
     }
 
     /**
@@ -497,7 +499,7 @@ class Module extends Base
             throw new AccessDeniedException();
 
         // Set some dependencies that are used in the delete
-        $module->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory);
+        $module->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory, $this->aiTagHelper);
 
         // Pass to view
         $this->getState()->template = 'module-form-delete';
@@ -519,7 +521,7 @@ class Module extends Base
             throw new AccessDeniedException();
 
         // Set some dependencies that are used in the delete
-        $module->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory);
+        $module->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory, $this->aiTagHelper);
 
         $moduleName = $module->getName();
         $widgetMedia = $module->widget->mediaIds;
@@ -542,7 +544,7 @@ class Module extends Base
                 if (!$this->getUser()->checkDeleteable($media))
                     throw new AccessDeniedException();
 
-                $media->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory);
+                $media->setChildObjectDependencies($this->layoutFactory, $this->widgetFactory, $this->displayGroupFactory, $this->aiTagHelper);
 
                 $media->delete();
             }

@@ -479,3 +479,6 @@ h1 .pagetitle {
     margin: initial;
     line-height:initial;
 }
+table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.dataTable tbody td.selected a {
+    color: #000000;
+}

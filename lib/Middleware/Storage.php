@@ -39,6 +39,7 @@ class Storage extends Middleware
     {
         $app = $this->app;
 
+        $app->startTime = microtime();
         $app->commit = true;
 
         // Configure storage
@@ -59,7 +60,11 @@ class Storage extends Middleware
             }
         }
 
-        $app->logService->info('PDO stats: %s.', json_encode(PdoStorageService::stats()));
+        // Get the stats for this connection
+        $stats = PdoStorageService::stats();
+        $stats['length'] = microtime() - $app->startTime;
+
+        $app->logService->info('PDO stats: %s.', json_encode($stats, JSON_PRETTY_PRINT));
 
         $app->store->close();
     }

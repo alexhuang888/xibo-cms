@@ -426,6 +426,12 @@ class MediaFactory extends BaseFactory
             $params['ownerId'] = $this->getSanitizer()->getInt('ownerId', $filterBy);
         }
 
+        // User Group filter
+        if ($this->getSanitizer()->getInt('ownerUserGroupId', 0, $filterBy) != 0) {
+            $body .= ' AND media.userid IN (SELECT DISTINCT userId FROM `lkusergroup` WHERE groupId =  :ownerUserGroupId) ';
+            $params['ownerUserGroupId'] = $this->getSanitizer()->getInt('ownerUserGroupId', 0, $filterBy);
+        }
+
         if ($this->getSanitizer()->getInt('retired', -1, $filterBy) == 1)
             $body .= " AND media.retired = 1 ";
 
@@ -464,35 +470,45 @@ class MediaFactory extends BaseFactory
 
         // Tags
         if ($this->getSanitizer()->getString('tags', $filterBy) != '') {
-            $body .= " AND `media`.mediaId IN (
+            $tagFilter = $this->getSanitizer()->getString('tags', $filterBy);
+
+            if (trim($tagFilter) === '--no-tag') {
+                $body .= ' AND `media`.mediaId NOT IN (
+                SELECT `lklinkedtags`.itemid
+                     FROM tag
+                    INNER JOIN `lklinkedtags`
+                    ON `lklinkedtags`.tagid = tag.tagId
+                    )
+                ';
+            } else {
+                $body .= " AND `media`.mediaId IN (
                 SELECT `lklinkedtags`.itemid
                   FROM tag
                     INNER JOIN `lklinkedtags`
                     ON `lklinkedtags`.tagid = tag.tagId
                 ";
-            $i = 0;
-            foreach (explode(',', $this->getSanitizer()->getString('tags', $filterBy)) as $tag) {
-                $i++;
+                $i = 0;
+                foreach (explode(',', $tagFilter) as $tag) {
+                    $i++;
+                    if ($i == 1)
+                        $body .= " WHERE ( tag LIKE :tags$i ";
+                    else
+                        $body .= " OR tag LIKE :tags$i ";
 
-                if ($i == 1)
-                    $body .= " WHERE ( tag LIKE :tags$i ";
+                    $params['tags' . $i] =  '%' . $tag . '%';
+                }
+                if ($i > 0)
+                {
+                    $body.= " ) AND lklinkedtags.itemtype = :itemtype ";
+                }
                 else
-                    $body .= " OR tag LIKE :tags$i ";
-
-                $params['tags' . $i] =  '%' . $tag . '%';
+                {
+                    $body .= "WHERE lklinkedtags.itemtype = :itemtype ";
+                }
+                $BodyRemoveItemTypeFilter = false;
+                $body .= " ) ";
             }
-            if ($i > 0)
-            {
-                $body.= " ) AND lklinkedtags.itemtype = :itemtype ";
-            }
-            else
-            {
-                $body .= "WHERE lklinkedtags.itemtype = :itemtype ";
-            }
-            $BodyRemoveItemTypeFilter = false;
-            $body .= " ) ";
         }
-
         // File size
         if ($this->getSanitizer()->getString('fileSize', $filterBy) != null) {
             $fileSize = $this->parseComparisonOperator($this->getSanitizer()->getString('fileSize', $filterBy));

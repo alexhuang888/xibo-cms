@@ -156,7 +156,10 @@ class Layout extends Base
     {
         // Call to render the template
         $this->getState()->template = 'layout-page';
-        $this->getState()->setData(['users' => $this->userFactory->query()]);
+        $this->getState()->setData([
+            'users' => $this->userFactory->query(),
+            'groups' => $this->userGroupFactory->query()
+        ]);
     }
 
     /**
@@ -592,6 +595,13 @@ class Layout extends Base
      *      required=false
      *   ),
      *  @SWG\Parameter(
+     *      name="ownerUserGroupId",
+     *      in="formData",
+     *      description="Filter by users in this UserGroupId",
+     *      type="integer",
+     *      required=false
+     *   ),
+     *  @SWG\Parameter(
      *      name="embed",
      *      in="formData",
      *      description="Embed related data such as regions, playlists, tags, etc",
@@ -625,7 +635,8 @@ class Layout extends Base
             'retired' => $this->getSanitizer()->getInt('retired'),
             'tags' => $this->getSanitizer()->getString('tags'),
             'filterLayoutStatusId' => $this->getSanitizer()->getInt('layoutStatusId'),
-            'layoutId' => $this->getSanitizer()->getInt('layoutId')
+            'layoutId' => $this->getSanitizer()->getInt('layoutId'),
+            'ownerUserGroupId' => $this->getSanitizer()->getInt('ownerUserGroupId')
         ]));
 
         foreach ($layouts as $layout) {
@@ -1035,7 +1046,7 @@ class Layout extends Base
 
     /**
      * @SWG\Delete(
-     *  path="/layout/{layoutId}/tag",
+     *  path="/layout/{layoutId}/untag",
      *  operationId="layoutUntag",
      *  tags={"layout"},
      *  summary="Untag Layout",
@@ -1078,7 +1089,7 @@ class Layout extends Base
         $tags = $this->getSanitizer()->getStringArray('tag');
 
         if (count($tags) <= 0)
-            throw new \InvalidArgumentException(__('No tags to assign'));
+            throw new \InvalidArgumentException(__('No tags to unassign'));
 
         foreach ($tags as $tag) {
             $layout->unassignTag($this->tagFactory->tagFromString($tag));
@@ -1142,10 +1153,6 @@ class Layout extends Base
             default:
                 $status = __('This Layout is invalid and should not be scheduled');
         }
-
-        // Keep things tidy
-        // Maintenance should also do this.
-        $this->getApp()->container->get('\Xibo\Controller\Library')->removeExpiredFiles();
 
         // We want a different return depending on whether we are arriving through the API or WEB routes
         if ($this->isApi()) {

@@ -20,6 +20,7 @@ use Xibo\Exception\NotFoundException;
 use Xibo\Exception\XMDSFault;
 use Xibo\Factory\BandwidthFactory;
 use Xibo\Factory\DataSetFactory;
+use Xibo\Factory\DayPartFactory;
 use Xibo\Factory\DisplayEventFactory;
 use Xibo\Factory\DisplayFactory;
 use Xibo\Factory\LayoutFactory;
@@ -28,6 +29,7 @@ use Xibo\Factory\ModuleFactory;
 use Xibo\Factory\NotificationFactory;
 use Xibo\Factory\RegionFactory;
 use Xibo\Factory\RequiredFileFactory;
+use Xibo\Factory\ScheduleFactory;
 use Xibo\Factory\UserFactory;
 use Xibo\Factory\UserGroupFactory;
 use Xibo\Factory\WidgetFactory;
@@ -118,7 +120,8 @@ class XMDSHandler extends Base
      */
     public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $pool, $store, 
                                     $requiredFileFactory, $moduleFactory, $layoutFactory, $dataSetFactory, $displayFactory, $userGroupFactory, 
-                                    $bandwidthFactory, $mediaFactory, $widgetFactory, $regionFactory, $notificationFactory, $displayEventFactory)
+                                    $bandwidthFactory, $mediaFactory, $widgetFactory, $regionFactory, $notificationFactory, $displayEventFactory, 
+                                    $scheduleFactory, $dayPartFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -138,6 +141,8 @@ class XMDSHandler extends Base
         $this->regionFactory = $regionFactory;
         $this->notificationFactory = $notificationFactory;
         $this->displayEventFactory = $displayEventFactory;
+        $this->scheduleFactory = $scheduleFactory;
+        $this->dayPartFactory = $dayPartFactory;
     }
 
     public function SetupSubDependency( $logProcessor)
@@ -208,14 +213,17 @@ class XMDSHandler extends Base
         if ($cache->isHit()) {
             $this->getLog()->info('Returning required files from Cache for display %s', $this->display->display);
 
+            $this->requiredFileFactory->setDisplay($this->display->displayId);
+            $this->requiredFileFactory->persist();
+
             // Log Bandwidth
             $this->logBandwidth($this->display->displayId, Bandwidth::$RF, strlen($output));
 
             return $output;
         }
 
-        // Generate a new Request Key which we will sign our Required Files with
-        $requestKey = Random::generateString(10);
+        // Expire all nonces
+        $this->requiredFileFactory->expireAll($this->display->displayId);
 
         // Build a new RF
         $requiredFilesXml = new \DOMDocument("1.0");
@@ -224,15 +232,14 @@ class XMDSHandler extends Base
 
         // Hour to hour time bands for the query
         // Start at the current hour
-        $fromFilter = time();
-        // Move forwards an hour and the rf look ahead
-        $rfLookAhead = $fromFilter + 3600 + $rfLookAhead;
-        // Dial both items back to the top of the hour
-        $fromFilter = $fromFilter - ($fromFilter % 3600);
-        $toFilter = $rfLookAhead - ($rfLookAhead % 3600);
+        $fromFilter = $this->getDate()->parse()->setTime(0, 0, 0);
 
-        if ($this->display->isAuditing())
-            $this->getLog()->debug(sprintf('Required files date criteria. FromDT = %s. ToDt = %s', date('Y-m-d h:i:s', $fromFilter), date('Y-m-d h:i:s', $toFilter)));
+        if ($this->getConfig()->GetSetting('SCHEDULE_LOOKAHEAD') == 'On')
+            $toFilter = $fromFilter->copy()->addSeconds($rfLookAhead);
+        else
+            $toFilter = $fromFilter->copy()->addHour();
+
+        $this->getLog()->debug(sprintf('FromDT = %s. ToDt = %s', $fromFilter->toRssString(), $toFilter->toRssString()));
 
         try {
             $dbh = $this->getStore()->getConnection();
@@ -240,12 +247,21 @@ class XMDSHandler extends Base
             // Get a list of all layout ids in the schedule right now
             // including any layouts that have been associated to our Display Group
             $SQL = '
-                SELECT layout.layoutID, schedule.DisplayOrder, lkcampaignlayout.DisplayOrder AS LayoutDisplayOrder, schedule_detail.eventId
+                SELECT layout.layoutID, 
+                    schedule.DisplayOrder, 
+                    lkcampaignlayout.DisplayOrder AS LayoutDisplayOrder, 
+                    schedule.eventId, 
+                    schedule.fromDt, 
+                    schedule.toDt, 
+                    schedule.recurrence_type AS recurrenceType,
+                    schedule.recurrence_detail AS recurrenceDetail,
+                    schedule.recurrence_range AS recurrenceRange,
+                    schedule.recurrenceRepeatsOn,
+                    schedule.lastRecurrenceWatermark,
+                    schedule.dayPartId
                   FROM `campaign`
                     INNER JOIN `schedule`
                     ON `schedule`.CampaignID = campaign.CampaignID
-                    INNER JOIN schedule_detail
-                    ON schedule_detail.eventID = `schedule`.eventID
                     INNER JOIN `lkscheduledisplaygroup`
                     ON `lkscheduledisplaygroup`.eventId = `schedule`.eventId
                     INNER JOIN `lkcampaignlayout`
@@ -257,11 +273,27 @@ class XMDSHandler extends Base
                     INNER JOIN `lkdisplaydg`
                     ON lkdisplaydg.DisplayGroupID = `lkdgdg`.childId
                  WHERE lkdisplaydg.DisplayID = :displayId
-                    AND schedule_detail.FromDT < :fromdt
-                    AND schedule_detail.ToDT > :todt
+                    AND (
+                      (schedule.FromDT < :toDt AND IFNULL(`schedule`.toDt, `schedule`.fromDt) > :fromDt) 
+                      OR `schedule`.recurrence_range >= :fromDt 
+                      OR (
+                        IFNULL(`schedule`.recurrence_range, 0) = 0 AND IFNULL(`schedule`.recurrence_type, \'\') <> \'\' 
+                      )
+                    )
                     AND layout.retired = 0
                 UNION
-                SELECT `lklayoutdisplaygroup`.layoutId, 0 AS DisplayOrder, 0 AS LayoutDisplayOrder, 0 AS eventId
+                SELECT `lklayoutdisplaygroup`.layoutId, 
+                    0 AS DisplayOrder, 
+                    0 AS LayoutDisplayOrder, 
+                    0 AS eventId, 
+                    0 AS fromDt, 
+                    0 AS toDt, 
+                    NULL AS recurrenceType, 
+                    NULL AS recurrenceDetail,
+                    NULL AS recurrenceRange,
+                    NULL AS recurrenceRepeatsOn,
+                    NULL AS lastRecurrenceWatermark,
+                    NULL AS dayPartId
                   FROM `lklayoutdisplaygroup`
                     INNER JOIN `lkdgdg`
                     ON `lkdgdg`.parentId = `lklayoutdisplaygroup`.displayGroupId
@@ -273,20 +305,39 @@ class XMDSHandler extends Base
                 ORDER BY DisplayOrder, LayoutDisplayOrder, eventId
             ';
 
-            $sth = $dbh->prepare($SQL);
-            $sth->execute(array(
+            $params = array(
                 'displayId' => $this->display->displayId,
-                'fromdt' => $toFilter,
-                'todt' => $fromFilter
-            ));
+                'fromDt' => $fromFilter->format('U'),
+                'toDt' => $toFilter->format('U')
+            );
+
+            if ($this->display->isAuditing())
+                $this->getLog()->sql($SQL, $params);
+
+            $sth = $dbh->prepare($SQL);
+            $sth->execute($params);
 
             // Our layout list will always include the default layout
             $layouts = array();
             $layouts[] = $this->display->defaultLayoutId;
 
             // Build up the other layouts into an array
-            foreach ($sth->fetchAll() as $row)
-                $layouts[] = $this->getSanitizer()->int($row['layoutID']);
+            foreach ($sth->fetchAll() as $row) {
+                $layoutId = $this->getSanitizer()->int($row['layoutID']);
+
+                if ($row['eventId'] != 0) {
+                    $schedule = $this->scheduleFactory->createEmpty()->hydrate($row);
+                    $schedule
+                        ->setDateService($this->getDate())
+                        ->setDayPartFactory($this->dayPartFactory);
+                    $scheduleEvents = $schedule->getEvents($fromFilter, $toFilter);
+
+                    if (count($scheduleEvents) <= 0)
+                        continue;
+                }
+
+                $layouts[] = $layoutId;
+            }
 
         } catch (\Exception $e) {
             $this->getLog()->error('Unable to get a list of layouts. ' . $e->getMessage());
@@ -380,7 +431,7 @@ class XMDSHandler extends Base
                 }
 
                 // Add nonce
-                $mediaNonce = $this->requiredFileFactory->createForMedia($this->display->displayId, $requestKey, $id, $fileSize, $path);
+                $mediaNonce = $this->requiredFileFactory->createForMedia($this->display->displayId, $id, $fileSize, $path);
                 $mediaNonce->save();
 
                 // Add the file node
@@ -426,8 +477,13 @@ class XMDSHandler extends Base
                 continue;
 
             // Load this layout
-            $layout = $this->layoutFactory->loadById($layoutId);
-            $layout->loadPlaylists();
+            try {
+                $layout = $this->layoutFactory->loadById($layoutId);
+                $layout->loadPlaylists();
+            } catch (NotFoundException $e) {
+                $this->getLog()->error('Layout not found - ID: ' . $layoutId . ', skipping.');
+                continue;
+            }
 
             // Make sure its XLF is up to date
             $path = $layout->xlfToDisk(['notify' => false]);
@@ -442,7 +498,7 @@ class XMDSHandler extends Base
                 $this->getLog()->debug('MD5 for layoutid ' . $layoutId . ' is: [' . $md5 . ']');
 
             // Add nonce
-            $layoutNonce = $this->requiredFileFactory->createForLayout($this->display->displayId, $requestKey, $layoutId, $fileSize, $fileName);
+            $layoutNonce = $this->requiredFileFactory->createForLayout($this->display->displayId, $layoutId, $fileSize, $fileName);
             $layoutNonce->save();
 
             // Add the Layout file element
@@ -485,7 +541,7 @@ class XMDSHandler extends Base
                             $modules[$widget->type]->renderAs == 'html'
                         ) {
                             // Add nonce
-                            $this->requiredFileFactory->createForGetResource($this->display->displayId, $requestKey, $layoutId, $region->regionId, $widget->widgetId)->save();
+                            $this->requiredFileFactory->createForGetResource($this->display->displayId, $layoutId, $region->regionId, $widget->widgetId)->save();
 
                             // Does the media provide a modified Date?
                             $widgetModifiedDt = $layoutModifiedDt->getTimestamp();
@@ -556,8 +612,8 @@ class XMDSHandler extends Base
         $requiredFilesXml->formatOutput = true;
         $output = $requiredFilesXml->saveXML();
 
-        // Remove unused required files
-        RequiredFile::removeUnusedForDisplay($this->getStore(), $this->display->displayId, $requestKey);
+        // Persist the required files.
+        $this->requiredFileFactory->persist();
 
         // Cache
         $cache->set($output);
@@ -568,8 +624,8 @@ class XMDSHandler extends Base
         $this->getPool()->saveDeferred($cache);
 
         // Log Bandwidth
-        $this->logBandwidth($this->display->displayId, Bandwidth::$RF, strlen($output));     
-        
+        $this->logBandwidth($this->display->displayId, Bandwidth::$RF, strlen($output));
+
         return $output;
     }
 
@@ -625,19 +681,14 @@ class XMDSHandler extends Base
 
         // Hour to hour time bands for the query
         // Start at the current hour
-        $fromFilter = time();
-        // Move forwards an hour and the rf lookahead
-        $rfLookAhead = $fromFilter + 3600 + $rfLookAhead;
-        // Dial both items back to the top of the hour
-        $fromFilter = $fromFilter - ($fromFilter % 3600);
+        $fromFilter = $this->getDate()->parse()->setTime(0, 0, 0);
 
         if ($this->getConfig()->GetSetting('SCHEDULE_LOOKAHEAD') == 'On')
-            $toFilter = $rfLookAhead - ($rfLookAhead % 3600);
+            $toFilter = $fromFilter->copy()->addSeconds($rfLookAhead);
         else
-            $toFilter = ($fromFilter + 3600) - (($fromFilter + 3600) % 3600);
+            $toFilter = $fromFilter->copy()->addHour();
 
-        if ($this->display->isAuditing())
-            $this->getLog()->debug(sprintf('FromDT = %s. ToDt = %s', date('Y-m-d h:i:s', $fromFilter), date('Y-m-d h:i:s', $toFilter)));
+        $this->getLog()->debug(sprintf('FromDT = %s. ToDt = %s', $fromFilter->toRssString(), $toFilter->toRssString()));
 
         try {
             $dbh = $this->getStore()->getConnection();
@@ -655,7 +706,20 @@ class XMDSHandler extends Base
             // Add file nodes to the $fileElements
             // Firstly get all the scheduled layouts
             $SQL = '
-                SELECT `schedule`.eventTypeId, layout.layoutId, `layout`.status, `command`.code, schedule_detail.fromDt, schedule_detail.toDt, schedule.eventId, schedule.is_priority
+                SELECT `schedule`.eventTypeId, 
+                    layout.layoutId, 
+                    `layout`.status, 
+                    `command`.code, 
+                    schedule.fromDt, 
+                    schedule.toDt,
+                    schedule.recurrence_type AS recurrenceType,
+                    schedule.recurrence_detail AS recurrenceDetail,
+                    schedule.recurrence_range AS recurrenceRange,
+                    schedule.recurrenceRepeatsOn,
+                    schedule.lastRecurrenceWatermark,
+                    schedule.eventId, 
+                    schedule.is_priority,
+                    schedule.dayPartId
             ';
 
             if (!$options['dependentsAsNodes']) {
@@ -681,8 +745,6 @@ class XMDSHandler extends Base
 
             $SQL .= '
                    FROM `schedule`
-                    INNER JOIN schedule_detail
-                    ON schedule_detail.eventID = `schedule`.eventID
                     INNER JOIN `lkscheduledisplaygroup`
                     ON `lkscheduledisplaygroup`.eventId = `schedule`.eventId
                     INNER JOIN `lkdgdg`
@@ -699,15 +761,19 @@ class XMDSHandler extends Base
                     LEFT OUTER JOIN `command`
                     ON `command`.commandId = `schedule`.commandId
                  WHERE lkdisplaydg.DisplayID = :displayId
-                    AND schedule_detail.FromDT < :todt
-                    AND IFNULL(schedule_detail.ToDT, schedule_detail.FromDT) > :fromdt
-                ORDER BY schedule.DisplayOrder, IFNULL(lkcampaignlayout.DisplayOrder, 0), schedule_detail.FromDT
+                    AND (
+                      (schedule.FromDT < :toDt AND IFNULL(`schedule`.toDt, `schedule`.fromDt) > :fromDt) 
+                      OR `schedule`.recurrence_range >= :fromDt OR (
+                        IFNULL(`schedule`.recurrence_range, 0) = 0 AND IFNULL(`schedule`.recurrence_type, \'\') <> \'\' 
+                        )
+                    )
+                ORDER BY schedule.DisplayOrder, IFNULL(lkcampaignlayout.DisplayOrder, 0), schedule.FromDT
             ';
 
             $params = array(
                 'displayId' => $this->display->displayId,
-                'todt' => $toFilter,
-                'fromdt' => $fromFilter
+                'toDt' => $toFilter->format('U'),
+                'fromDt' => $fromFilter->format('U')
             );
 
             if ($this->display->isAuditing())
@@ -768,82 +834,100 @@ class XMDSHandler extends Base
                 $scheduleId = $row['eventId'];
                 $is_priority = $this->getSanitizer()->int($row['is_priority']);
 
-                if ($eventTypeId == Schedule::$LAYOUT_EVENT) {
-                    // Ensure we have a layoutId (we may not if an empty campaign is assigned)
-                    // https://github.com/xibosignage/xibo/issues/894
-                    if ($layoutId == 0 || empty($layoutId)) {
-                        $this->getLog()->error('Player has empty event scheduled. Display = %s, EventId = %d', $this->display->display, $scheduleId);
-                        continue;
-                    }
+                $schedule = $this->scheduleFactory->createEmpty()->hydrate($row);
+                $schedule
+                    ->setDateService($this->getDate())
+                    ->setDayPartFactory($this->dayPartFactory);
+                $scheduleEvents = $schedule->getEvents($fromFilter, $toFilter);
 
-                    // Check the layout status
-                    // https://github.com/xibosignage/xibo/issues/743
-                    if (intval($row['status']) > 3) {
-                        $this->getLog()->error('Player has invalid layout scheduled. Display = %s, LayoutId = %d', $this->display->display, $layoutId);
-                        continue;
-                    }
+                $this->getLog()->debug(count($scheduleEvents) . ' events for eventId ' . $schedule->eventId);
 
-                    // Add a layout node to the schedule
-                    $layout = $scheduleXml->createElement("layout");
-                    $layout->setAttribute("file", $layoutId);
-                    $layout->setAttribute("fromdt", $fromDt);
-                    $layout->setAttribute("todt", $toDt);
-                    $layout->setAttribute("scheduleid", $scheduleId);
-                    $layout->setAttribute("priority", $is_priority);
+                foreach ($scheduleEvents as $scheduleEvent) {
 
-                    if (!$options['dependentsAsNodes']) {
-                        $dependents = $this->getSanitizer()->string($row['Dependents']);
-                        $layout->setAttribute("dependents", $dependents);
-                    }
-                    else if (array_key_exists($layoutId, $layoutDependents)) {
-                        $dependentNode = $scheduleXml->createElement("dependents");
+                    $eventTypeId = $row['eventTypeId'];
+                    $layoutId = $row['layoutId'];
+                    $commandCode = $row['code'];
+                    $fromDt = $this->getDate()->getLocalDate($scheduleEvent->fromDt);
+                    $toDt = $this->getDate()->getLocalDate($scheduleEvent->toDt);
+                    $scheduleId = $row['eventId'];
+                    $is_priority = $this->getSanitizer()->int($row['is_priority']);
 
-                        foreach ($layoutDependents[$layoutId] as $storedAs) {
-                            $fileNode = $scheduleXml->createElement("file", $storedAs);
-
-                            $dependentNode->appendChild($fileNode);
+                    if ($eventTypeId == Schedule::$LAYOUT_EVENT) {
+                        // Ensure we have a layoutId (we may not if an empty campaign is assigned)
+                        // https://github.com/xibosignage/xibo/issues/894
+                        if ($layoutId == 0 || empty($layoutId)) {
+                            $this->getLog()->info('Player has empty event scheduled. Display = %s, EventId = %d', $this->display->display, $scheduleId);
+                            continue;
                         }
 
-                        $layout->appendChild($dependentNode);
+                        // Check the layout status
+                        // https://github.com/xibosignage/xibo/issues/743
+                        if (intval($row['status']) > 3) {
+                            $this->getLog()->info('Player has invalid layout scheduled. Display = %s, LayoutId = %d', $this->display->display, $layoutId);
+                            continue;
+                        }
+
+                        // Add a layout node to the schedule
+                        $layout = $scheduleXml->createElement("layout");
+                        $layout->setAttribute("file", $layoutId);
+                        $layout->setAttribute("fromdt", $fromDt);
+                        $layout->setAttribute("todt", $toDt);
+                        $layout->setAttribute("scheduleid", $scheduleId);
+                        $layout->setAttribute("priority", $is_priority);
+
+                        if (!$options['dependentsAsNodes']) {
+                            $dependents = $this->getSanitizer()->string($row['Dependents']);
+                            $layout->setAttribute("dependents", $dependents);
+                        } else if (array_key_exists($layoutId, $layoutDependents)) {
+                            $dependentNode = $scheduleXml->createElement("dependents");
+
+                            foreach ($layoutDependents[$layoutId] as $storedAs) {
+                                $fileNode = $scheduleXml->createElement("file", $storedAs);
+
+                                $dependentNode->appendChild($fileNode);
+                            }
+
+                            $layout->appendChild($dependentNode);
+                        }
+
+                        $layoutElements->appendChild($layout);
+
+                    } else if ($eventTypeId == Schedule::$COMMAND_EVENT) {
+                        // Add a command node to the schedule
+                        $command = $scheduleXml->createElement("command");
+                        $command->setAttribute("date", $fromDt);
+                        $command->setAttribute("scheduleid", $scheduleId);
+                        $command->setAttribute('code', $commandCode);
+                        $layoutElements->appendChild($command);
+                    } else if ($eventTypeId == Schedule::$OVERLAY_EVENT && $options['includeOverlays']) {
+                        // Ensure we have a layoutId (we may not if an empty campaign is assigned)
+                        // https://github.com/xibosignage/xibo/issues/894
+                        if ($layoutId == 0 || empty($layoutId)) {
+                            $this->getLog()->error('Player has empty event scheduled. Display = %s, EventId = %d', $this->display->display, $scheduleId);
+                            continue;
+                        }
+
+                        // Check the layout status
+                        // https://github.com/xibosignage/xibo/issues/743
+                        if (intval($row['status']) > 3) {
+                            $this->getLog()->error('Player has invalid layout scheduled. Display = %s, LayoutId = %d', $this->display->display, $layoutId);
+                            continue;
+                        }
+
+                        if ($overlayNodes == null) {
+                            $overlayNodes = $scheduleXml->createElement('overlays');
+                        }
+
+                        $overlay = $scheduleXml->createElement('overlay');
+                        $overlay->setAttribute("file", $layoutId);
+                        $overlay->setAttribute("fromdt", $fromDt);
+                        $overlay->setAttribute("todt", $toDt);
+                        $overlay->setAttribute("scheduleid", $scheduleId);
+                        $overlay->setAttribute("priority", $is_priority);
+
+                        // Add to the overlays node list
+                        $overlayNodes->appendChild($overlay);
                     }
-
-                    $layoutElements->appendChild($layout);
-
-                } else if ($eventTypeId == Schedule::$COMMAND_EVENT) {
-                    // Add a command node to the schedule
-                    $command = $scheduleXml->createElement("command");
-                    $command->setAttribute("date", $fromDt);
-                    $command->setAttribute("scheduleid", $scheduleId);
-                    $command->setAttribute('code', $commandCode);
-                    $layoutElements->appendChild($command);
-                } else if ($eventTypeId == Schedule::$OVERLAY_EVENT && $options['includeOverlays']) {
-                    // Ensure we have a layoutId (we may not if an empty campaign is assigned)
-                    // https://github.com/xibosignage/xibo/issues/894
-                    if ($layoutId == 0 || empty($layoutId)) {
-                        $this->getLog()->error('Player has empty event scheduled. Display = %s, EventId = %d', $this->display->display, $scheduleId);
-                        continue;
-                    }
-
-                    // Check the layout status
-                    // https://github.com/xibosignage/xibo/issues/743
-                    if (intval($row['status']) > 3) {
-                        $this->getLog()->error('Player has invalid layout scheduled. Display = %s, LayoutId = %d', $this->display->display, $layoutId);
-                        continue;
-                    }
-
-                    if ($overlayNodes == null) {
-                        $overlayNodes = $scheduleXml->createElement('overlays');
-                    }
-
-                    $overlay = $scheduleXml->createElement('overlay');
-                    $overlay->setAttribute("file", $layoutId);
-                    $overlay->setAttribute("fromdt", $fromDt);
-                    $overlay->setAttribute("todt", $toDt);
-                    $overlay->setAttribute("scheduleid", $scheduleId);
-                    $overlay->setAttribute("priority", $is_priority);
-
-                    // Add to the overlays node list
-                    $overlayNodes->appendChild($overlay);
                 }
             }
 
@@ -919,7 +1003,7 @@ class XMDSHandler extends Base
 
         // Cache
         $cache->set($output);
-        $cache->expiresAt($this->getDate()->parse($toFilter, 'U'));
+        $cache->expiresAt($toFilter);
         $this->getPool()->saveDeferred($cache);
 
         // Log Bandwidth
@@ -1053,8 +1137,20 @@ class XMDSHandler extends Base
 
         if (!$document->loadXML($logXml)) {
             $this->getLog()->error('Malformed XML from Player, this will be discarded. The Raw XML String provided is: ' . $logXml);
+            $this->getLog()->debug('XML log: ' . $logXml);
             return true;
         }
+
+        // Current log level
+        $logLevel = $this->logProcessor->getLevel();
+        $discardedLogs = 0;
+
+        // Get the display timezone to use when adjusting log dates.
+        $timeZone = $this->display->getSetting('displayTimeZone', '');
+        $timeZone = (empty($timeZone)) ? $this->getConfig()->GetSetting('defaultTimezone') : $timeZone;
+
+        // Store processed logs in an array
+        $logs = [];
 
         foreach ($document->documentElement->childNodes as $node) {
             /* @var \DOMElement $node */
@@ -1082,6 +1178,28 @@ class XMDSHandler extends Base
                 continue;
             }
 
+            // Does this meet the current log level?
+            if ($cat == 'error') {
+                $recordLogLevel = Log::ERROR;
+                $levelName = 'ERROR';
+            }
+            else if ($cat == 'audit') {
+                $recordLogLevel = Log::DEBUG;
+                $levelName = 'DEBUG';
+            }
+            else {
+                $recordLogLevel = Log::NOTICE;
+                $levelName = 'NOTICE';
+            }
+
+            if ($recordLogLevel > $logLevel) {
+                $discardedLogs++;
+                continue;
+            }
+
+            // Adjust the date according to the display timezone
+            $date = $this->getDate()->getLocalDate($this->getDate()->parse($date, 'Y-m-d H:i:s')->tz($timeZone));
+
             // Get the date and the message (all log types have these)
             foreach ($node->childNodes as $nodeElements) {
 
@@ -1107,11 +1225,42 @@ class XMDSHandler extends Base
             if ($message == '')
                 $message = $node->textContent;
 
-            // We should have enough information to log this now.
-            $logType = ($cat == 'error') ? 'error' : 'audit';
-
-            $this->getLog()->notice('%s,%s,%s,%s,%s,%s,%s,%s', $logType, $message, 'Client', $thread . $method . $type, $date, $scheduleId, $layoutId, $mediaId);
+            $logs[] = [
+                $this->logProcessor->getUid(),
+                $date,
+                'PLAYER',
+                $levelName,
+                $thread . $method . $type,
+                'POST',
+                $message . $scheduleId . $layoutId . $mediaId,
+                0,
+                $this->display->displayId
+            ];
         }
+
+        if (count($logs) > 0) {
+            // Insert
+            $sql = 'INSERT INTO log (runNo, logdate, channel, type, page, function, message, userid, displayid) VALUES ';
+            $placeHolders = '(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+            $sql = $sql . implode(', ', array_fill(1, count($logs), $placeHolders));
+
+            // Flatten the array
+            $data = [];
+            foreach ($logs as $log) {
+                foreach ($log as $field) {
+                    $data[] = $field;
+                }
+            }
+
+            // Insert
+            $this->getStore()->isolated($sql, $data);
+        } else {
+            $this->getLog()->error('0 logs resolved from log package');
+        }
+
+        if ($discardedLogs > 0)
+            $this->getLog()->error('Discarded ' . $discardedLogs . ' logs. Consider adjusting your display profile log level. Resolved level is ' . $logLevel);
 
         $this->logBandwidth($this->display->displayId, Bandwidth::$SUBMITLOG, strlen($logXml));
 
@@ -1179,17 +1328,28 @@ class XMDSHandler extends Base
             // MediaId is actually the widgetId (since 1.8) and the mediaId is looked up by this service
             $widgetId = $node->getAttribute('mediaid');
             
-            // Lookup the mediaId
-            $media = $this->mediaFactory->getByLayoutAndWidget($layoutID, $widgetId);
+            $mediaId = 0;
 
-            if (count($media) <= 0) {
-                // Non-media widget
-                $mediaId = 0;
-            } else {
-                $mediaId = $media[0]->mediaId;
+            // The mediaId (really widgetId) might well be null
+            if ($widgetId == 'null' || $widgetId == '')
+                $widgetId = 0;
+
+            if ($widgetId > 0) {
+                // Lookup the mediaId
+                $media = $this->mediaFactory->getByLayoutAndWidget($layoutID, $widgetId);
+
+                if (count($media) <= 0) {
+                    // Non-media widget
+                    $mediaId = 0;
+                } else {
+                    $mediaId = $media[0]->mediaId;
+                }
             }
             
             $tag = $node->getAttribute('tag');
+
+            if ($tag == 'null')
+                $tag = null;
 
             // Write the stat record with the information we have available to us.
             try {
@@ -1264,6 +1424,7 @@ class XMDSHandler extends Base
 
             // What type of file?
             try {
+                $requiredFile = null;
                 switch ($node->getAttribute('type')) {
 
                     case 'media':
@@ -1275,13 +1436,22 @@ class XMDSHandler extends Base
                         break;
 
                     case 'resource':
-                        $requiredFile = $this->requiredFileFactory->getByDisplayAndMedia($this->display->displayId, $node->getAttribute('id'));
+                        $requiredFile = $this->requiredFileFactory->getByDisplayAndWidget($this->display->displayId, $node->getAttribute('id'));
                         break;
 
                     default:
                         $this->getLog()->debug('Skipping unknown node in media inventory: %s - %s.', $node->getAttribute('type'), $node->getAttribute('id'));
                         continue;
                 }
+
+                // File complete?
+                $complete = $node->getAttribute('complete');
+                $requiredFile->complete = $complete;
+                $requiredFile->save(['refreshNonce' => false]);
+
+                // If this item is a 0 then set not complete
+                if ($complete == 0)
+                    $mediaInventoryComplete = 2;
             }
             catch (NotFoundException $e) {
                 $this->getLog()->info('Unable to find file in media inventory: %s', $node->getAttribute('type'), $node->getAttribute('id'));
@@ -1297,9 +1467,11 @@ class XMDSHandler extends Base
             if ($complete == 0)
                 $mediaInventoryComplete = 2;
         }
-
+       // Persist into the cache
+        $this->requiredFileFactory->persist();
+ 
         $this->display->mediaInventoryStatus = $mediaInventoryComplete;
-        $this->display->save(['validate' => false, 'audit' => false]);
+        $this->display->save(Display::$saveOptionsMinimum);
 
         $this->logBandwidth($this->display->displayId, Bandwidth::$MEDIAINVENTORY, strlen($inventory));
 
@@ -1343,12 +1515,18 @@ class XMDSHandler extends Base
 
         // The MediaId is actually the widgetId
         try {
-            $requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
+            //$requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
+            //$thisregion = $this->regionFactory->getById($regionId);
+            //$module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($mediaId), $preferredDisplayWidth, $preferredDisplayHeight);
+            $requiredFile = $this->requiredFileFactory->getByDisplayAndWidget($this->display->displayId, $mediaId);
             $module = $this->moduleFactory->createWithWidgetAndPreferredDim($this->widgetFactory->loadByWidgetId($mediaId), $preferredDisplayWidth, $preferredDisplayHeight);
+
+            //$module = $this->moduleFactory->createWithWidget($this->widgetFactory->loadByWidgetId($mediaId), $this->regionFactory->getById($regionId));
             $resource = $module->getResource($this->display->displayId);
 
             $requiredFile->bytesRequested = $requiredFile->bytesRequested + strlen($resource);
             $requiredFile->markUsed();
+            $this->requiredFileFactory->persist();
 
             if ($resource == '')
                 throw new ControllerNotImplemented();
@@ -1615,7 +1793,12 @@ class XMDSHandler extends Base
         $cdnUrl = $this->configService->GetSetting('CDN_URL');
         if ($cdnUrl != '') {
             // Serve a link to the CDN
-            return 'http' . ((isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') ? 's' : '') . '://' . $cdnUrl . urlencode($saveAsPath);
+            return 'http' . (
+                (
+                    (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') ||
+                    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https')
+                ) ? 's' : '')
+                . '://' . $cdnUrl . urlencode($saveAsPath);
         } else {
             // Serve a HTTP link to XMDS
             return $saveAsPath;
@@ -1831,6 +2014,7 @@ class XMDSHandler extends Base
             $displayElement->setAttribute('message', 'Display added and is awaiting licensing approval from an Administrator.');
         }
 
+
         $display->lastAccessed = time();
         $display->loggedIn = 1;
         $display->clientAddress = $clientAddress;
@@ -1839,7 +2023,7 @@ class XMDSHandler extends Base
         $display->clientVersion = $clientVersion;
         $display->clientCode = $clientCode;
         //$display->operatingSystem = $operatingSystem;
-        $display->save(Display::$saveOptionsMinimum);
+        $display->save(['validate' => false, 'audit' => false]);
 
         // Log Bandwidth
         $returnXml = $return->saveXML();
@@ -2058,9 +2242,14 @@ class XMDSHandler extends Base
                 $requiredFile = $this->requiredFileFactory->getByDisplayAndMedia($this->display->displayId, $fileId);
 
                 $media = $this->mediaFactory->getById($fileId);
+                $this->getLog()->debug(json_encode($media));
+
+                if (!file_exists($libraryLocation . $media->storedAs))
+                    throw new NotFoundException('Media exists but file missing from library. ' . $libraryLocation);
 
                 // Return the Chunk size specified
-                $f = fopen($libraryLocation . $media->storedAs, 'r');
+                if (!$f = fopen($libraryLocation . $media->storedAs, 'r'))
+                    throw new NotFoundException('Unable to get file pointer');
 
                 fseek($f, $chunkOffset);
 
@@ -2069,15 +2258,20 @@ class XMDSHandler extends Base
                 // Store file size for bandwidth log
                 $chunkSize = strlen($file);
 
+                if ($chunkSize === 0)
+                    throw new NotFoundException('Empty file');
+
                 $requiredFile->bytesRequested = $requiredFile->bytesRequested + $chunkSize;
                 $requiredFile->markUsed();
 
             } else {
                 throw new NotFoundException('Unknown FileType Requested.');
             }
+
+            $this->requiredFileFactory->persist();
         }
         catch (NotFoundException $e) {
-            $this->getLog()->error($e->getMessage());
+            $this->getLog()->error('Not found FileId: ' . $fileId . '. FileType: ' . $fileType . '. ' . $e->getMessage());
             throw new \Xibo\Exception\XMDSFault('Receiver', 'Requested an invalid file.');
         }
 
@@ -2334,6 +2528,7 @@ class XMDSHandler extends Base
         $this->display->storageAvailableSpace = $this->getSanitizer()->getInt('availableSpace', $this->display->storageAvailableSpace, $status);
         $this->display->storageTotalSpace = $this->getSanitizer()->getInt('totalSpace', $this->display->storageTotalSpace, $status);
         $this->display->lastCommandSuccess = $this->getSanitizer()->getCheckbox('lastCommandSuccess', $this->display->lastCommandSuccess, $status);
+        $this->display->deviceName = $this->getSanitizer()->getString('deviceName', $this->display->deviceName, $status);
 
         // Touch the display record
         $this->display->save(Display::$saveOptionsMinimum);

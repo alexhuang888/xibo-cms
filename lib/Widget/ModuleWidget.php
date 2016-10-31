@@ -477,6 +477,7 @@ abstract class ModuleWidget implements ModuleInterface
 
     /**
      * Clear Media
+     * should only be used on media items that do not automatically assign new media from the feed
      */
     final protected function clearMedia()
     {

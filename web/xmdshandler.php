@@ -18,7 +18,7 @@ if (!file_exists('settings.php'))
         die('Not configured');
     }
 }
-
+$uidProcessor = new \Monolog\Processor\UidProcessor(7);
 // Create a logger
 $logger = new \Xibo\Helper\AccessibleMonologWriter(array(
     'name' => 'XMDSHANDLER',
@@ -82,7 +82,7 @@ $app->notFound(function () use ($app) {
 $twig->twigTemplateDirs = array_merge($app->moduleFactory->getViewPaths(), [PROJECT_ROOT . '/views']);
 $app->view($twig);
 
-$logProcessor = new \Xibo\Xmds\LogProcessor($app->getLog());
+$logProcessor = new \Xibo\Xmds\LogProcessor($app->getLog(), $uidProcessor->getUid());
 $app->logWriter->addProcessor($logProcessor);
 //$app->container->singleton('\Xibo\Controller\XMDSHandler')->SetupSubDependency($logProcessor);
 // Check to see if we have a file attribute set (for HTTP file downloads)
