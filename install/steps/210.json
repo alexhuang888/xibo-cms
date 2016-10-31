@@ -33,7 +33,9 @@
 
     {
       "step": "New AI-aware settings",
-      "action": "INSERT INTO `xiboaids`.`setting` (`settingid`, `setting`, `value`, `fieldType`, `helptext`, `options`, `cat`, `userChange`, `title`, `validation`, `ordering`, `default`, `userSee`, `type`) VALUES (NULL, 'GLOBAL_ENABLE_AIAWARE', 'Yes', 'dropdown', 'AI-ware is to allow system to match media and playlist to make content authoring easily. Turn on this setting to enable system-wise AI-ware functions.', 'Yes|No', 'AI-aware', '1', 'Enable AI-aware function', '', '1', 'Yes', '1', '');
+      "action": "INSERT INTO `xiboaids`.`setting` (`settingid`, `setting`, `value`, `fieldType`, `helptext`, `options`, `cat`, `userChange`, `title`, `validation`, `ordering`, `default`, `userSee`, `type`) VALUES 
+                    (NULL, 'GLOBAL_ENABLE_AIAWARE', 'Yes', 'dropdown', 
+                'AI-ware is to allow system to match media and playlist to make content authoring easily. Turn on this setting to enable system-wise AI-ware functions.', 'Yes|No', 'AI-aware', '1', 'Enable AI-aware function', '', '1', 'Yes', '1', '');
 INSERT INTO  `xiboaids`.`setting` (
 `settingid` ,
 `setting` ,

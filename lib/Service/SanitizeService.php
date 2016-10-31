@@ -160,7 +160,13 @@ class SanitizeService implements SanitizerServiceInterface
     {
         return $this->string($this->getParam($param, $default, $source));
     }
-
+    /**
+     * @inheritdoc
+     */
+    public function getRawString($param, $default = null, $source = null)
+    {
+        return $this->getParam($param, $default, $source);
+    }
     /**
      * @inheritdoc
      */

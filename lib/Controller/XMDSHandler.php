@@ -1779,6 +1779,7 @@ class XMDSHandler extends Base
                     // Append each individual command
                     foreach ($display->getCommands() as $command) {
                         /* @var \Xibo\Entity\Command $command */
+                        // here, command code should not container blank
                         $node = $return->createElement($command->code);
                         $commandString = $return->createElement('commandString', $command->commandString);
                         $validationString = $return->createElement('validationString', $command->validationString);
@@ -1798,7 +1799,7 @@ class XMDSHandler extends Base
                 // Update the Channel
                 $display->xmrChannel = $xmrChannel;
                 // Update the PUB Key only if it has been cleared
-                if ($display->xmrPubKey == '')
+                if ($display->xmrPubKey == '' || $display->xmrPubKey == "\n")
                     $display->xmrPubKey = $xmrPubKey;
 
                 // Send Notification if required
@@ -2150,7 +2151,7 @@ class XMDSHandler extends Base
         try {
             $serverKey = $this->getSanitizer()->getString('serverKey');
             $hardwareKey = $this->getSanitizer()->getString('hardwareKey');
-            $logXml = $this->getSanitizer()->getString('logXml');
+            $logXml = $this->getSanitizer()->getRawString('logXml');
 
             $retData = $this->doSubmitLog($serverKey, $hardwareKey, $logXml);
 
@@ -2187,7 +2188,7 @@ class XMDSHandler extends Base
         try {
             $serverKey = $this->getSanitizer()->getString('serverKey');
             $hardwareKey = $this->getSanitizer()->getString('hardwareKey');
-            $statXml = $this->getSanitizer()->getString('statXml');
+            $statXml = $this->getSanitizer()->getRawString('statXml');
 
             $retData = $this->doSubmitStats($serverKey, $hardwareKey, $statXml);
 
@@ -2224,7 +2225,7 @@ class XMDSHandler extends Base
         try {
             $serverKey = $this->getSanitizer()->getString('serverKey');
             $hardwareKey = $this->getSanitizer()->getString('hardwareKey');
-            $inventory = $this->getSanitizer()->getString('inventory');
+            $inventory = $this->getSanitizer()->getRawString('inventory');
 
             $retData = $this->doMediaInventory($serverKey, $hardwareKey, $inventory);
 
@@ -2268,7 +2269,7 @@ class XMDSHandler extends Base
         try {
             $serverKey = $this->getSanitizer()->getString('serverKey');
             $hardwareKey = $this->getSanitizer()->getString('hardwareKey');
-            $status = $this->getSanitizer()->getString('status');
+            $status = $this->getSanitizer()->getRawString('status');
 
             $retData = $this->doNotifyStatus($serverKey, $hardwareKey, $status);
 
@@ -2345,7 +2346,7 @@ class XMDSHandler extends Base
         try {
             $serverKey = $this->getSanitizer()->getString('serverKey');
             $hardwareKey = $this->getSanitizer()->getString('hardwareKey');
-            $screenShot = $this->getSanitizer()->getString('screenShot');
+            $screenShot = $this->getSanitizer()->getRawString('screenShot');
 
             $retData = $this->doSubmitScreenShot($serverKey, $hardwareKey, $screenShot);
 
@@ -2384,6 +2385,9 @@ class XMDSHandler extends Base
         $serverKey = $this->getSanitizer()->string($serverKey);
         $hardwareKey = $this->getSanitizer()->string($hardwareKey);
 
+         // please be noted: @screenShot is base64 encoded
+         $screenShot = base64_decode($screenShot);
+
         $screenShotFmt = "jpg";
         $screenShotMime = "image/jpeg";
         $screenShotImg = false;
@@ -2411,7 +2415,7 @@ class XMDSHandler extends Base
 
         // Open this displays screen shot file and save this.
         $location = $this->getConfig()->GetSetting('LIBRARY_LOCATION') . 'screenshots/' . $this->display->displayId . '_screenshot.' . $screenShotFmt;
-
+/*
         foreach(array('imagick', 'gd') as $imgDriver) {
             Img::configure(array('driver' => $imgDriver));
             try {
@@ -2449,7 +2453,7 @@ class XMDSHandler extends Base
             $this->logBandwidth($this->display->displayId, Bandwidth::$SCREENSHOT, filesize($location));
             throw new \Xibo\Exception\XMDSFault('Receiver', __('Incorrect Screen shot Format'));
         }
-
+*/
         $fp = fopen($location, 'wb');
         fwrite($fp, $screenShot);
         fclose($fp);
