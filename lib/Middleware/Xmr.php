@@ -32,7 +32,7 @@ class Xmr extends Middleware
             $app->container->singleton('playerActionService', function() use ($app) {
                 return new PlayerActionService($app->configService, $app->logService);
             });
-
+/*
             // Register the display notify service
             $app->container->singleton('displayNotifyService', function () use ($app) {
                 return new DisplayNotifyService(
@@ -46,6 +46,7 @@ class Xmr extends Middleware
                     $app->dayPartFactory
                 );
             });
+            */
         });
 
         $this->next->call();

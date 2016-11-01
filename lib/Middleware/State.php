@@ -38,7 +38,7 @@ use Xibo\Service\ConfigServiceInterface;
 use Xibo\Service\HelpService;
 use Xibo\Service\ModuleService;
 use Xibo\Service\SanitizeService;
-
+use Xibo\Service\DisplayNotifyService;
 /**
  * Class State
  * @package Xibo\Middleware
@@ -122,6 +122,19 @@ class State extends Middleware
         // Set the config dependencies
         $app->configService->setDependencies($app->store, $app->rootUri);
 
+        // Register the display notify service
+        $app->container->singleton('displayNotifyService', function () use ($app) {
+            return new DisplayNotifyService(
+                $app->configService,
+                $app->logService,
+                $app->store,
+                $app->pool,
+                $app->playerActionService,
+                $app->dateService,
+                $app->scheduleFactory,
+                $app->dayPartFactory
+            );
+        });
         // Register the date service
         $app->container->singleton('dateService', function() use ($app) {
             if ($app->configService->GetSetting('CALENDAR_TYPE') == 'Jalali')
