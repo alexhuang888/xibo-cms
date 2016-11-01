@@ -677,7 +677,7 @@ class Twitter extends ModuleWidget
         $isPreview = ($this->getSanitizer()->getCheckbox('preview') == 1);
 
         // Replace the View Port Width?
-        $data['viewPortWidth'] = ($isPreview) ? $this->region->width : '[[ViewPortWidth]]';
+        $data['viewPortWidth'] = ($isPreview) ? $this->preferredDisplayWidth : '[[ViewPortWidth]]';
 
         // Information from the Module
         $duration = $this->getCalculatedDurationForGetResource();
@@ -696,8 +696,8 @@ class Twitter extends ModuleWidget
             'duration' => $duration,
             'durationIsPerItem' => ($this->getOption('durationIsPerItem', 0) == 1),
             'numItems' => count($items),
-            'originalWidth' => $this->region->width,
-            'originalHeight' => $this->region->height,
+            'originalWidth' => $this->preferredDisplayWidth,
+            'originalHeight' => $this->preferredDisplayHeight,
             'previewWidth' => $this->getSanitizer()->getDouble('width', 0),
             'previewHeight' => $this->getSanitizer()->getDouble('height', 0),
             'scaleOverride' => $this->getSanitizer()->getDouble('scale_override', 0),

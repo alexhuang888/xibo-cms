@@ -566,7 +566,7 @@
                     library: {
                         label: "{% trans "View Library" %}",
                         callback: function () {
-                            XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId));
+                            XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId.toString()));
                         }
                     },
                     main: {
@@ -732,7 +732,10 @@
                             html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + playlist.thumbnail + '" alt="' + alttip + '" />';
                             html = html + '<i class="fa fa-cog fa-fw medialistitemsettingicon medialistitemsettingiconOff"';
                             html = html + ' data-playlistid=' + playlist.playlistId;
-                            html = html + ' data-playlisteditformurl="' + '{{ urlFor('playlist.timeline.form')}}' + '?view=grid"'
+                            var pltimelineformurl = "{{ urlFor('playlist.timeline.form')}}";
+                            pltimelineformurl = pltimelineformurl.replace(":id", playlist.playlistId);
+
+                            html = html + ' data-playlisteditformurl="' + pltimelineformurl + '?view=grid"'
                             html = html + ' title="{% trans "Edit this playlist" %}"';
                             html = html + ' ></i>';
                             html = html + ' </li>';
@@ -767,7 +770,7 @@
                             if (xhr.success && urlFormRedirect != null) 
                             {
                                 // Reload the designer
-                                XiboFormRender(urlFormRedirect.replace(":id", xhr.id));
+                                XiboFormRender(urlFormRedirect.replace(":id", xhr.id.toString()));
                             }
                         }
                     });
@@ -793,10 +796,13 @@
                             {
                                 console.log("added new region: " + xhr.id);
                                 var regionIDElement = '.region_' + xhr.id;
+                                var playlistid = xhr.data.playlists[0].playlistId;
+                                console.log("playlistid=" + playlistid);
                                 // Reload the designer
                                 //window.location.reload();
                                 // we have to creae a new region 
                                 newHtml = addNewRegionWithRegionId(xhr.id, 
+                                                                    playlistid,
                                                                     xhr.data.left,
                                                                     xhr.data.top,
                                                                     xhr.data.width,
@@ -809,7 +815,8 @@
                                 configureRegionHandler();
                                 //console.log($(regionItem));
                                 //console.log($(regionItem).data());
-                                new Preview($(regionItem));                                                                    
+                                new Preview($(regionItem));
+                                XiboInitialise("");                                                                    
                             }
                         }
                     })
@@ -834,7 +841,7 @@
             });
             /* end of document.ready() */
 
-            addNewRegionWithRegionId = function(regionId, originalLeft, originalTop,
+            addNewRegionWithRegionId = function(regionId, playlistid, originalLeft, originalTop,
                                                 originalWidth, originalHeight, designerScale, regionZIndex,
                                                 currentUsercheckEditable)
             {
@@ -845,24 +852,26 @@
                 var layoutid = "{{ layout.layoutId }}";
                 var layoutschemaVersion = {{ layout.schemaVersion}};
                 var urltimelineform = "{{ urlFor("region.timeline.form") }}";
-                urltimelineform.replace(':id', regionId);
+                urltimelineform = urltimelineform.replace(":id", regionId.toString());
                 var urlPreview = "{{ urlFor("region.preview") }}";
-                urlPreview.replace(':id', regionId);
+                urlPreview = urlPreview.replace(":id", regionId.toString());
                 var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
-                urlResetPlaylist.replace(':regionid', regionId);                
+                urlResetPlaylist = urlResetPlaylist.replace(":regionid", regionId.toString()); 
+                urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());                
+               
                 var regionWidth = originalWidth * designerScale;
                 var regionHeight = originalHeight * designerScale;
                 var regionLeft = originalLeft * designerScale;
                 var regionTop = originalTop * designerScale;
 
                 var urlRegionDeleteForm = "{{ urlFor("region.delete.form") }}";
-                urlRegionDeleteForm.replace(':id', regionId);
+                urlRegionDeleteForm = urlRegionDeleteForm.replace(":id", regionId.toString());
                 var urlRegionEditForm = "{{ urlFor("region.edit.form") }}";
-                urlRegionEditForm.replace(':id', regionId);
+                urlRegionEditForm = urlRegionEditForm.replace(":id", regionId.toString());
                 var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
-                urlRegionTimeLineForm.replace(':id', regionId);
+                urlRegionTimeLineForm = urlRegionTimeLineForm.replace(":id", regionId.toString());
                 var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
-                urlUserPermissionForm.replace(':id', regionId);                                                
+                urlUserPermissionForm = urlUserPermissionForm.replace(":id", regionId.toString());                                                
                 var disabledCss = 'regionDis';
                 var transparencyCss = 'Disabled';
                 var previewCss = "regionPreview";                
