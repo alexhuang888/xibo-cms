@@ -61,6 +61,7 @@ function regionPositionUpdateBase(element, refreshPreview)
 }
 toggleRegionSelectedIcon = function(regionitem)
 {
+    //console.log(regionitem);
     if ($(regionitem).hasClass('ui-selected'))
     {
         $(regionitem).removeClass("ui-selected");
@@ -82,7 +83,7 @@ DeSelecteAllRegion = function() {
 };
 AdjustSelectedRegionPosition = function(postype)
 {
-    console.log('adjustpos: type=' + postype);
+    //console.log('adjustpos: type=' + postype);
     var anchoritem = undefined;
     var minselectedIdx = 99999999;
     var totalitems = 0;
@@ -274,6 +275,7 @@ $(document).ready(function(){
     }, 500);
 
     // Bind to the region options menu
+    $('.RegionOptionsMenuItem').off('click');
     $('.RegionOptionsMenuItem').on('click', function(e) 
     {
         e.preventDefault();
@@ -296,13 +298,14 @@ $(document).ready(function(){
     });
 
     // Bind to the save/revert buttons
+    $("#layout-save-all").off("click");
     $("#layout-save-all").on("click", function () 
     {
         // Save positions for all layouts / regions
         savePositions();
         return false;
     });
-
+    $("#layout-revert").off("click");
     $("#layout-revert").on("click", function () 
     {
         // Reload
@@ -311,6 +314,7 @@ $(document).ready(function(){
     });
 
     // Bind to the save size button
+    $("#saveDesignerSize").off("click");
     $("#saveDesignerSize").on("click", function () {
         // Update the user preference
         updateUserPref([{
@@ -320,6 +324,7 @@ $(document).ready(function(){
     });
 
     // Bind to the save size button
+    $("#layoutzoomout").off("click");
     $("#layoutzoomout").on("click", function () 
     {
         layout = $("#layout");
@@ -362,6 +367,7 @@ $(document).ready(function(){
                 $("input[name=lockPosition]").attr("disabled", false);                        
         }
     });
+    $("#layoutzoomin").off("click");
     $("#layoutzoomin").on("click", function () 
     {
         layout = $("#layout");
@@ -412,6 +418,7 @@ $(document).ready(function(){
     /* horizontal playlist, sortable, draggable, droppable */
     configurePlaylistHandler();
 
+    $("#playlist-sortable-draggable").off("click");
     $("#playlist-sortable-draggable").on("click", '.playlistitemdeleteicon', function() {
         // find the nearest playlistitem to delete this item
         $(this).closest(".playlistitem").hide().remove();
@@ -457,13 +464,13 @@ function configureMedialistHandler()
         $(this).find('.medialistitemsettingicon').addClass('medialistitemsettingiconOff');
         //$(this).find('.medialistitemsettingicon').removeClass('medialistitemsettingiconOn');        
     });
-
+    $('.medialistitemsettingicon').off('click');
     $('.medialistitemsettingicon').on('click', function()
     {
         // try to launch playlist editing form
         var formurl = $(this).data().playlisteditformurl;
         formurl = formurl.replace(':id', $(this).data().playlistid);
-        console.log(formurl);
+        //console.log(formurl);
         XiboFormRender(formurl);
     });
 }
@@ -519,13 +526,14 @@ function configureRegionHandler()
         .draggable({
             containment: thisLayout,
             stop: regionPositionUpdateNoRefreshPreview,
-            drag: updateRegionInfo,
-            start: function(event, ui) {
-                //toggleRegionSelectedIcon($(this));
-
+            drag: function(event, ui) {        
+                updateRegionInfo(event, ui);
             },
-            //grid: [ 10, 10 ],
-            snap: false
+            start: function(event, ui) {
+            },
+            grid: [ 10, 10 ],
+            snap: ".regionsnappableitem",
+            snapTolerance: 10
         })
         .resizable({
             containment: thisLayout,
@@ -541,7 +549,7 @@ function configureRegionHandler()
             greedy: true,               
             drop: function(event, ui) 
             {
-                console.log($(this).attr('id') + 'to be checked.');
+                //console.log($(this).attr('id') + 'to be checked.');
                 var topElement = undefined;
                 //var topElementArray = Array();
                 var zIndexHighest = 0;
@@ -601,11 +609,12 @@ function configureRegionHandler()
         });
 
     // alex: region item
+    $(".mediadroppable").off("click");
     $(".mediadroppable").on('click', function(e)
     {
         //console.log(e.target);
         //console.log($(e.target).attr('class'));
-//        console.log(this);
+        //console.log(this);
 //        console.log($(e.target).hasClass('regionPreviewOverlay'));
         if ($(e.target).hasClass('regionPreviewOverlay') || 
             $(e.target).hasClass('previewContent') ||
@@ -615,7 +624,36 @@ function configureRegionHandler()
         {       
             toggleRegionSelectedIcon($(this));     
         }   
-    });             
+    });
+    $('.RegionOptionsMenuItem').off('click');
+    $('.RegionOptionsMenuItem').on('click', function(e) 
+    {
+        e.preventDefault();
+
+        // If any regions have been moved, then save them.
+        if (!$("#layout-save-all").hasClass("disabled")) {
+            SystemMessage(translation.savePositionsFirst, true);
+            return;
+        }
+
+        var data = {
+            layoutid: $(this).closest('.region').attr("layoutid"),
+            regionid: $(this).closest('.region').attr("regionid"),
+            scale: $(this).closest('.region').attr("tip_scale"),
+            zoom: $(this).closest('.layout').attr("zoom")
+        };
+
+        var url = $(this).prop("href");
+        XiboFormRender($(this), data);
+    });
+    // Search for any Buttons / Links on the page that are used to load forms
+    $(".XiboFormButton").off("click");
+    $(".XiboFormButton").on("click", function() {
+
+        XiboFormRender($(this));
+
+        return false;
+    });                      
 }
 
 /**
@@ -624,6 +662,7 @@ function configureRegionHandler()
  * @param  {[type]} ui [description]
  * @return {[type]}    [description]
  */
+/*
 function updateRegionInfo(e, ui) 
 {
     var pos = $(this).position();
@@ -632,6 +671,20 @@ function updateRegionInfo(e, ui)
     $('.region-tip', this).html(Math.round($(this).width() / scale, 0) + 
                                 " x " + 
                                 Math.round($(this).height() / scale, 0) + 
+                                " (" + 
+                                    Math.round(pos.left / scale, 0) + 
+                                    "," + 
+                                    Math.round(pos.top / scale, 0) + ") ");
+}
+*/
+function updateRegionInfo(e, ui) 
+{
+    var pos = $(ui.helper).position();
+    //console.log(regiondurationhtml);
+    var scale = ($(ui.helper).closest('.layout').attr("version") == 1) ? (1 / $(ui.helper).attr("tip_scale")) : $(ui.helper).attr("designer_scale");
+    $('.region-tip', $(ui.helper)).html(Math.round($(ui.helper).width() / scale, 0) + 
+                                " x " + 
+                                Math.round($(ui.helper).height() / scale, 0) + 
                                 " (" + 
                                     Math.round(pos.left / scale, 0) + 
                                     "," + 
@@ -792,7 +845,7 @@ var XiboTimelineSaveOrder = function(timelineDiv) {
         widgets[$(this).attr("widgetid")] = i;
     });
 
-    console.log(widgets);
+    //console.log(widgets);
 
 
     // Call the server to do the reorder
@@ -823,7 +876,7 @@ var XiboTimelineGridSaveOrder = function(timelinetable) {
         widgets[$(this).attr("widgetid")] = i;
     });
 
-    console.log(widgets);
+    //console.log(widgets);
 
     // Call the server to do the reorder
     $.ajax({
@@ -951,7 +1004,7 @@ function layoutStatus(url) {
                 $("#layout-duration").html(moment().startOf("day").seconds(response.extra.duration).format("HH:mm:ss"));
                 $.each(response.extra.regionduration, function(index, value) 
                 {
-                    console.log('idx[' + index + '] = ' + value);
+                    //console.log('idx[' + index + '] = ' + value);
                     var regionid = '#region_' + index;
                     $(regionid).attr('duration', value);
                 });

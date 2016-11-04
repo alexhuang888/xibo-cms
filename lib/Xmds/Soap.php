@@ -1475,7 +1475,7 @@ class Soap
                         break;
 
                     case 'resource':
-                        $requiredFile = $this->requiredFileFactory->getByDisplayAndMedia($this->display->displayId, $node->getAttribute('id'));
+                        $requiredFile = $this->requiredFileFactory->getByDisplayAndWidget($this->display->displayId, $node->getAttribute('id'));
                         break;
 
                     default:
@@ -1496,6 +1496,9 @@ class Soap
                 $this->getLog()->info('Unable to find file in media inventory: %s', $node->getAttribute('type'), $node->getAttribute('id'));
             }
         }
+
+        // Persist into the cache
+        $this->requiredFileFactory->persist();
 
         $this->display->mediaInventoryStatus = $mediaInventoryComplete;
         $this->display->save(Display::$saveOptionsMinimum);
@@ -1537,9 +1540,6 @@ class Soap
         if (!$this->authDisplay($hardwareKey))
             throw new \SoapFault('Receiver', "This display client is not licensed");
 
-        // Update the last accessed date/logged in
-        $this->touchDisplay();
-
         // The MediaId is actually the widgetId
         try {
             //$requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
@@ -1566,9 +1566,6 @@ class Soap
             $this->getLog()->debug($e->getTraceAsString());
             throw new \SoapFault('Receiver', 'Unable to get the media resource');
         }
-
-        // Commit the touch
-        $this->display->save(Display::$saveOptionsMinimum);
 
         // Log Bandwidth
         $this->logBandwidth($this->display->displayId, Bandwidth::$GETRESOURCE, strlen($resource));
@@ -1675,17 +1672,6 @@ class Soap
             $this->getLog()->error($e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * Touch Display
-     */
-    protected function touchDisplay()
-    {
-        // Last accessed date on the display
-        $this->display->lastAccessed = time();
-        $this->display->loggedIn = 1;
-        $this->display->clientAddress = $this->getIp();
     }
 
     /**

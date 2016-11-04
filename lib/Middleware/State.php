@@ -122,7 +122,7 @@ class State extends Middleware
 
         // Set the config dependencies
         $app->configService->setDependencies($app->store, $app->rootUri);
-
+/*
         // Player Action Helper
         $app->container->singleton('playerActionService', function() use ($app) {
             return new PlayerActionService($app->configService, $app->logService);
@@ -140,6 +140,7 @@ class State extends Middleware
                 $app->dayPartFactory
             );
         });
+    */
         // Register the date service
         $app->container->singleton('dateService', function() use ($app) {
             if ($app->configService->GetSetting('CALENDAR_TYPE') == 'Jalali')

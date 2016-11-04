@@ -215,7 +215,7 @@
             <div class="row" id="layoutpanel" >
                 <div id="layout" zoom="{{ zoom }}" 
                                 tip_scale="1" designer_scale="{{ designerScale }}" 
-                                class="layout center-block col-md-12 layoutitem" 
+                                class="layout center-block col-md-12 layoutitem regionsnappableitem" 
                                 layoutid="{{ layout.layoutId }}" 
                                 width="{{layout.width}}"
                                 height = "{{layout.height}}" 
@@ -261,7 +261,7 @@
                                 duration={{ region.duration }}
                                 href="{{ urlFor("region.timeline.form", {id: region.regionId}) }}" 
                                 {% if currentUser.checkEditable(region) %}ondblclick="XiboFormRender($(this))"{% endif %} 
-                                class="{{ disabledCss }} {{ previewCss }} regionitem mediadroppable" 
+                                class="{{ disabledCss }} {{ previewCss }} regionitem mediadroppable regionsnappableitem" 
                                 data-preview-url="{{ urlFor("region.preview", {id: region.regionId}) }}" 
                                 data-reset-playlist-url="{{ urlFor("region.resetplaylist", {regionid: region.regionId}) }}"
                                 style="position:absolute; width:{{ regionWidth }}px; height:{{ regionHeight }}px; top: {{ regionTop }}px; left:{{ regionLeft }}px; z-index: {{ region.zIndex }};margin:0px;padding:0px;">
@@ -812,11 +812,10 @@
                                                                     xhr.extra['currentUserEditable']);
                                 //console.log(newHtml);
                                 var regionItem = $(newHtml).appendTo('#layout');
+
                                 configureRegionHandler();
-                                //console.log($(regionItem));
-                                //console.log($(regionItem).data());
-                                new Preview($(regionItem));
-                                XiboInitialise("");                                                                    
+
+                                new Preview($(regionItem));                
                             }
                         }
                     })
@@ -831,7 +830,7 @@
                     });
                 });
                 refreshplaylistCallback();
-                
+                $('#addnewplaylisticon').off('click');
                 $('#addnewplaylisticon').on('click', function()
                 {
                     // here, we should add a new playlist to this 
@@ -900,7 +899,7 @@
                 {
                     newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
                 } 
-                newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem mediadroppable"'; 
+                newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem mediadroppable regionsnappableitem"'; 
                 newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
                 newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
                 newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';

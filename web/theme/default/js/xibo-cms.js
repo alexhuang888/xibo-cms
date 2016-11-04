@@ -115,7 +115,8 @@ function XiboInitialise(scope) {
     });
 
     // Search for any Buttons / Links on the page that are used to load forms
-    $(scope + " .XiboFormButton").click(function() {
+    $(scope + " .XiboFormButton").off("click");
+    $(scope + " .XiboFormButton").on("click", function() {
 
         XiboFormRender($(this));
 
@@ -123,7 +124,8 @@ function XiboInitialise(scope) {
     });
 
     // Search for any Buttons that redirect to another page
-    $(scope + " .XiboRedirectButton").click(function() {
+    $(scope + " .XiboRedirectButton").off("click");
+    $(scope + " .XiboRedirectButton").on("click", function() {
 
         window.location = $(this).attr("href");
 
@@ -165,7 +167,8 @@ function XiboInitialise(scope) {
     });
 
     // Links that just need to be submitted as forms
-    $(scope + ' .XiboAjaxSubmit').click(function(){
+    $(scope + ' .XiboAjaxSubmit').off("click");
+    $(scope + ' .XiboAjaxSubmit').on("click", function(){
         
         $.ajax({
             type: "post",
@@ -198,7 +201,8 @@ function XiboInitialise(scope) {
     });
 
     // Search for any help enabled elements
-    $(scope + " .XiboHelpButton").click(function(){
+    $(scope + " .XiboHelpButton").off("click");
+    $(scope + " .XiboHelpButton").on("click", function(){
 
         var formUrl = $(this).attr("href");
 
@@ -222,6 +226,7 @@ function XiboInitialise(scope) {
     });
 
     // Special drop down forms (to act as a menu instead of a usual dropdown)
+    $(scope + ' .dropdown-menu').off('click');
     $(scope + ' .dropdown-menu').on('click', function(e) {
         if($(this).hasClass('dropdown-menu-form')) {
             e.stopPropagation();

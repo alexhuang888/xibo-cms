@@ -215,7 +215,7 @@ INSERT INTO `setting` (`settingid`, `setting`, `value`, `fieldType`, `helptext`,
 (76, 'DEFAULTS_IMPORTED', '0', 'text', 'Has the default layout been imported?', NULL, 'general', 0, 'Defaults Imported?', 'required', 100, '0', 0, 'checkbox'),
 (77, 'FORCE_HTTPS', '0', 'checkbox', 'Force the portal into HTTPS?', NULL, 'network', 1, 'Force HTTPS?', '', 70, '0', 1, 'checkbox'),
 (78, 'ISSUE_STS', '0', 'checkbox', 'Add STS to the response headers? Make sure you fully understand STS before turning it on as it will prevent access via HTTP after the first successful HTTPS connection.', NULL, 'network', 1, 'Enable STS?', '', 80, '0', 1, 'checkbox'),
-(79, 'STS_TTL', '600', 'text', 'The Time to Live (maxage) of the STS header expressed in minutes.', NULL, 'network', 1, 'STS Time out', '', 90, '600', 1, 'int'),
+(79, 'STS_TTL', '600', 'text', 'The Time to Live (maxage) of the STS header expressed in seconds.', NULL, 'network', 1, 'STS Time out', '', 90, '600', 1, 'int'),
 (80, 'MAINTENANCE_ALERTS_FOR_VIEW_USERS', '0', 'checkbox', 'Email maintenance alerts for users with view permissions to effected Displays.', NULL, 'displays', 1, 'Maintenance Alerts for Users', '', 60, '0', 1, 'checkbox'),
 (81, 'CALENDAR_TYPE', 'Gregorian', 'dropdown', 'Which Calendar Type should the CMS use?', 'Gregorian|Jalali', 'regional', 1, 'Calendar Type', '', 50, 'Gregorian', 1, 'string'),
 (82, 'DASHBOARD_LATEST_NEWS_ENABLED', '1', 'checkbox', 'Should the Dashboard show latest news? The address is provided by the theme.', '', 'general', 1, 'Enable Latest News?', '', 110, '1', 1, 'checkbox'),
@@ -315,3 +315,160 @@ INSERT INTO task (taskId, name, class, status, options, schedule, isActive, conf
   (3, 'Email Notifications', '\\Xibo\\XTR\\EmailNotificationsTask', 2, '[]', '*/5 * * * * *', 1, '/tasks/email-notifications.task'),
   (4, 'Stats Archive', '\\Xibo\\XTR\\StatsArchiveTask', 2, '{"periodSizeInDays":"7","maxPeriods":"4"}', '0 0 * * Mon', 0, '/tasks/stats-archiver.task'),
   (5, 'Remove old Notifications', '\\Xibo\\XTR\\NotificationTidyTask', 2, '{"maxAgeDays":"7","systemOnly":"1","readOnly":"0"}', '15 0 * * Mon', 0, '/tasks/notification-tidy.task');
+
+
+INSERT INTO `setting` (`settingid`, `setting`, `value`, `fieldType`, `helptext`, `options`, `cat`, `userChange`, `title`, `validation`, `ordering`, `default`, `userSee`, `type`) VALUES 
+                    (NULL, 'GLOBAL_ENABLE_AIAWARE', 'Yes', 'dropdown', 
+                'AI-ware is to allow system to match media and playlist to make content authoring easily. Turn on this setting to enable system-wise AI-ware functions.', 'Yes|No', 'AI-aware', '1', 'Enable AI-aware function', '', '1', 'Yes', '1', '');
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_ALLOW_USEREDITING',  '1',  'checkbox', 'AI-ware information is done by system automatically by default. To enable this setting can allow users to edit those information manually.',  '',  'AI-aware',  '1', 'User can edit AI-aware information',  '',  '1',  '1',  '1',  'checkbox'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_DEFAULT_PUT_UPLOADED_MEDIA_IN_MATCHINGQUEUE',  '1',  'checkbox', 'When new media are uploaded, the system can schedule those media to extract ai-ware information and match them to all qualified playlists.',  '',  'AI-aware',  '1', 'Match media to playlist after uploaded',  '',  '1',  '1',  '1',  'checkbox'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_DEFAULT_PLAYLIST_IS_AIAWARE',  '1',  'checkbox', 'When a playlist is created, set it as ai-ware by default. This allows the system to match any newly uploaded media to this playlist.',  '',  'AI-aware',  '1',  'Set new playlist as AI-awared',  '', '1',  '1',  '1',  'checkbox'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_PROFILE_EXTRACTOR_SERVICE_URL',  'http://localhost:35360/profileaitags/profiletextextractor',  'text', 'Provide the url to your AI-aware profile-extractor service.',  '',  'AI-aware',  '1',  'URL to AI-aware profile extractor service',  '',  '1',  '1',  '1',  'string'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_MEDIASMARTTAG_EXTRACTOR_SERVICE_URL',  'http://localhost:35360/profileaitags/mediasmarttagretriever',  'text', 'Provide the url to your AI-aware media ai-aware information extractor service.',  '',  'AI-aware',  '1',  'URL to AI-aware media information extractor service',  '',  '1',  '1',  '1',  'string'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_MATCHING_SERVICE_URL',  'http://localhost:35370/tagsmatch/n_similarity',  'text',  'Provide the url to your AI-aware information matching service.',  '', 'AI-aware',  '1',  'URL to AI-aware informaton matching service',  '',  '1',  '1',  '1',  'string'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_MATCHING_SERVICE_MINIMUM_SCORE_URL',  '0.5',  'text',  'The minimum score that a media matches a playlist',  '',  'AI-aware',  '1', 'AI-aware miniimum media matching score',  '',  '1',  '0.5',  '1',  'string'
+);
+INSERT INTO  `setting` (
+`settingid` ,
+`setting` ,
+`value` ,
+`fieldType` ,
+`helptext` ,
+`options` ,
+`cat` ,
+`userChange` ,
+`title` ,
+`validation` ,
+`ordering` ,
+`default` ,
+`userSee` ,
+`type`
+)
+VALUES (
+NULL ,  'GLOBAL_AIAWARE_PROPAGATE_TO_CHILDITEMS',  '1',  'checkbox',  'Pass ai-aware information to all its child items.',  '',  'AI-aware',  '1', 'Pass ai-ware information to child items.',  '',  '1',  '1',  '1',  'checkbox'
+);

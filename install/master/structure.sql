@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS `campaign` (
   `Campaign` varchar(254) NOT NULL,
   `IsLayoutSpecific` tinyint(4) NOT NULL,
   `UserID` int(11) NOT NULL,
+  `isPlaylistCampaign` BOOLEAN NOT NULL DEFAULT FALSE, 
+  `isUserCreated` BOOLEAN NULL,
   PRIMARY KEY (`CampaignID`),
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -454,6 +456,7 @@ CREATE TABLE IF NOT EXISTS `media` (
   `expires` int(11) DEFAULT NULL,
   `released` tinyint(4) NOT NULL DEFAULT '1',
   `apiRef` varchar(254) NULL,
+  `isaitagsgenerated` BOOLEAN NULL,
   PRIMARY KEY (`mediaID`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -698,6 +701,11 @@ CREATE TABLE IF NOT EXISTS `playlist` (
   `playlistId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(254) DEFAULT NULL,
   `ownerId` int(11) NOT NULL,
+  `isaitagmatchable` BOOLEAN NULL,
+  `description` varchar(254) DEFAULT NULL,
+  `playlistLayoutID` INT NOT NULL , 
+  `playlistCampaignID` INT NOT NULL,
+  `isUserPlaylist` BOOLEAN NULL,
   PRIMARY KEY (`playlistId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -1105,3 +1113,10 @@ CREATE TABLE `task` (
   `configFile` VARCHAR(254) NOT NULL,
   PRIMARY KEY (`taskId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=6;
+
+CREATE TABLE IF NOT EXISTS `lklinkedtags` (
+  `itemtype` int(11) NOT NULL, 
+  `itemid` int(11) NOT NULL, 
+  `tagid` int(11) NOT NULL, 
+  `score` float NOT NULL) 
+  ENGINE=InnoDB DEFAULT CHARSET=utf8;

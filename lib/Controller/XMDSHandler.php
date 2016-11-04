@@ -1511,9 +1511,6 @@ class XMDSHandler extends Base
         if (!$this->authDisplay($hardwareKey))
             throw new \Xibo\Exception\XMDSFault('Receiver', "This display client is not licensed");
 
-        // Update the last accessed date/logged in
-        $this->touchDisplay();
-
         // The MediaId is actually the widgetId
         try {
             //$requiredFile = $this->requiredFileFactory->getByDisplayAndResource($this->display->displayId, $layoutId, $regionId, $mediaId);
@@ -1540,9 +1537,6 @@ class XMDSHandler extends Base
             $this->getLog()->debug($e->getTraceAsString());
             throw new \Xibo\Exception\XMDSFault('Receiver', 'Unable to get the media resource');
         }
-
-        // Commit the touch
-        $this->display->save(Display::$saveOptionsMinimum);
 
         // Log Bandwidth
         $this->logBandwidth($this->display->displayId, Bandwidth::$GETRESOURCE, strlen($resource));
@@ -1651,17 +1645,6 @@ class XMDSHandler extends Base
             $this->getLog()->error($e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * Touch Display
-     */
-    protected function touchDisplay()
-    {
-        // Last accessed date on the display
-        $this->display->lastAccessed = time();
-        $this->display->loggedIn = 1;
-        $this->display->clientAddress = $this->getIp();
     }
 
     /**
@@ -2515,9 +2498,6 @@ class XMDSHandler extends Base
         if (!$this->authDisplay($hardwareKey))
             throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
 
-        // Update the last accessed date/logged in
-        $this->touchDisplay();
-
         if ($this->display->isAuditing())
             $this->getLog()->debug($status);
 
@@ -2602,9 +2582,6 @@ class XMDSHandler extends Base
         // Auth this request...
         if (!$this->authDisplay($hardwareKey))
             throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
-
-        // Update the last accessed date/logged in
-        $this->touchDisplay();
 
         if ($this->display->isAuditing())
             $this->getLog()->debug('Received Screen shot');
