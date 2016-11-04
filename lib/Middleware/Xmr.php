@@ -27,12 +27,12 @@ class Xmr extends Middleware
         $app->hook('slim.before', function() {
 
             $app = $this->app;
-
+/*
             // Player Action Helper
             $app->container->singleton('playerActionService', function() use ($app) {
                 return new PlayerActionService($app->configService, $app->logService);
             });
-/*
+
             // Register the display notify service
             $app->container->singleton('displayNotifyService', function () use ($app) {
                 return new DisplayNotifyService(

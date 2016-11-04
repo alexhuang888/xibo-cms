@@ -39,6 +39,7 @@ use Xibo\Service\HelpService;
 use Xibo\Service\ModuleService;
 use Xibo\Service\SanitizeService;
 use Xibo\Service\DisplayNotifyService;
+use Xibo\Service\PlayerActionService;
 /**
  * Class State
  * @package Xibo\Middleware
@@ -122,6 +123,10 @@ class State extends Middleware
         // Set the config dependencies
         $app->configService->setDependencies($app->store, $app->rootUri);
 
+        // Player Action Helper
+        $app->container->singleton('playerActionService', function() use ($app) {
+            return new PlayerActionService($app->configService, $app->logService);
+        });
         // Register the display notify service
         $app->container->singleton('displayNotifyService', function () use ($app) {
             return new DisplayNotifyService(

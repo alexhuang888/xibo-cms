@@ -1457,7 +1457,7 @@ class XMDSHandler extends Base
                 $this->getLog()->info('Unable to find file in media inventory: %s', $node->getAttribute('type'), $node->getAttribute('id'));
                 continue;
             }
-
+/*
             // File complete?
             $complete = $node->getAttribute('complete');
             $requiredFile->complete = $complete;
@@ -1466,6 +1466,7 @@ class XMDSHandler extends Base
             // If this item is a 0 then set not complete
             if ($complete == 0)
                 $mediaInventoryComplete = 2;
+                */
         }
        // Persist into the cache
         $this->requiredFileFactory->persist();
