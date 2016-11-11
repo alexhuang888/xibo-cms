@@ -84,6 +84,8 @@ DeSelecteAllRegion = function() {
 AdjustSelectedRegionPosition = function(postype)
 {
     //console.log('adjustpos: type=' + postype);
+    var canvasItem = $("#layout");
+
     var anchoritem = undefined;
     var minselectedIdx = 99999999;
     var totalitems = 0;
@@ -111,8 +113,8 @@ AdjustSelectedRegionPosition = function(postype)
         {
             $('.regionitem.ui-selected').each(function()
             {
-                console.log(parseInt($(anchoritem).css('top'))+ $(anchoritem).height() - $(this).height());
-                $(this).css('top', parseInt($(anchoritem).css('top')) + $(anchoritem).height() - $(this).height());
+                console.log(parseFloat($(anchoritem).css('top'))+ $(anchoritem).height() - $(this).height());
+                $(this).css('top', parseFloat($(anchoritem).css('top')) + $(anchoritem).height() - $(this).height());
             });
         }        
         if (postype == 2)   // align left
@@ -126,12 +128,12 @@ AdjustSelectedRegionPosition = function(postype)
         {
             $('.regionitem.ui-selected').each(function()
             {
-                $(this).css('left', parseInt($(anchoritem).css('left'))+$(anchoritem).width()-$(anchoritem).width());
+                $(this).css('left', parseFloat($(anchoritem).css('left'))+$(anchoritem).width()-$(this).width());
             });
         }   
         if (postype == 4)   // align v-center
         {
-            var v_center = parseInt($(anchoritem).css('top')) + $(anchoritem).height() / 2;
+            var v_center = parseFloat($(anchoritem).css('top')) + $(anchoritem).height() / 2;
             $('.regionitem.ui-selected').each(function()
             {
                 $(this).css('top', v_center - $(this).height() / 2);
@@ -139,7 +141,7 @@ AdjustSelectedRegionPosition = function(postype)
         }         
         if (postype == 5)   // align h-center
         {
-            var h_center = parseInt($(anchoritem).css('left')) + $(anchoritem).width() / 2;
+            var h_center = parseFloat($(anchoritem).css('left')) + $(anchoritem).width() / 2;
             $('.regionitem.ui-selected').each(function()
             {
                 $(this).css('left', h_center - $(this).width() / 2);
@@ -181,6 +183,63 @@ AdjustSelectedRegionPosition = function(postype)
             updateRegionInfoBase($(this));
         });        
     }
+
+    if (anchoritem != undefined && (postype > 20 && postype < 30) && totalitems > 0)
+    {
+        var canvasW = parseFloat(canvasItem.css("width"));
+        var canvasH = parseFloat(canvasItem.css("height"));
+
+        if (postype == 21)   // Canvas V-center
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('top', (canvasH - parseFloat($(this).css('height'))) / 2);
+            });
+        }
+        if (postype == 22)   // Canvas H center
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('left', (canvasW - parseFloat($(this).css('width'))) / 2);
+            });
+        }  
+        if (postype == 23)   // Canvas Center
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('top', (canvasH - parseFloat($(this).css('height'))) / 2);
+                $(this).css('left', (canvasW - parseFloat($(this).css('width'))) / 2);
+            });
+        }    
+
+        if (postype == 24)   // Canvas V-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('width', canvasW);
+            });
+        }
+        if (postype == 25)   // Canvas H-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('height', canvasH);
+            });
+        }  
+        if (postype == 26)   // Canvas H&V-size
+        {
+            $('.regionitem.ui-selected').each(function()
+            {
+                $(this).css('height', canvasH);
+                $(this).css('width', canvasW);
+            });
+        }                   
+        $('.regionitem.ui-selected').each(function()
+        {           
+            regionPositionUpdateBase($(this), true);
+            updateRegionInfoBase($(this));
+        });        
+    }    
 };
 $(document).ready(function(){
     $('.regionitem').each(function()
@@ -807,7 +866,7 @@ var loadTimeLineCallback = function(dialog) {
         $("div#timelinePreview")
             .html($("div.timelineMediaPreview", this).html())
             .css({
-                "margin-top": position.top + $('#timelineControl').closest('.modal-body').scrollTop()
+                "margin-top": /*position.top + */$('#timelineControl').closest('.modal-body').scrollTop()
             })
             .show();
 
