@@ -1489,14 +1489,6 @@ class XMDSHandler extends Base
             }
         }
 
-            // If this item is a 0 then set not complete
-            if ($complete == 0)
-                $mediaInventoryComplete = 2;
-                */
-        }
-       // Persist into the cache
-        $this->requiredFileFactory->persist();
- 
         $this->display->mediaInventoryStatus = $mediaInventoryComplete;
 
         // Only call save if this property has actually changed.
@@ -1987,7 +1979,7 @@ class XMDSHandler extends Base
                     // Append each individual command
                     foreach ($display->getCommands() as $command) {
                         /* @var \Xibo\Entity\Command $command */
-                        // here, command code should not container blank
+                        // here, command code should not contain blank
                         $node = $return->createElement($command->code);
                         $commandString = $return->createElement('commandString', $command->commandString);
                         $validationString = $return->createElement('validationString', $command->validationString);
@@ -2048,7 +2040,7 @@ class XMDSHandler extends Base
         $display->clientVersion = $clientVersion;
         $display->clientCode = $clientCode;
         //$display->operatingSystem = $operatingSystem;
-        $display->save(['validate' => false, 'audit' => false]);
+        $display->save(Display::$saveOptionsMinimum);
 
         // Log Bandwidth
         $returnXml = $return->saveXML();
