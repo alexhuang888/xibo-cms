@@ -1120,3 +1120,15 @@ CREATE TABLE IF NOT EXISTS `lklinkedtags` (
   `tagid` int(11) NOT NULL, 
   `score` float NOT NULL) 
   ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `requiredfile` (
+  `rfId` bigint(20) NOT NULL AUTO_INCREMENT,
+  `displayId` int(11) NOT NULL,
+  `type` varchar(1) NOT NULL,
+  `itemId` int(11) DEFAULT NULL,
+  `bytesRequested` bigint(20) NOT NULL,
+  `complete` tinyint(1) DEFAULT 0 NOT NULL,
+  `path` varchar(255) NULL,
+  `size` BIGINT(20) DEFAULT 0 NOT NULL,
+  PRIMARY KEY (`rfId`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

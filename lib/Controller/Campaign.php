@@ -483,6 +483,9 @@ class Campaign extends Base
 
         $campaign->setChildObjectDependencies($this->layoutFactory);
 
+        // Track whether we've made any changes.
+        $changesMade = false;
+
         // Check our permissions to see each one
         $layouts = $this->getSanitizer()->getParam('layoutId', null);
         $layouts = is_array($layouts) ? $layouts : [];
@@ -501,6 +504,8 @@ class Campaign extends Base
 
             // Assign it
             $campaign->assignLayout($layout);
+
+            $changesMade = true;
         }
 
         // Run through the layouts to unassign
@@ -518,10 +523,13 @@ class Campaign extends Base
 
             // Unassign it
             $campaign->unassignLayout($layout);
+
+            $changesMade = true;
         }
 
         // Save the campaign
-        $campaign->save(['validate' => false]);
+        if ($changesMade)
+            $campaign->save(['validate' => false]);
 
         // Return
         $this->getState()->hydrate([

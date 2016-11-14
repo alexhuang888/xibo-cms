@@ -5,6 +5,8 @@ namespace Xibo\Controller;
 define('BLACKLIST_ALL', "All");
 define('BLACKLIST_SINGLE', "Single");
 
+use Jenssegers\Date\Date;
+use Slim\Log;
 use Stash\Interfaces\PoolInterface;
 use Xibo\Entity\Bandwidth;
 use Xibo\Entity\Display;
@@ -16,6 +18,7 @@ use Xibo\Entity\Stat;
 use Xibo\Entity\UserGroup;
 use Xibo\Entity\Widget;
 use Xibo\Exception\ControllerNotImplemented;
+use Xibo\Exception\DeadlockException;
 use Xibo\Exception\NotFoundException;
 use Xibo\Exception\XMDSFault;
 use Xibo\Factory\BandwidthFactory;
@@ -99,6 +102,12 @@ class XMDSHandler extends Base
 
     /** @var  DisplayEventFactory */
     protected $displayEventFactory;
+
+    /** @var  ScheduleFactory */
+    protected $scheduleFactory;
+
+    /** @var  DayPartFactory */
+    protected $dayPartFactory;
 
     /**
      * Set common dependencies.
@@ -210,11 +219,16 @@ class XMDSHandler extends Base
 
         $output = $cache->get();
 
+        // Required Files caching operates in lockstep with nonce caching
+        //  - required files are cached for 4 hours
+        //  - nonces have an expiry of 1 day
+        //  - nonces are marked "used" when they get used
+        //  - nonce use/expiry is not checked for XMDS served files (getfile, getresource)
+        //  - nonce use/expiry is checked for HTTP served files (media, layouts)
+        //  - Each time a nonce is used through HTTP, the required files cache is invalidated so that new nonces
+        //    are generated for the next request.
         if ($cache->isHit()) {
             $this->getLog()->info('Returning required files from Cache for display %s', $this->display->display);
-
-            $this->requiredFileFactory->setDisplay($this->display->displayId);
-            $this->requiredFileFactory->persist();
 
             // Log Bandwidth
             $this->logBandwidth($this->display->displayId, Bandwidth::$RF, strlen($output));
@@ -222,8 +236,18 @@ class XMDSHandler extends Base
             return $output;
         }
 
-        // Expire all nonces
-        $this->requiredFileFactory->expireAll($this->display->displayId);
+        // Generate a new nonce for this player and store it in the cache.
+        $playerNonce = Random::generateString(32);
+        $playerNonceCache = $this->pool->getItem('/display/nonce/' . $this->display->displayId);
+        $playerNonceCache->set($playerNonce);
+        $this->pool->saveDeferred($playerNonceCache);
+
+        // Get all required files for this display.
+        // we will use this to drop items from the requirefile table if they are no longer in required files
+        $rfIds = array_map(function ($element) {
+            return intval($element['rfId']);
+        }, $this->getStore()->select('SELECT rfId FROM `requiredfile` WHERE displayId = :displayId', ['displayId' => $this->display->displayId]));
+        $newRfIds = [];
 
         // Build a new RF
         $requiredFilesXml = new \DOMDocument("1.0");
@@ -431,8 +455,8 @@ class XMDSHandler extends Base
                 }
 
                 // Add nonce
-                $mediaNonce = $this->requiredFileFactory->createForMedia($this->display->displayId, $id, $fileSize, $path);
-                $mediaNonce->save();
+                $mediaNonce = $this->requiredFileFactory->createForMedia($this->display->displayId, $id, $fileSize, $path)->save();
+                $newRfIds[] = $mediaNonce->rfId;
 
                 // Add the file node
                 $file = $requiredFilesXml->createElement("file");
@@ -443,7 +467,7 @@ class XMDSHandler extends Base
 
                 if ($httpDownloads) {
                     // Serve a link instead (standard HTTP link)
-                    $file->setAttribute("path", $this->generateRequiredFileDownloadPath($mediaNonce->nonce));
+                    $file->setAttribute("path", $this->generateRequiredFileDownloadPath('M', $id, $playerNonce));
                     $file->setAttribute("saveAs", $path);
                     $file->setAttribute("download", 'http');
                 }
@@ -498,8 +522,8 @@ class XMDSHandler extends Base
                 $this->getLog()->debug('MD5 for layoutid ' . $layoutId . ' is: [' . $md5 . ']');
 
             // Add nonce
-            $layoutNonce = $this->requiredFileFactory->createForLayout($this->display->displayId, $layoutId, $fileSize, $fileName);
-            $layoutNonce->save();
+            $layoutNonce = $this->requiredFileFactory->createForLayout($this->display->displayId, $layoutId, $fileSize, $fileName)->save();
+            $newRfIds[] = $layoutNonce->rfId;
 
             // Add the Layout file element
             $file = $requiredFilesXml->createElement("file");
@@ -512,7 +536,7 @@ class XMDSHandler extends Base
 
             if ($httpDownloads && $supportsHttpLayouts) {
                 // Serve a link instead (standard HTTP link)
-                $file->setAttribute("path", $this->generateRequiredFileDownloadPath($layoutNonce->nonce));
+                $file->setAttribute("path", $this->generateRequiredFileDownloadPath('L', $layoutId, $playerNonce));
                 $file->setAttribute("saveAs", $fileName);
                 $file->setAttribute("download", 'http');
             }
@@ -541,7 +565,8 @@ class XMDSHandler extends Base
                             $modules[$widget->type]->renderAs == 'html'
                         ) {
                             // Add nonce
-                            $this->requiredFileFactory->createForGetResource($this->display->displayId, $layoutId, $region->regionId, $widget->widgetId)->save();
+                            $getResourceRf = $this->requiredFileFactory->createForGetResource($this->display->displayId, $widget->widgetId)->save();
+                            $newRfIds[] = $getResourceRf->rfId;
 
                             // Does the media provide a modified Date?
                             $widgetModifiedDt = $layoutModifiedDt->getTimestamp();
@@ -602,6 +627,18 @@ class XMDSHandler extends Base
             return new \Xibo\Exception\XMDSFault('Sender', 'Unable to get a list of blacklisted files');
         }
 
+        // Remove any required files that remain in the array of rfIds
+        $rfIds = array_values(array_diff($rfIds, $newRfIds));
+        if (count($rfIds) > 0) {
+            $this->getLog()->debug('Removing ' . count($rfIds) . ' from requiredfiles');
+
+            try {
+                $this->getStore()->updateWithDeadlockLoop('DELETE FROM `requiredfile` WHERE rfId IN (' . implode(',', array_fill(0, count($rfIds), '?')) . ')', $rfIds);
+            } catch (DeadlockException $deadlockException) {
+                $this->getLog()->error('Deadlock when deleting required files - ignoring and continuing with request');
+            }
+        }
+
         // Phone Home?
         $this->phoneHome();
 
@@ -612,15 +649,11 @@ class XMDSHandler extends Base
         $requiredFilesXml->formatOutput = true;
         $output = $requiredFilesXml->saveXML();
 
-        // Persist the required files.
-        $this->requiredFileFactory->persist();
-
         // Cache
         $cache->set($output);
 
-        // Nonces expire after 86400 seconds.
-        //$cache->expiresAt($this->getDate()->parse($toFilter, 'U'));
-        $cache->expiresAfter(86400);
+        // RF cache expires every 4 hours
+        $cache->expiresAfter(3600*4);
         $this->getPool()->saveDeferred($cache);
 
         // Log Bandwidth
@@ -1129,9 +1162,6 @@ class XMDSHandler extends Base
         if (!$this->authDisplay($hardwareKey))
             throw new \Xibo\Exception\XMDSFault('Sender', 'This display client is not licensed.');
 
-        if ($this->display->isAuditing())
-            $this->getLog()->debug('XML log: ' . $logXml);
-
         // Load the XML into a DOMDocument
         $document = new \DOMDocument("1.0");
 
@@ -1147,7 +1177,7 @@ class XMDSHandler extends Base
 
         // Get the display timezone to use when adjusting log dates.
         $timeZone = $this->display->getSetting('displayTimeZone', '');
-        $timeZone = (empty($timeZone)) ? $this->getConfig()->GetSetting('defaultTimezone') : $timeZone;
+        $defaultTimeZone = $this->getConfig()->GetSetting('defaultTimezone');
 
         // Store processed logs in an array
         $logs = [];
@@ -1198,7 +1228,8 @@ class XMDSHandler extends Base
             }
 
             // Adjust the date according to the display timezone
-            $date = $this->getDate()->getLocalDate($this->getDate()->parse($date, 'Y-m-d H:i:s')->tz($timeZone));
+            $date = ($timeZone != null) ? Date::createFromFormat('Y-m-d H:i:s', $date, $timeZone)->tz($defaultTimeZone) : Date::createFromFormat('Y-m-d H:i:s', $date);
+            $date = $this->getDate()->getLocalDate($date);
 
             // Get the date and the message (all log types have these)
             foreach ($node->childNodes as $nodeElements) {
@@ -1447,21 +1478,16 @@ class XMDSHandler extends Base
                 // File complete?
                 $complete = $node->getAttribute('complete');
                 $requiredFile->complete = $complete;
-                $requiredFile->save(['refreshNonce' => false]);
+                $requiredFile->save();
 
                 // If this item is a 0 then set not complete
                 if ($complete == 0)
                     $mediaInventoryComplete = 2;
             }
             catch (NotFoundException $e) {
-                $this->getLog()->info('Unable to find file in media inventory: %s', $node->getAttribute('type'), $node->getAttribute('id'));
-                continue;
+                $this->getLog()->error('Unable to find file in media inventory: ' . $node->getAttribute('type') . '. ' . $node->getAttribute('id'));
             }
-/*
-            // File complete?
-            $complete = $node->getAttribute('complete');
-            $requiredFile->complete = $complete;
-            $requiredFile->save(['refreshNonce' => false]);
+        }
 
             // If this item is a 0 then set not complete
             if ($complete == 0)
@@ -1472,7 +1498,16 @@ class XMDSHandler extends Base
         $this->requiredFileFactory->persist();
  
         $this->display->mediaInventoryStatus = $mediaInventoryComplete;
-        $this->display->save(Display::$saveOptionsMinimum);
+
+        // Only call save if this property has actually changed.
+        if ($this->display->hasPropertyChanged('mediaInventoryStatus')) {
+            // If we are complete, then drop the player nonce cache
+            if ($this->display->mediaInventoryStatus == 1) {
+                $this->pool->deleteItem('/display/nonce/' . $this->display->displayId);
+            }
+
+            $this->display->saveMediaInventoryStatus();
+        }
 
         $this->logBandwidth($this->display->displayId, Bandwidth::$MEDIAINVENTORY, strlen($inventory));
 
@@ -1523,8 +1558,7 @@ class XMDSHandler extends Base
             $resource = $module->getResource($this->display->displayId);
 
             $requiredFile->bytesRequested = $requiredFile->bytesRequested + strlen($resource);
-            $requiredFile->markUsed();
-            $this->requiredFileFactory->persist();
+            $requiredFile->save();
 
             if ($resource == '')
                 throw new ControllerNotImplemented();
@@ -1767,12 +1801,14 @@ class XMDSHandler extends Base
 
     /**
      * Generate a file download path for HTTP downloads, taking into account the precence of a CDN.
+     * @param $type
+     * @param $itemId
      * @param $nonce
      * @return string
      */
-    protected function generateRequiredFileDownloadPath($nonce)
+    protected function generateRequiredFileDownloadPath($type, $itemId, $nonce)
     {
-        $saveAsPath = Wsdl::getRoot() . '?file=' . $nonce;
+        $saveAsPath = Wsdl::getRoot() . '?file=' . $nonce . '&displayId=' . $this->display->displayId . '&type=' . $type . '&itemId=' . $itemId;
         // CDN?
         $cdnUrl = $this->configService->GetSetting('CDN_URL');
         if ($cdnUrl != '') {
@@ -1933,6 +1969,11 @@ class XMDSHandler extends Base
                 $nodeName = ($clientType == 'windows') ? 'DisplayName' : 'displayName';
                 $node = $return->createElement($nodeName, $display->display);
                 $node->setAttribute('type', 'string');
+                $displayElement->appendChild($node);
+
+                $nodeName = ($clientType == 'windows') ? 'ScreenShotRequested' : 'screenShotRequested';
+                $node = $return->createElement($nodeName, $display->screenShotRequested);
+                $node->setAttribute('type', 'checkbox');
                 $displayElement->appendChild($node);
 
                 // Commands
@@ -2219,7 +2260,7 @@ class XMDSHandler extends Base
                 $chunkSize = filesize($path);
 
                 $requiredFile->bytesRequested = $requiredFile->bytesRequested + $chunkSize;
-                $requiredFile->markUsed();
+                $requiredFile->save();
 
             } else if ($fileType == "media") {
                 // Validate the nonce
@@ -2246,13 +2287,11 @@ class XMDSHandler extends Base
                     throw new NotFoundException('Empty file');
 
                 $requiredFile->bytesRequested = $requiredFile->bytesRequested + $chunkSize;
-                $requiredFile->markUsed();
+                $requiredFile->save();
 
             } else {
                 throw new NotFoundException('Unknown FileType Requested.');
             }
-
-            $this->requiredFileFactory->persist();
         }
         catch (NotFoundException $e) {
             $this->getLog()->error('Not found FileId: ' . $fileId . '. FileType: ' . $fileType . '. ' . $e->getMessage());
@@ -2498,6 +2537,7 @@ class XMDSHandler extends Base
         if (!$this->authDisplay($hardwareKey))
             throw new \Xibo\Exception\XMDSFault('Receiver', 'This display client is not licensed');
 
+        // Important to keep this logging in place (status screen notification gets logged)
         if ($this->display->isAuditing())
             $this->getLog()->debug($status);
 
@@ -2638,5 +2678,5 @@ class XMDSHandler extends Base
         $this->logBandwidth($this->display->displayId, Bandwidth::$SCREENSHOT, filesize($location));
 
         return true;
-    }                        
+    }
 }
