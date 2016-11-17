@@ -76,7 +76,6 @@ class ModuleService implements ModuleServiceInterface
     /**
      * @inheritdoc
      */
-
     public function get($module, $moduleFactory, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory)
     {
         $object = $this->getByClass($module->class, $moduleFactory, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory);

@@ -434,7 +434,7 @@ $app->post('/aitags/mediasmarttagextractor', '\Xibo\Controller\AITags:mediasmart
 /**
  * Dayparts
  * @SWG\Tag(
- *  name="daypart",
+ *  name="dayPart",
  *  description="Dayparting"
  * )
  */

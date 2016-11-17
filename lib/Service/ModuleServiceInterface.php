@@ -53,7 +53,6 @@ interface ModuleServiceInterface
      * @param CommandFactory $commandFactory
      * @return ModuleWidget
      */
-
     public function get($module, $moduleFactory, $mediaFactory, $dataSetFactory, $dataSetColumnFactory, $transitionFactory, $displayFactory, $commandFactory, $tagFactory);
     /**
      * @param string $className

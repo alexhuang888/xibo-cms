@@ -1121,6 +1121,7 @@ CREATE TABLE IF NOT EXISTS `lklinkedtags` (
   `score` float NOT NULL) 
   ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 CREATE TABLE IF NOT EXISTS `requiredfile` (
   `rfId` bigint(20) NOT NULL AUTO_INCREMENT,
   `displayId` int(11) NOT NULL,
