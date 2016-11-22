@@ -192,7 +192,7 @@ class Layout extends Base
         ];
 
         // Call the render the template
-        $this->getState()->template = 'layout-designer-page';
+        $this->getState()->template = 'layout-storyline-page';
         $this->getState()->setData($data);
     }
 

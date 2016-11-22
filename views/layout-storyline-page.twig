@@ -1,0 +1,1660 @@
+{#
+/*
+ * Spring Signage Ltd - http://www.springsignage.com
+ * Copyright (C) 2015 Spring Signage Ltd
+ * (${FILE_NAME})
+ */
+#}
+
+{% extends "authed.twig" %}
+{% import "inline.twig" as inline %}
+
+{% block pageContent %}
+    {# Get the display width / height #}
+    {% set designerScale = min((resolution.designerWidth / layout.width), (resolution.designerHeight / layout.height)) %}
+
+    {# Version 2 layout can support zooming? #}
+    {% if layout.schemaVersion > 1 %}
+        {% set designerScale = designerScale * zoom %}
+    {% endif %}
+
+    {# Reset the designer width / height based on the zoom #}
+    {% set width = layout.width * designerScale %}
+    {% set height = layout.height * designerScale %}
+
+    {# Layout Background #}
+    {% if layout.backgroundImageId == 0 %}
+        {% set backgroundCss = layout.backgroundColor %}
+    {% else %}
+        {% set backgroundCss %}url('{{ urlFor("library.download", {id: layout.backgroundImageId}) }}?preview=1&width={{ width }}&height={{ height }}') top center no-repeat; background-color: {{ layout.backgroundColor }}{% endset %}
+    {% endif %}
+
+    <!-- top toolbar panel -->
+    <div class="layout-toolbox row">
+        <div class="col-md-12">
+            <div class="panel bttm-fix with-nav-tabs panel-primary">
+                <div class="panel-heading">
+                    <ul class="nav nav-tabs">
+                        <li class="active tab-design">
+                            <a class="text-center" id="designer-tab" href="#tab1primary" data-toggle="tab"><i class="fa fa-pencil-square-o" aria-hidden="true"></i>  {% trans "Designer" %}</a>
+                        </li>
+                        <li class="tab-design">
+                            <a class="text-center" id="action-tab" href="#tab2primary" data-toggle="tab"><i class="fa fa-bell" aria-hidden="true"></i>   {% trans "Action" %}s</a>
+                        </li>
+                        <div class="pull-right">
+                            <span class="text-center" data-toggle="tooltip" data-placement="bottom" data-title="{% trans "Layout Duration: Duration may change depending on the exact number of items in ticker/twitter media items." %}">
+                                <i class="fa fa-clock-o" aria-hidden="true"></i> {% trans "" %}
+                                <span id="layout-duration" class="label label-success big-duration"></span></span>
+                            <span>| <b>Currently Editing</b></span>
+                            <select id="layoutJumpList" data-live-search="true">
+                                {% for item in layouts %}
+                                    <option value="{{ urlFor("layout.designer", {id: item.layoutId}) }}"{% if item.layoutId == layout.layoutId %} selected{% endif %}>{{ item.layout }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </ul>
+                </div>
+                <div class="panel-body">
+                    <div class="tab-content">
+                        <div class="tab-pane no-pad fade in active" id="tab1primary">
+                            <div class="col-md-2 text-center">
+
+                                <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                                    <div class="btn-group" role="group">
+                                        <a class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o" aria-hidden="true"></i> {% trans "" %}</span></a>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <a class="btn btn-info btn-sm" id="regionAddButton" role="button" href="{{ urlFor("region.add", {id: layout.layoutId}) }}" title="{% trans "Add a new region" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 text-center">
+                                {% if currentUser.routeViewable("/user") %}
+                                <div class="designer-control-panel-checkbox override-layout">
+                                    <input type="checkbox" class="switch-check-box" name="lockPosition"  data-size="small" data-off-color="danger" data-on-color="success" data-label-width="100" data-label-text="{% trans "Lock Positions" %}" {% if currentUser.getOptionValue("lockPosition", "false") == "true" %}checked="checked"{% endif %}
+                                           data-on-text="{% trans "On" %}" data-off-text="{% trans "Off" %}"/>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2 text-center">
+                                {% if currentUser.routeViewable("/user") %}
+                                <div class="designer-control-panel-checkbox override-layout">
+                                    <input type="checkbox"  data-size="small" data-off-color="danger" data-on-color="success" class="switch-check-box" data-label-text="{% trans "Hide Controls" %}" data-label-width="100" name="hideControls" {% if currentUser.getOptionValue("hideControls", "false") == "true" %}checked="checked"{% endif %}
+                                           data-on-text="{% trans "On" %}" data-off-text="{% trans "Off" %}"/>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                                    <div class="btn-group" role="group">
+
+                                        <a id="layoutzoomout" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
+                                    </div>
+                                    <div class="btn-group" role="group">
+
+                                        <a id="layoutzoomin" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <button id="saveDesignerSize" data-toggle="" data-placement="bottom" title="{% trans "Save canvas size as default" %}" class="btn btn-success btn-sm " role="button" data-designer-size="{{ zoom }}">
+                                            <i class="fa fa-floppy-o" aria-hidden="true"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% set alignposinfo = {'Align Top': 0, 'Align Bottom': 1, 'Align Left': 2, 'Align Right': 3, 'Align V-Center': 4, 'Align H-Center': 5, 'Same Width':11, 'Same Height': 12, 'Same Size': 13, "Canvas V Center": 21, "Canvas H Center": 22, "Canvas Center": 23, "Same Canvas Width" : 24, "Same Canvas Height": 25, "Same Canvas Size" : 26, "Vertical Distribution": 31, "Horizontal Distriution": 32} %}                            
+                            <div class="col-md-2 text-center">
+                                <div class="btn-group regionAligmentDropdown pull-right">
+                                    <button class="btn dropdown-toggle" data-toggle="dropdown">
+                                        <span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size" %}">{% trans "Region alignment" %}</span> <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                    <li>
+                                            <a href="javascript:void(0)" onclick="DeSelecteAllRegion()">{% trans "Select None" %}</a>
+                                    </li>
+                                    {% for key,value in alignposinfo %}
+                                        <li>
+                                            <a href="javascript:void(0)" onclick="AdjustSelectedRegionPosition({{value}})">{% trans key %}</a>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>   
+                            </div>                         
+                            <div class="col-md-2 text-center">
+                                <div class="btn-group" role="group" aria-label="...">
+                                <div class="btn-group" role="group">
+                                    <button id="layout-revert" class="btn btn-warning btn-sm disabled btn-block"  title="{% trans "Undo position change" %}">
+                                        <i class="fa fa-undo" aria-hidden="true"></i> {% trans "" %}</button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <button id="layout-save-all" class="btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Positions" %}">
+                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Positions" %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane no-pad fade" id="tab2primary">
+                        <div class="col-md-6">
+                            <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-success btn-sm" role="button" href="{{ urlFor("layout.preview", {id: layout.layoutId}) }}" target="_blank"><span><i class="fa fa-eye" aria-hidden="true"></i> {% trans "Preview Layout" %}</span></a>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a class="XiboFormButton btn btn-info btn-sm" id="schedule-btn" role="button" href="{{ urlFor("schedule.now.form", {id: layout.campaignId, from: "Campaign"}) }}"><span><i class="fa fa-clock-o" aria-hidden="true"></i> {% trans "Schedule Now" %}</span></a>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a class="XiboFormButton btn btn-warning btn-sm" role="button" href="{{ urlFor("template.from.layout.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Template" %}</span></a>
+                                    {% if layout.schemaVersion < 2 %}
+                                        <a class="XiboFormButton btn btn-warning" role="button" href="{{ urlFor("layout.upgrade.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Upgrade Layout" %}</span></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if isTemplate %}
+                                <div class="alert no-pad alert-info text-right">{% trans "Editing a Template will only affect future Layouts." %}</div>
+                            {% else %}
+                                <div id="layout-status" class="alert no-pad text-center" style="margin-bottom: 0px;"></div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- layout start -->
+    <div class="row">
+		<div class="col-md-4 layoutwidget" style="">
+
+		</div>
+		<div class="col-md-8 propertypanel" id="propertypanel">
+			<div class="layoutproperty row">
+				layout
+				</div>
+			<div class="regionproperty row">
+				region
+				</div>
+			<div class="widgetproperty row">
+				widget
+				</div>								
+		</div>
+    </div>
+	<div class="region-toolbox row">
+		<input id="addwidget" type="button" value="Add Widget" title="Add Widget"></input>
+		<input id="updatewidget" type="button" value="Update Widget" title="Update Widget"></input>
+		<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
+
+		<input id="moveforward" type="button" value="Move Forward" title="Move Forward"></input>
+
+		<input id="movebackward" type="button" value="Move Backward" title="Move Backward"></input>
+
+		<input id="movefront" type="button" value="Move to front" title="Move to front"></input>
+
+		<input id="moveend" type="button" value="Move to end" title="Move to End"></input>
+		<div id="visualization"></div>
+	</div>	
+{% endblock %}
+
+{% block javaScript %}
+	<script src="{{ theme.uri("js/xibo-layout-designer.js") }}"></script>
+	<script type="text/javascript">
+		var translation = {
+			savePositionsFirst: "{% trans "Please save the pending position changes first by clicking Save Positions or cancel by clicking Undo." %}"
+		};
+
+		// Callback for the media form
+		function mediaFormCallBack() {
+			// prevent filter form submit
+			$("#libraryAssignFilterOptions").find("form").on("submit", function(e) {
+				e.preventDefault();
+				return false;
+			});
+
+			var mediaTable = $("#mediaAssignments").DataTable({
+				"language": dataTablesLanguage,
+				serverSide: true, stateSave: true,
+				searchDelay: 3000,
+				"order": [[1, "asc"]],
+				"filter": false,
+				ajax: {
+					url: "{{ urlFor("library.search") }}",
+					"data": function (d) {
+						$.extend(d, $("#libraryAssignFilterOptions").find("form").serializeObject());
+					}
+				},
+				"columns": [
+					{"data": "mediaId"},
+					{"data": "name"},
+					{"data": "mediaType"},
+					{
+						"sortable": false,
+						"data": function (data, type, row, meta) {
+							if (type != "display")
+								return "";
+
+							// Create a click-able span
+							return "<a href=\"#\" class=\"assignItem\"><span class=\"glyphicon glyphicon-plus-sign\"></a>";
+						}
+					}
+				]
+			});
+
+			mediaTable.on('draw', function (e, settings) {
+				dataTableDraw(e, settings);
+
+				// Clicky on the +spans
+				$(".assignItem", "#mediaAssignments").click(function () {
+					// Get the row that this is in.
+					var data = mediaTable.row($(this).closest("tr")).data();
+
+					// Construct a new list item for the lower list and append it.
+					var newItem = $("<li/>", {
+						"text": " " + data.name,
+						"data-media-id": data.mediaId,
+						"class": "li-sortable",
+						"dblclick": function () {
+							$(this).remove();
+						}
+					});
+
+					newItem.appendTo("#LibraryAssignSortable");
+
+					// Add a span to that new item
+					$("<span/>", {
+						"class": "glyphicon glyphicon-minus-sign",
+						click: function () {
+							$(this).parent().remove();
+						}
+					}).prependTo(newItem);
+				});
+			});
+			mediaTable.on('processing.dt', dataTableProcessing);
+
+			// Make our little list sortable
+			$("#LibraryAssignSortable").sortable();
+
+			// Bind the filter form
+			$("#libraryAssignFilterOptions").find("input, select").change(function () {
+				mediaTable.ajax.reload();
+			});
+		}
+
+		/**
+			* Open Upload Form
+			*/
+		function openUploadForm(templateOptions, buttons) {
+
+			// Close the current dialog
+			XiboDialogClose();
+
+			var template = Handlebars.compile($("#template-file-upload").html());
+
+			// Handle bars and open a dialog
+			bootbox.dialog({
+				message: template(templateOptions),
+				title: "{% trans "Upload media" %}",
+				buttons: buttons,
+				updateInAllChecked: {% if settings.LIBRARY_MEDIA_UPDATEINALL_CHECKB == "Checked" %}true{% else %}false{% endif %},
+				deleteOldRevisionsChecked: {% if settings.LIBRARY_MEDIA_DELETEOLDVER_CHECKB == "Checked" %}true{% else %}false{% endif %}
+			}).on('shown.bs.modal', function () {
+				// Configure the upload form
+				var url = "{{ urlFor("library.add") }}";
+				var form = $(this).find("form");
+
+				// Initialize the jQuery File Upload widget:
+				form.fileupload({
+					url: url,
+					disableImageResize: false
+				});
+
+				// Upload server status check for browsers with CORS support:
+				if ($.support.cors) {
+					$.ajax({
+						url: url,
+						type: 'HEAD'
+					}).fail(function () {
+						$('<span class="alert alert-error"/>')
+								.text('Upload server currently unavailable - ' + new Date())
+								.appendTo(form);
+					});
+				}
+
+				// Enable iframe cross-domain access via redirect option:
+				form.fileupload(
+						'option',
+						'redirect',
+						window.location.href.replace(
+								/\/[^\/]*$/,
+								'/cors/result.html?%s'
+						)
+				);
+
+				form.bind('fileuploadsubmit', function (e, data) {
+					var inputs = data.context.find(':input');
+					if (inputs.filter('[required][value=""]').first().focus().length) {
+						return false;
+					}
+					data.formData = inputs.serializeArray().concat(form.serializeArray());
+
+					inputs.filter("input").prop("disabled", true);
+				});
+			});
+		}
+
+		// Click Handler for Library Upload Buttons (image, video, powerpoint, flash)
+		function libraryUploadClick(e) {
+			e.preventDefault();
+
+			var validExt = $(this).data().validExt.replace(/,/g, "|");
+			var playlistId = $(this).data().playlistId;
+
+			openUploadForm({
+				trans: {
+					addFiles: "{% trans "Add files" %}",
+					startUpload: "{% trans "Start upload" %}",
+					cancelUpload: "{% trans "Cancel upload" %}"
+				},
+				upload: {
+					maxSize: {{ libraryUpload.maxSize }},
+					maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+					validExt: validExt
+				},
+				playlistId: playlistId
+			}, {
+				library: {
+					label: "{% trans "View Library" %}",
+					callback: function () {
+						XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId.toString()));
+					}
+				},
+				main: {
+					label: "{% trans "Done" %}",
+					className: "btn-primary",
+					callback: function () {
+						XiboFormRender(timelineForm.url, timelineForm.value);
+					}
+				}
+			});
+		}
+
+		/**
+			* Media Edit form
+			*/
+		function mediaEditFormOpen(dialog) {
+
+			if (dialog.find("form").data().mediaEditable != 1)
+				return;
+
+			// Create a new button
+			var footer = dialog.find(".modal-footer");
+			var mediaId = dialog.find("form").data().mediaId;
+			var widgetId = dialog.find("form").data().widgetId;
+			var validExtensions = dialog.find("form").data().validExtensions;
+
+			// Append
+			var replaceButton = $('<button class="btn btn-warning">').html("{% trans "Replace" %}");
+			replaceButton.click(function (e) {
+				e.preventDefault();
+
+				// Open the upload dialog with our options.
+				openUploadForm({
+					oldMediaId: mediaId,
+					widgetId: widgetId,
+					{% if config.LIBRARY_MEDIA_UPDATEINALL_CHECKB == "Checked" %}
+					updateInAllChecked: true,
+					{% else %}
+					updateInAllChecked: false,
+					{% endif %}
+					trans: {
+						addFiles: "{% trans "Add Replacement" %}",
+						startUpload: "{% trans "Start Replace" %}",
+						cancelUpload: "{% trans "Cancel Replace" %}",
+						updateInLayouts: {
+							title: "{% trans "Update this media in all layouts it is assigned to?" %}",
+							helpText: "{% trans "Note: It will only be updated in layouts you have permission to edit." %}"
+						},
+						deleteOldRevisions: {
+							title: "{% trans "Delete the old version?" %}",
+							helpText: "{% trans "Completely remove the old version of this media item if a new file is being uploaded." %}"
+						}
+					},
+					upload: {
+						maxSize: {{ libraryUpload.maxSize }},
+						maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+						validExt: validExtensions
+					}
+				}, {
+					main: {
+						label: "{% trans "Done" %}",
+						className: "btn-primary",
+						callback: function () {
+							XiboFormRender(timelineForm.url, timelineForm.value);
+						}
+					}
+				});
+			});
+
+			footer.find(".btn-primary").before(replaceButton);
+		}
+
+		function timelineGridCallback(dialog) {
+
+			dialog.addClass("modal-big");
+
+			var timelineWidgetTabel = $("#timelineWidgets").DataTable({
+				"language": dataTablesLanguage,
+				serverSide: true, stateSave: true,
+				filter: false,
+				'ordering': false,
+				searchDelay: 3000,
+				//"order": [[0, "asc"]],
+				//rowReorder: true,
+				"createdRow": function( row, data, dataIndex ) {
+					//console.log($(row));
+					//console.log(data);
+					$(row).attr('widgetid', data['widgetId']);
+					$(row).attr('displayorder', data['displayOrder']);
+				},         
+				ajax: {
+					url: "{{ urlFor("playlist.widget.search") }}",
+					"data": function (d) {
+						$.extend(d, $("#timelineWidgets").closest(".XiboGrid").find(".FilterDiv form").serializeObject());
+					}
+				},
+				"columns": [
+					{"data": "displayOrder", "orderable": false},
+					{"data": "name", "orderable": false},
+					{"data": "type", "orderable": false},
+					{"data": "duration", "orderable": false},
+					{"data": "transition", "orderable": false},
+					{"data": "widgetId", "visible": false, "orderable": false},
+					{
+						"orderable": false,
+						"data": dataTableButtonsColumn
+					}
+				]
+			});
+			$("#timelineWidgets tbody").sortable();
+			timelineWidgetTabel.on('draw', dataTableDraw);
+			timelineWidgetTabel.on('processing.dt', dataTableProcessing);
+			// Hook up the library Upload Buttons
+			$(".libraryUploadForm").click(libraryUploadClick);
+		}
+
+		function DeleteRegion(form, regionId) {
+			$.ajax({
+				type: form.attr("method"),
+				url: form.attr("action"),
+				cache: false,
+				dataType: "json",
+				data: form.serialize(),
+				success: function (xhr, textStatus, error) {
+
+					XiboSubmitResponse(xhr, form);
+
+					if (xhr.success)
+						$("#region_" + regionId).remove();
+				},
+				error: function (xhr, textStatus, errorThrown) {
+					SystemMessage(xhr.responseText, false);
+				}
+			});
+		}
+		refreshplaylistCallback = function() {
+			$.ajax({
+				type: "get",
+				url: "{{ urlFor("playlist.search") }}",
+				cache: false,
+				dataType: "json"                        
+			})
+			.success(function(data) 
+			{                 
+				if (data.data.length > 0)
+				{
+					$("#medialist-draggable").html("");
+					for (var m = 0; m < data.data.length; m++)
+					{
+						var playlist = data.data[m];
+						var alink = playlist.thumbnail;
+						//var alinkdom = $.parseHTML(alink);
+						//console.log($(alinkdom));
+						//console.log(playlist);
+						var alttip = playlist.name + "/" + playlist.numberWidgets + "items";
+						var html = '<li class="mediaitem mediaitemtooltip ui-state-default"';
+						html = html + ' title="' + alttip + '"';
+						html = html + ' id="m-' + playlist.playlistId + '"';
+						//html = html + ' data-mediatype="' + media.mediaType + '"';
+						html = html + ' data-playlistid="' + playlist.playlistId + '"';
+						//html = html + ' data-mediafilesize="' + media.fileSize + '"';
+						html = html + ' >';
+						html = html + '<img style="vertical-align: initial;" width="92" height="68" src="' + playlist.thumbnail + '" alt="' + alttip + '" />';
+						html = html + '<i class="fa fa-cog fa-fw medialistitemsettingicon medialistitemsettingiconOff"';
+						html = html + ' data-playlistid=' + playlist.playlistId;
+						var pltimelineformurl = "{{ urlFor('playlist.timeline.form')}}";
+						pltimelineformurl = pltimelineformurl.replace(":id", playlist.playlistId);
+
+						html = html + ' data-playlisteditformurl="' + pltimelineformurl + '?view=grid"'
+						html = html + ' title="{% trans "Edit this playlist" %}"';
+						html = html + ' ></i>';
+						html = html + ' </li>';
+						$("#medialist-draggable").append(html);
+						//$(html).appendto("#medialist-draggable");                          
+					}
+					//$("#medialist-draggable").html($("#medialist-draggable").html());
+
+					$('.medialistcarousel').jcarousel('reload');
+					configureMedialistHandler();                        
+				}
+			});
+		};
+		// this will be called from layout-designer-page
+		function playlistAddFormOpen() {
+			$("#playlistAddForm").submit(function(e) {
+				e.preventDefault();
+				var form = $(this);
+
+				//var url = $(this).data().redirect;
+				var urlFormRedirect = $(this).data().formRedirect;
+				$.ajax({
+					type: $(this).attr("method"),
+					url: $(this).attr("action"),
+					data: $(this).serialize(),
+					cache: false,
+					dataType:"json",
+					success: function(xhr, textStatus, error) {
+
+						XiboSubmitResponse(xhr, form);
+
+						if (xhr.success && urlFormRedirect != null) 
+						{
+							// Reload the designer
+							XiboFormRender(urlFormRedirect.replace(":id", xhr.id.toString()));
+						}
+					}
+				});
+			});
+		}
+		// Bind to the add button when we load
+		$(document).ready(function () {
+
+			// Add region button
+			$("#regionAddButton").click(function (e) {
+				e.preventDefault();
+				$.ajax({
+					type: "post",
+					url: $(this).attr("href"),
+					cache: false,
+					dataType: "json",
+					success: function (xhr, textStatus, error) 
+					{
+
+						XiboSubmitResponse(xhr);
+
+						if (xhr.success) 
+						{
+							console.log("added new region: " + xhr.id);
+							var regionIDElement = '.region_' + xhr.id;
+							var playlistid = xhr.data.playlists[0].playlistId;
+							console.log("playlistid=" + playlistid);
+							var regionName = "region-" + xhr.id;
+							var colorName = "regioncolor-" + _pColorID;
+
+							var obj = { id: xhr.id, 
+											content: regionName, 
+											title: regionName, 
+											className: "regionSelector " + regionName + " " + colorName, 
+											regionareaClassName : "",
+											playlistid: playlistid,
+											left: xhr.data.left, 
+											top: xhr.data.top, 
+											width: xhr.data.width, 
+											height: xhr.data.height, 
+											regioncode: regionName,
+											duration: xhr.data.duration,
+											zindex: xhr.data.zIndex,
+											currentUserEditable: xhr.extra['currentUserEditable'],
+											playlist: { 
+												id: playlistid,
+												description: xhr.data.playlists[0].description,
+												widgets: []
+											}
+										 };
+
+							_allRegions.add(obj);
+
+							// create a new region
+							var html = "";
+
+							html = regionHTML(obj);
+									
+							$(html).appendTo('.layout');
+
+							prepareRegionFunction();
+
+							_pColorID++;
+							_pColorID = _pColorID % 7;
+							_regionID++;
+							_plID++;							
+
+
+							configureRegionHandler();
+
+							//new Preview($(regionItem));                
+						}
+					}
+				})
+				.done(function(data)
+				{
+					if (data)
+					{
+						// data.id::regionid
+						// data.data: region
+						// create a new region
+					}
+				});
+			});
+			//refreshplaylistCallback();
+			$('#addnewplaylisticon').off('click');
+			$('#addnewplaylisticon').on('click', function()
+			{
+				// here, we should add a new playlist to this 
+				XiboFormRender('{{ urlFor("playlist.add.form") }}');
+			});
+
+		});
+		/* end of document.ready() */
+		addNewRegionWithRegionId2 = function(regionId, playlistid, originalLeft, originalTop,
+											originalWidth, originalHeight, designerScale, regionZIndex,
+											currentUsercheckEditable,
+											regioncode,
+											extraClassName)
+		{
+			var newRegionHtml = "";
+			var currentUsercheckEditable = currentUsercheckEditable == 1 ? true : false;
+			var layoutid = "{{ layout.layoutId }}";
+			var layoutschemaVersion = {{ layout.schemaVersion}};
+			var urltimelineform = "{{ urlFor("region.timeline.form") }}";
+			urltimelineform = urltimelineform.replace(":id", regionId.toString());
+			var urlPreview = "{{ urlFor("region.preview") }}";
+			urlPreview = urlPreview.replace(":id", regionId.toString());
+			var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
+			urlResetPlaylist = urlResetPlaylist.replace(":regionid", regionId.toString()); 
+			urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());                
+			
+			var regionWidth = originalWidth * designerScale;
+			var regionHeight = originalHeight * designerScale;
+			var regionLeft = originalLeft * designerScale;
+			var regionTop = originalTop * designerScale;
+
+			var urlRegionDeleteForm = "{{ urlFor("region.delete.form") }}";
+			urlRegionDeleteForm = urlRegionDeleteForm.replace(":id", regionId.toString());
+			var urlRegionEditForm = "{{ urlFor("region.edit.form") }}";
+			urlRegionEditForm = urlRegionEditForm.replace(":id", regionId.toString());
+			var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
+			urlRegionTimeLineForm = urlRegionTimeLineForm.replace(":id", regionId.toString());
+			var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
+			urlUserPermissionForm = urlUserPermissionForm.replace(":id", regionId.toString());                                                
+			var disabledCss = 'regionDis';
+			var transparencyCss = 'Disabled';
+			var previewCss = "regionPreview";                
+			if (currentUsercheckEditable)
+			{
+				disabledCss = 'region';
+				transparencyCss = '';
+				previewCss = "regionPreview";
+			}
+
+			//<!-- region start -->
+			newRegionHtml = newRegionHtml + '<div id="region_' + regionId + '"'; 
+			newRegionHtml = newRegionHtml + ' regionEnabled="' + currentUsercheckEditable + '"';
+			newRegionHtml = newRegionHtml + ' regionid="' + regionId + '"'; 
+			newRegionHtml = newRegionHtml + ' layoutid="' + layoutid + '"';
+			newRegionHtml = newRegionHtml + ' zindex="' + regionId + '"';
+			newRegionHtml = newRegionHtml + ' tip_scale="1"';
+			newRegionHtml = newRegionHtml + ' designer_scale="' + designerScale + '"'; 
+			newRegionHtml = newRegionHtml + ' left = "' + originalLeft + '"';
+			newRegionHtml = newRegionHtml + ' top = "' + originalTop + '"';
+			newRegionHtml = newRegionHtml + ' width="' + originalWidth + '"'; 
+			newRegionHtml = newRegionHtml + ' height="' + originalHeight + '"'; 
+			newRegionHtml = newRegionHtml + ' duration=0';
+			newRegionHtml = newRegionHtml + ' href="' + urltimelineform + '"'; 
+			newRegionHtml = newRegionHtml + ' data-regioncode="' + regioncode + '"';
+			newRegionHtml = newRegionHtml + ' data-regionid="' + regionId + '"';
+			newRegionHtml = newRegionHtml + ' data-playlistid="' + playlistid + '"';
+			if (currentUsercheckEditable)
+			{
+				newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
+			} 
+			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' ' + extraClassName + ' regionitem mediadroppable regionsnappableitem"'; 
+			newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
+			newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
+			newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
+
+			/*
+			newRegionHtml = newRegionHtml + ' <i class="fa fa-check fa-fw regionitemselectedicon regionselectediconOff"></i>';
+				//<!-- region transparency background -->                            
+			newRegionHtml = newRegionHtml + ' <div class="regionTransparency ' + transparencyCss + ' " style="width:100%; height:100%;"></div>';
+			if (currentUsercheckEditable)
+			{ 
+				newRegionHtml = newRegionHtml + ' <div class="btn-group regionInfo pull-right">';
+				newRegionHtml = newRegionHtml + ' <button class="btn dropdown-toggle" data-toggle="dropdown">';
+				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+				newRegionHtml = newRegionHtml + ' </button>';
+				newRegionHtml = newRegionHtml + ' <ul class="dropdown-menu">';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionTimeLineForm + '">{% trans "Edit Timeline" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="RegionOptionsMenuItem" href="' + urlRegionEditForm + '">{% trans "Options" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionDeleteForm + '">{% trans "Delete" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlUserPermissionForm + '">{% trans "Permissions" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' </ul>';
+				newRegionHtml = newRegionHtml + ' </div>';
+			}
+			else if (currentUsercheckEditable && (layoutschemaVersion >= 2) )
+			{
+				newRegionHtml = newRegionHtml + ' <div class="regionInfo">';
+				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+				newRegionHtml = newRegionHtml + ' </div>';                            
+			}
+			//<!-- region preview panel -->
+			newRegionHtml = newRegionHtml + ' <div class="preview">';
+			newRegionHtml = newRegionHtml + ' <div class="previewContent">';
+
+			newRegionHtml = newRegionHtml + ' </div>';
+			newRegionHtml = newRegionHtml + ' <div class="previewNav label label-info"></div>';
+			newRegionHtml = newRegionHtml + ' </div>';
+			*/
+			newRegionHtml = newRegionHtml + ' </div>';
+			return newRegionHtml;
+		};
+		addNewRegionWithRegionId = function(regionId, playlistid, originalLeft, originalTop,
+											originalWidth, originalHeight, designerScale, regionZIndex,
+											currentUsercheckEditable)
+		{
+			console.log(regionId + ' ' + originalLeft + ' ' + originalTop + ' ' + originalWidth + ' ' + originalHeight + ' ' + designerScale + ' ' + regionZIndex + ' ' + currentUsercheckEditable);
+			var newRegionHtml = "";
+			var currentUsercheckEditable = currentUsercheckEditable == 1 ? true : false;
+			console.log(currentUsercheckEditable);
+			var layoutid = "{{ layout.layoutId }}";
+			var layoutschemaVersion = {{ layout.schemaVersion}};
+			var urltimelineform = "{{ urlFor("region.timeline.form") }}";
+			urltimelineform = urltimelineform.replace(":id", regionId.toString());
+			var urlPreview = "{{ urlFor("region.preview") }}";
+			urlPreview = urlPreview.replace(":id", regionId.toString());
+			var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
+			urlResetPlaylist = urlResetPlaylist.replace(":regionid", regionId.toString()); 
+			urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());                
+			
+			var regionWidth = originalWidth * designerScale;
+			var regionHeight = originalHeight * designerScale;
+			var regionLeft = originalLeft * designerScale;
+			var regionTop = originalTop * designerScale;
+
+			var urlRegionDeleteForm = "{{ urlFor("region.delete.form") }}";
+			urlRegionDeleteForm = urlRegionDeleteForm.replace(":id", regionId.toString());
+			var urlRegionEditForm = "{{ urlFor("region.edit.form") }}";
+			urlRegionEditForm = urlRegionEditForm.replace(":id", regionId.toString());
+			var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
+			urlRegionTimeLineForm = urlRegionTimeLineForm.replace(":id", regionId.toString());
+			var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
+			urlUserPermissionForm = urlUserPermissionForm.replace(":id", regionId.toString());                                                
+			var disabledCss = 'regionDis';
+			var transparencyCss = 'Disabled';
+			var previewCss = "regionPreview";                
+			if (currentUsercheckEditable)
+			{
+				disabledCss = 'region';
+				transparencyCss = '';
+				previewCss = "regionPreview";
+			}
+
+			//<!-- region start -->
+			newRegionHtml = newRegionHtml + '<div id="region_' + regionId + '"'; 
+			newRegionHtml = newRegionHtml + ' regionEnabled="' + currentUsercheckEditable + '"';
+			newRegionHtml = newRegionHtml + ' regionid="' + regionId + '"'; 
+			newRegionHtml = newRegionHtml + ' layoutid="' + layoutid + '"';
+			newRegionHtml = newRegionHtml + ' zindex="' + regionId + '"';
+			newRegionHtml = newRegionHtml + ' tip_scale="1"';
+			newRegionHtml = newRegionHtml + ' designer_scale="' + designerScale + '"'; 
+			newRegionHtml = newRegionHtml + ' left = "' + originalLeft + '"';
+			newRegionHtml = newRegionHtml + ' top = "' + originalTop + '"';
+			newRegionHtml = newRegionHtml + ' width="' + originalWidth + '"'; 
+			newRegionHtml = newRegionHtml + ' height="' + originalHeight + '"'; 
+			newRegionHtml = newRegionHtml + ' duration=0';
+			newRegionHtml = newRegionHtml + ' href="' + urltimelineform + '"'; 
+			if (currentUsercheckEditable)
+			{
+				newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
+			} 
+			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem mediadroppable regionsnappableitem"'; 
+			newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
+			newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
+			newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
+			newRegionHtml = newRegionHtml + ' <i class="fa fa-check fa-fw regionitemselectedicon regionselectediconOff"></i>';
+				//<!-- region transparency background -->                            
+			newRegionHtml = newRegionHtml + ' <div class="regionTransparency ' + transparencyCss + ' " style="width:100%; height:100%;"></div>';
+			if (currentUsercheckEditable)
+			{ 
+				newRegionHtml = newRegionHtml + ' <div class="btn-group regionInfo pull-right">';
+				newRegionHtml = newRegionHtml + ' <button class="btn dropdown-toggle" data-toggle="dropdown">';
+				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+				newRegionHtml = newRegionHtml + ' </button>';
+				newRegionHtml = newRegionHtml + ' <ul class="dropdown-menu">';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionTimeLineForm + '">{% trans "Edit Timeline" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="RegionOptionsMenuItem" href="' + urlRegionEditForm + '">{% trans "Options" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionDeleteForm + '">{% trans "Delete" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' <li>';
+				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlUserPermissionForm + '">{% trans "Permissions" %}</a>';
+				newRegionHtml = newRegionHtml + ' </li>';
+				newRegionHtml = newRegionHtml + ' </ul>';
+				newRegionHtml = newRegionHtml + ' </div>';
+			}
+			else if (currentUsercheckEditable && (layoutschemaVersion >= 2) )
+			{
+				newRegionHtml = newRegionHtml + ' <div class="regionInfo">';
+				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
+				newRegionHtml = newRegionHtml + ' </div>';                            
+			}
+			//<!-- region preview panel -->
+			newRegionHtml = newRegionHtml + ' <div class="preview">';
+			newRegionHtml = newRegionHtml + ' <div class="previewContent">';
+
+			newRegionHtml = newRegionHtml + ' </div>';
+			newRegionHtml = newRegionHtml + ' <div class="previewNav label label-info"></div>';
+			newRegionHtml = newRegionHtml + ' </div>';
+			newRegionHtml = newRegionHtml + ' </div>';
+			return newRegionHtml;
+		};
+		$("[name='my-checkbox']").bootstrapSwitch();
+	</script>
+	<script type="text/javascript">
+		
+		var layoutcssWidth = 384;
+		var layoutcssHeight = 216;		
+
+		var _Scale = 1.0;//Math.min(x_Scale, y_Scale);
+		var _CtrlHold = false;
+		var _allRegions;
+		// Create a DataSet (allows two way data-binding)
+		var _allWidgets;
+
+		var _regionTimelines;
+
+		var _timelineOptions;
+
+		var _timelineContainer;
+
+		var _regionID = 15;
+		var _plID = 25;
+		var _pColorID = 6;
+		var _pWidgetID = 26;
+		var _SelectedRegionID = -1;
+
+		// here, the content will be generate from server by twig
+		// however, we still update these data dynamically later.
+
+		var thislayoutinfo = { id: "{{ layout.layoutId }}", 
+								zoom: "{{ zoom }}",
+                                tip_scale: "1",
+								designer_scale: "{{ designerScale }}",
+                                className: "layout center-block col-md-12 layoutitem regionsnappableitem",
+                                layoutid: "{{ layout.layoutId }}",
+                                width: "{{layout.width}}",
+                                height: "{{layout.height}}",
+                                reswidth: "{{resolution.designerWidth}}",
+                                resheight: "{{resolution.designerHeight}}", 
+                                backgroundcolor: "{{ layout.backgroundColor }}", 
+                                statusurl: "{{ urlFor("layout.status", {id: layout.layoutId}) }}", 
+                                positionallurl: "{{ urlFor("region.position.all", {id: layout.layoutId}) }}", 
+								backgroundcss: "{{ backgroundCss }}",
+								schemaVersion: "{{ layout.schemaVersion }}",
+		 regions: [
+			 		{% set regioncolor = 0  %}
+                    {% for region in layout.regions %}
+                        {% set regionWidth = region.width * designerScale %}
+                        {% set regionHeight = region.height * designerScale %}
+                        {% set regionLeft = region.left * designerScale %}
+                        {% set regionTop = region.top * designerScale %}
+
+                        {# Disabled / Enabled CSS #}
+                        {% if currentUser.checkEditable(region) %}
+                            {% set disabledCss = "region" %}
+                            {% set trasparencyCss = "" %}
+                        {% else %}
+                            {% set disabledCss = "regionDis" %}
+                            {% set trasparencyCss = "regionDisabled" %}
+                        {% endif %}
+
+                        {% if currentUser.checkViewable(region) %}
+                            {% set previewCss = "regionPreview" %}
+                        {% else %}
+                            {% set previewCss = "" %}
+                        {% endif %}
+						{% set regioncode = "region-" ~ region.regionId %}
+						
+						{% set regionColorCode = "regioncolor-" ~ regioncolor %}
+						{% set regioncolor = (regioncolor + 1) % 6 %}
+			{
+				id: "{{ region.regionId }}", 
+				regioncode: "{{ regioncode }}",
+				content: "{{ regioncode }}", 
+				title: "{{ regioncode }}", 
+				className: "regionSelector {{ regioncode }} {{ regionColorCode }} ", 
+				regionareaClassName: "{{ disabledCss }} {{ previewCss }} regionitem mediadroppable regionsnappableitem",
+				
+				left: {{ region.left }}, 
+				top: {{ region.top }}, 
+				width: {{ region.width }}, 
+				height: {{ region.height }}, 
+				duration: {{ region.duration }},
+				href: "{{ urlFor("region.timeline.form", {id: region.regionId}) }}", 
+                {% if currentUser.checkEditable(region) %} ondblclick: "XiboFormRender($(this))"{% endif %},
+                previewurl: "{{ urlFor("region.preview", {id: region.regionId}) }}",
+                resetplaylisturl: "{{ urlFor("region.resetplaylist", {regionid: region.regionId}) }}",
+				currentUserEditable: "{{ currentUser.checkEditable(region)}}",
+				currentUserViewable: "{{ currentUser.checkViewable(region)}}",
+				zindex: {{ region.zIndex }},
+				{% if region.playlists|length > 0 %}
+				playlistid: {{ region.playlists[0].playlistId }},
+				playlist: { 
+							id: {{ region.playlists[0].playlistId }},
+							description: "{{wid.description }}",
+							widgets: [
+					{% for wid in region.playlists[0].widgets %}
+							{
+								duration: {{ wid.duration}}, 
+								widgetid: {{ wid.widgetId }}, 
+								type: "{{wid.type}}",
+								displayOrder: {{wid.displayOrder}},
+								{% if wid.medias|length > 0 %}
+								mediaid: {{ wid.medias[0].mediaId }},
+								{% else %}
+								mediaid: -1,
+								{% endif %}
+								{% if wid.audio|length > 0 %}
+								audiomediaid: {{ wid.audio[0].mediaId }},
+								{% else %}
+								audiomediaid: -1,
+								{% endif %}
+							},
+					{% endfor %}								
+							]}, 
+				{% else %}
+					playlistid: -1,
+					playlist: { 
+							id: -1,
+							widgets: []
+					},
+				{%endif%}							
+
+			},
+			{% endfor %}
+		] };	
+
+		// Configuration for the Timeline
+		InitTimelineData();
+
+		updateLayoutInfo();
+
+		$(".layout").keydown(function(event) {
+			if (event.which == 17)
+				_CtrlHold = true;
+			console.log("keydown: code=" + event.which + " " + _CtrlHold);
+		});
+		$(".layout").keyup(function(event) {
+			if (event.which == 17)
+				_CtrlHold = false;
+			console.log("keydown: code=" + event.which + " " + _CtrlHold);
+		});
+		function updateWidgetInfo(widgetid)
+		{
+			// get widget date from _allWidgets
+			var widget = _allWidgets.get(widgetid);
+			if (widget.length)
+			{
+				var intext = "widgetid: " + widget[0].id + " type: " + widget[0].widgettype + " duration: " + widget[0].duration;
+
+				$(".widgetproperty").html(intext);
+			}
+		}
+		function onWidgetSelectedHandler(properties)
+		{
+			// properties.items: selected item id
+			//console.log("selected:" + properties.items);
+			updateWidgetInfo(properties.items);
+		}
+
+		function onWidgetDoubleClickedHandler(properties)
+		{
+			console.log("double clicked:" + properties.item);
+		}
+
+		function onWidgetMouseOverHandler(properties)
+		{
+			var widget = _allWidgets.get(properties.item);
+			var html = "id:" + widget.id + " start:" + widget.start + " end:" + widget.end;
+
+			//$("#propertypanel").text(html);
+		}
+
+		function onWidgetMouseOutHandler(properties)
+		{
+			//$("#propertypanel").text("");
+			//console.log("mouse out:" + properties.item);
+		}
+  // here, we need some functions:
+  // 1. InitData(); initialize by data from server
+  // 2. Update selected widget (duration): update back to server
+  // 3. delete selected widget: update back to server
+  // 4. add new widget: (create by server, then update locally)
+  // 5. add new group: add a new region
+  // 6. delete gropu: delete a region
+  // 7. update group info: for tooltip
+  // 8. update group by an existing playlist:
+  // 9. layout region position manipulation:
+
+  // add widget from widget object (wid)
+  // regionid: also the group id
+  // starttime: starting time in second
+
+  	function regionHTML(obj)
+	{
+		// here, we would like to generate region for every pl
+		/*
+		var html = "";
+		var regioncssLeft = obj.left * _Scale;
+		var regioncssTop = obj.top * _Scale;
+		var regioncssWidth = obj.width * _Scale;
+		var regioncssHeight = obj.height * _Scale;
+
+		html = '<div class="region ' + obj.className + ' ' + obj.regionareaClassName + ' ' + obj.regioncode + '" style="position:absolute;  width:' + regioncssWidth + "px; " +
+				'height: ' + regioncssHeight + "px; " +
+				'left: ' + regioncssLeft + "px;" +
+				'top: ' + regioncssTop + 'px;"' + 
+				' data-regioncode="' + obj.regioncode + '"' + 
+				' data-regionid="' + obj.id + '"' + 
+				' data-playlistid="' + obj.playlistid + '"' + 
+				'></div>';
+*/
+		return addNewRegionWithRegionId2(obj.id, obj.playlistid, obj.left, obj.top,
+											obj.width, obj.height, _Scale, obj.zindex,
+											obj.currentUserEditable,
+											obj.regioncode,
+											obj.className);
+					
+	}
+	function addWidgets(all, wid, regionid, playlistid, starttime)
+	{
+		//console.log(wid);
+		var endtime = starttime + wid.duration;
+		var sh = Math.floor(starttime / 3600);
+		var sm = Math.floor((starttime - sh * 3600) / 60);
+		var ss = starttime % 60;
+		var eh = Math.floor(endtime / 3600);
+		var em = Math.floor((endtime - eh * 3600) / 60);
+		var es = endtime % 60;
+		//console.log(starttime + " " + endtime);
+		all.add({
+				id: wid.widgetid, 
+				widgetid: wid.widgetid, 
+				duration: wid.duration,
+				start: new Date(1971, 3, 25, sh, sm, ss),
+				end: new Date(1971, 3, 25, eh, em, es),
+				title: "widget-" + wid.widgetid,
+				tooltip: "widget-" + wid.widgetid,
+				className: wid.type,
+				group: regionid,
+				regionid: regionid,
+				widgettype: wid.type,
+				playlistid: playlistid,
+				mediaid: wid.mediaid,
+				audiomediaid: wid.audiomediaid });
+	}
+  // pl is the widget object list
+	function addPlaylist(all, playlist, regionid)
+	{
+		var starttime = 0;
+		for (var w in playlist.widgets)
+		{
+			addWidgets(all, playlist.widgets[w], regionid, playlist.id, starttime);
+			starttime += playlist.widgets[w].duration;
+		}
+	}
+
+	function newLayout(layoutinfo)
+	{
+		var cssW = 384;
+		var cssH = 216;
+
+		if (layoutinfo.width < layoutinfo.height)
+		{
+			cssW = 216;
+			cssH = 384;
+		}
+
+		var y_Scale = cssH / layoutinfo.height;
+		var x_Scale = cssW / layoutinfo.width;
+		_Scale = Math.min(x_Scale, y_Scale);		
+		var layouthtml = '<div tabindex="1" class="layout" ' + 
+							'style="position:relative;  ' + 
+							'width: ' + cssW + 'px;  ' + 
+							'height: ' + cssH + 'px;  ' + 
+							'margin:0px;  ' + 
+							'padding: 0px; background: #dddddd; border: 0px;"> ' + 
+							'</div>';
+		$(".layoutwidget").html(layouthtml);
+				
+		if (_allRegions)
+			_allRegions.destroy();
+		_allRegions = new vis.DataSet();
+
+		if (_allWidgets)
+			_allWidgets.destroy();
+		_allWidgets = new vis.DataSet();
+
+		
+		for (var r in layoutinfo.regions)
+		{
+			_allRegions.add(layoutinfo.regions[r]);
+
+			addPlaylist(_allWidgets, layoutinfo.regions[r].playlist, layoutinfo.regions[r].id);
+		}
+
+		_timelineOptions = {
+			editable: {
+				add: false,         // add new items by double tapping
+				updateTime: false,  // drag items horizontally
+				updateGroup: false, // drag items from one group to another
+				remove: false       // delete an item by tapping the delete button top right
+			},
+			orientation: 'top',
+
+			groupEditable: false,
+			//start: new Date(1971, 5, 1, 0, 0, 0),
+			//end: new Date(1971, 5, 1, 1, 0, 0),
+			stack: false,
+			max: new Date(1971, 3, 25, 23, 59, 50),
+			min: new Date(1971, 3, 25, 0, 0, 0),
+			showMajorLabels: false,
+			clickToUse: false,
+			showCurrentTime: false,
+			zoomable: true,
+			template: function (widget) {
+				var html = "widget-" + widget.widgetid;
+				return html;
+			},
+			groupTemplate: function(group) {
+				var html = '<div class="regionLabel ' + 
+								group.className + ' ' + 
+								group.regioncode + 
+								'" data-regioncode="' + group.regioncode + '"' + 
+								'  data-regionid="' + group.id + '"' + 
+								'>region-' + group.id + "</div>";
+				return html;
+			},
+			dataAttributes: ['tooltip', 'id', 'title', 'duration', 'widgetid', 'type', "regionid"],
+			margin: { axis: 5 },	// important, to get rid of top space between axis and the first timeline
+		};
+		// Create a Timeline
+		// DOM element where the Timeline will be attached
+		_timelineContainer = document.getElementById('visualization');
+
+		if (_regionTimelines)
+			_regionTimelines.destroy();
+
+		_regionTimelines = new vis.Timeline(_timelineContainer);
+
+		_regionTimelines.setOptions(_timelineOptions);
+		_regionTimelines.setGroups(_allRegions);
+		_regionTimelines.setItems(_allWidgets);
+
+		_regionTimelines.on('select', onWidgetSelectedHandler);
+		_regionTimelines.on('doubleClick', onWidgetDoubleClickedHandler);
+		_regionTimelines.on('itemover', onWidgetMouseOverHandler);
+		_regionTimelines.on('itemout', onWidgetMouseOutHandler);
+
+		var rhtml = "";
+		_allRegions.forEach(function(obj) {
+			// here, we would like to generate region for every pl
+			rhtml += regionHTML(obj);
+		});
+		$(".layout").html(rhtml);
+		prepareRegionFunction();		
+	}
+	function InitTimelineData()
+	{
+		newLayout(thislayoutinfo);
+	}
+
+	function updateRegionInfo(item) 
+	{
+		var pos = $(item).position();
+		var region = _allRegions.get(_SelectedRegionID);
+
+		var intext = "id:" + region.id + " playlist-id: " + region.playlistid;
+					
+		$('.regionproperty').html(intext + " Region size: " + Math.round($(item).width() / _Scale, 0) + 
+									" x " + 
+									Math.round($(item).height() / _Scale, 0) + 
+									" (" + 
+										Math.round(pos.left / _Scale, 0) + 
+										"," + 
+										Math.round(pos.top / _Scale, 0) + ") ");
+	}
+	function updateLayoutInfo() 
+	{
+		$('.layoutproperty').html("Layout size: 1920 x 1080");
+	}	
+	function prepareRegionFunction()
+	{
+		var thisLayout = $(".layout");
+		thisLayout.find(".region")
+		.draggable({
+			containment: thisLayout,
+            //stop: regionPositionUpdateNoRefreshPreview,
+            drag: function(event, ui) {        
+                updateRegionInfo(ui.helper);
+            },
+            start: function(event, ui) {
+            },
+            grid: [ 5, 5 ],
+            snap: ".region, .layout",
+            snapTolerance: 10})
+		.resizable({
+			containment: thisLayout,
+			minWidth: 25,
+			minHeight: 25,
+			//stop: regionPositionUpdate,
+			resize: function(event, ui) {        
+                updateRegionInfo(ui.helper);
+            },
+            grid: [ 5, 5 ],
+            snap: ".region, .layout",
+            snapTolerance: 5
+		})
+		.selectable(
+			{
+				selected: function(event, ui) {        
+                					updateRegionInfo(ui.helper);
+            					}
+			}
+		);
+
+		$(".regionSelector").click(function() {
+			var regionCode;
+			var selectedID = -1;
+
+			if ($(this).hasClass("regionLabel"))
+			{
+				regionCode = $(this).data('regioncode');
+				selectedID = $(this).data('regionid');
+			}
+			else if ($(this).hasClass("region"))
+			{
+				regionCode = $(this).data('regioncode');
+				selectedID = $(this).data('regionid');	
+				{
+					toggleRegionSelectedIcon($(this));
+				}
+				$(".layout").focus();			
+			} else
+			{
+				var lbl = $(this).find(".regionLabel");
+				if (lbl)
+				{
+					regionCode = $(lbl).data('regioncode');
+					selectedID = $(lbl).data('regionid');
+				}
+			}
+
+			if (regionCode)
+			{
+				if (_CtrlHold == false || _SelectedRegionID == -1)
+				{
+					$(".regionSelector").removeClass("regionSelected");
+					$("." + regionCode).addClass("regionSelected");
+					_SelectedRegionID = selectedID;
+
+					updateRegionInfo($(".layout").find("." + regionCode));
+					DeSelecteAllRegion();					
+				}
+			}
+			console.log("Selected RID=" + _SelectedRegionID + " regioncode=" + regionCode);
+		});			
+	}
+	$("#addregion").click(function() {
+		var regionName = "region-" + _regionID;
+		var colorName = "regioncolor-" + _pColorID;
+
+		var obj = { id: _regionID, 
+						content: regionName, 
+						title: regionName, 
+						className: "regionSelector " + regionName + " " + colorName, 
+						regionareaClassName : "",
+						playlistid: _plID,
+						left: 0, 
+						top: 880, 
+						width: 250, 
+						height: 250, 
+						regioncode: regionName};
+		_allRegions.add(obj);
+
+		// create a new region
+		var html = "";
+
+		html = regionHTML(obj);
+				
+		$(html).appendTo('.layout');
+
+		prepareRegionFunction();
+
+		_pColorID++;
+		_pColorID = _pColorID % 7;
+		_regionID++;
+		_plID++;		
+	});
+	$("#deleteregion").click(function() {
+		if (_SelectedRegionID != -1)
+		{
+			// remove all data from allWidgets about this regionid
+			var widgetids = [];
+			var regionCode = "region-" + _SelectedRegionID;
+			widgetids = _allWidgets.getIds({
+					filter: function (item) {
+					return (item.id == _SelectedRegionID);
+					}
+				});
+			_allWidgets.remove(widgetids);
+
+			// remove groups
+			_allRegions.remove(_SelectedRegionID);
+
+			// remove region from layout
+			$(".layout").find(".region." + regionCode).remove();
+		}
+		_SelectedRegionID = -1;
+	});
+	$("#addwidget").click(function() {
+		if (_SelectedRegionID != -1)
+		{
+			insertWidget(_allWidgets, _SelectedRegionID,
+						{ duration: 30, widgetid: _pWidgetID, type: "image" },
+						new Date(1971, 3, 25, 0, 0, 0),
+						true, true);	// append
+
+			_regionTimelines.focus(_pWidgetID);						
+			_pWidgetID++;
+		}				
+	});
+
+	// widgetid: widget id
+	// starttime: starting time in second
+	// duration: in second
+	function updateWidgetStartEndTime(all, widgetid, starttime, duration)
+	{
+		var endtime = starttime + duration;
+		var sh = Math.floor(starttime / 3600);
+		var sm = Math.floor((starttime - sh * 3600) / 60);
+		var ss = starttime % 60;
+		var eh = Math.floor(endtime / 3600);
+		var em = Math.floor((endtime - eh * 3600) / 60);
+		var es = endtime % 60;
+		all.update({id: widgetid, start: new Date(1971, 3, 25, sh, sm, ss),
+					end: new Date(1971, 3, 25, eh, em, es)});
+	}
+	// update playlist widget time start at baseST
+	function updateWidgetTimeStartFrom(all, regionid, baseST)
+	{
+		var starttime = baseST.getHours() * 3600 + baseST.getMinutes() * 60 + baseST.getSeconds();
+
+		widgets = all.get({
+					filter: function (item) {
+					return (item.start.getTime() >= baseST.getTime() && item.group == regionid);
+					},
+					order: "start"
+		});
+		for (var w in widgets)
+		{
+		updateWidgetStartEndTime(all, widgets[w].widgetid, starttime, widgets[w].duration);
+
+		starttime += widgets[w].duration;
+		}
+	}
+	// update duration of single widget, also, update all the followed widget starting/end time
+	function updateWidgetDuration(all, regionid, widgetid, newDuration)
+	{
+		// update duration of that widget
+		// also, update all widget of following widgets
+		widget = all.get({
+					filter: function (item) {
+					return (item.id == widgetid && item.group == regionid);
+					}
+		});
+		if (widget.length)
+		{
+			all.update({id: widgetid, duration: newDuration});
+			var baseST = widget[0].start;
+
+			updateWidgetTimeStartFrom(all, regionid, baseST);
+		}
+	}
+	// delete widget
+	function deleteWidget(all, regionid, widgetid)
+	{
+		all.remove(widgetid);
+		var baseST = new Date(1971, 3, 25, 0, 0, 0);
+		updateWidgetTimeStartFrom(all, regionid, baseST);
+	}
+
+	// mode: 0: move to head, 1: move to end, 2: move before, 3: move next
+	function moveWidget(all, regionid, widgetid, mode)
+	{
+		var anchorWidget = all.get(widgetid);
+		var toBeUpdate = [];
+		var starttime = 0;
+		if (anchorWidget.length)
+			return;
+		if (mode == 0)
+		{
+			starttime = 0;
+			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration);
+			starttime += anchorWidget.duration;
+			toBeUpdate = all.get({
+						filter: function (item) {
+							return (item.group == regionid && item.id != widgetid);
+						}
+					});
+			for (var w in toBeUpdate)
+			{
+				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+
+				starttime += toBeUpdate[w].duration;
+			}
+		} else if (mode == 1) // append
+		{
+			starttime = 0;
+			toBeUpdate = all.get({
+						filter: function (item) {
+							return (item.group == regionid && item.id != widgetid);
+						}
+					});
+			for (var w in toBeUpdate)
+			{
+				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+
+				starttime += toBeUpdate[w].duration;
+			}
+
+			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration);
+		} else if (mode == 2) // move forward
+		{
+			var targetWidget = all.get({
+						filter: function (item) {
+							return (item.group == regionid && item.end.getTime() == anchorWidget.start.getTime());
+						}
+					});
+
+			if (targetWidget.length)
+			{
+				var baseST = targetWidget[0].start;
+				starttime = baseST.getHours() * 3600 + baseST.getMinutes() * 60 + baseST.getSeconds();
+
+				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration);
+				starttime += anchorWidget.duration;
+				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration);
+			}
+		} else if (mode = 3) // move afterward
+		{
+			var targetWidget = all.get({
+						filter: function (item) {
+							return (item.group == regionid && item.start.getTime() == anchorWidget.end.getTime());
+						}
+					});
+			if (targetWidget.length)
+			{
+				var baseST = anchorWidget.start;
+				starttime = baseST.getHours() * 3600 + baseST.getMinutes() * 60 + baseST.getSeconds();
+				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration);
+				starttime += targetWidget[0].duration;
+				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration);
+			}
+		}
+	}
+
+	function insertWidget(all, regionid, widget, startST, bAppend, bUpdateOthers)
+	{
+		var toBeUpdate = [];
+
+		if (bUpdateOthers || bAppend)
+		{
+			if (bAppend)
+			{
+				toBeUpdate = all.get({
+							filter: function (item) {
+								return (item.group == regionid);
+							}
+						});
+			}
+			else
+			{
+				toBeUpdate = all.get({
+							filter: function (item) {
+								return (item.group == regionid && item.start.getTime() >= startST.getTime());
+							}
+						});
+			}
+		}
+
+		var starttime = startST.getHours() * 3600 + startST.getMinutes() * 60 + startST.getSeconds();
+		if (bAppend)
+		{
+			starttime = 0;
+		}
+		if (!bAppend)
+		{
+			addWidgets(all, widget, regionid, starttime);
+			starttime += widget.duration;
+		}
+
+		if (bUpdateOthers || bAppend)
+		{
+			for (var w in toBeUpdate)
+			{
+				if (!bAppend)
+					updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+
+				starttime += toBeUpdate[w].duration;
+			}
+		}
+		if (bAppend)
+		{
+			addWidgets(all, widget, regionid, starttime);
+		}		
+	}
+
+	$("#deletewidget").click(function() {
+			selectedIds = _regionTimelines.getSelection();
+			for (var wid in selectedIds)
+			{
+			var selW = _allWidgets.get(selectedIds[wid]);
+			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+			_allWidgets.remove(selW.id);
+			}
+			var baseST = new Date(1971, 3, 25, 0, 0, 0);
+			updateWidgetTimeStartFrom(_allWidgets, selW.group, baseST);
+
+	});
+
+	$("#updatewidget").click(function() {
+		//updateWidgetDuration(_allWidgets, 14, 31, 50);
+		selectedIds = _regionTimelines.getSelection();
+		for (var wid in selectedIds)
+		{
+			var selW = _allWidgets.get(selectedIds[wid]);
+			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+			_allWidgets.update({id: selW.id, duration: selW.duration + 5});
+			updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
+		}
+	});
+
+	$("#moveforward").click(function() {
+			selectedIds = _regionTimelines.getSelection();
+			for (var wid in selectedIds)
+			{
+			var selW = _allWidgets.get(selectedIds[wid]);
+			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+			moveWidget(_allWidgets, selW.group, selW.id, 2);
+			}
+
+	});
+	$("#movebackward").click(function() {
+		selectedIds = _regionTimelines.getSelection();
+		for (var wid in selectedIds)
+		{
+		var selW = _allWidgets.get(selectedIds[wid]);
+		console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+		moveWidget(_allWidgets, selW.group, selW.id, 3);
+		}
+	});
+	$("#movefront").click(function() {
+			selectedIds = _regionTimelines.getSelection();
+			for (var wid in selectedIds)
+			{
+			var selW = _allWidgets.get(selectedIds[wid]);
+			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+			moveWidget(_allWidgets, selW.group, selW.id, 0);
+			}
+
+	});
+	$("#moveend").click(function() {
+		selectedIds = _regionTimelines.getSelection();
+		for (var wid in selectedIds)
+		{
+		  var selW = _allWidgets.get(selectedIds[wid]);
+		  console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+		  moveWidget(_allWidgets, selW.group, selW.id, 1);
+		}
+  	});
+</script>
+	{% for module in modules %}
+		{% if module.layoutDesignerJavaScript() != "" %}
+			{% include module.layoutDesignerJavaScript() ~ ".twig" %}
+		{% endif %}
+	{% endfor %}
+
+{% endblock %}

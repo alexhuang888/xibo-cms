@@ -62,7 +62,7 @@ function regionPositionUpdateBase(element, refreshPreview)
 toggleRegionSelectedIcon = function(regionitem)
 {
     //console.log(regionitem);
-    if ($(regionitem).hasClass('ui-selected'))
+    if ($(regionitem).hasClass('ui-selected') && $(regionitem).hasClass('regionSelected') == false)
     {
         $(regionitem).removeClass("ui-selected");
         $(regionitem).find('.regionitemselectedicon').addClass('regionselectediconOff');
@@ -73,7 +73,11 @@ toggleRegionSelectedIcon = function(regionitem)
         $(regionitem).addClass("ui-selected");
         $(regionitem).find('.regionitemselectedicon').removeClass('regionselectediconOff');
         $(regionitem).attr('selectedindex', currentSelectedIdx++);
-    }    
+    }
+    if ($(regionitem).hasClass('regionSelected'))
+    {
+        $(regionitem).addClass("ui-selected");
+    } 
 };
 DeSelecteAllRegion = function() {
     $('.regionitem.ui-selected').each(function()
@@ -84,19 +88,23 @@ DeSelecteAllRegion = function() {
 AdjustSelectedRegionPosition = function(postype)
 {
     //console.log('adjustpos: type=' + postype);
-    var canvasItem = $("#layout");
+    var canvasItem = $(".layout");
 
     var anchoritem = undefined;
     var minselectedIdx = 99999999;
     var totalitems = 0;
     $('.regionitem.ui-selected').each(function()
     {
+        /*
         var thisselectedidx = parseInt($(this).attr('selectedindex'));
         if (thisselectedidx < minselectedIdx)
         {
             minselectedIdx = thisselectedidx;
             anchoritem = $(this);
         }
+        */
+        if ($(this).hasClass('regionSelected'))
+            anchoritem = $(this);
         totalitems++;
     });
     console.log('totalitems: ' + totalitems);
@@ -668,13 +676,10 @@ function configureRegionHandler()
         });
 
     // alex: region item
+    /*
     $(".mediadroppable").off("click");
     $(".mediadroppable").on('click', function(e)
     {
-        //console.log(e.target);
-        //console.log($(e.target).attr('class'));
-        //console.log(this);
-//        console.log($(e.target).hasClass('regionPreviewOverlay'));
         if ($(e.target).hasClass('regionPreviewOverlay') || 
             $(e.target).hasClass('previewContent') ||
             $(e.target).hasClass('preview') || 
@@ -684,6 +689,7 @@ function configureRegionHandler()
             toggleRegionSelectedIcon($(this));     
         }   
     });
+    */
     $('.RegionOptionsMenuItem').off('click');
     $('.RegionOptionsMenuItem').on('click', function(e) 
     {
