@@ -65,6 +65,16 @@
                                     </div>
                                     <div class="btn-group" role="group">
                                         <a class="btn btn-info btn-sm" id="regionAddButton" role="button" href="{{ urlFor("region.add", {id: layout.layoutId}) }}" title="{% trans "Add a new region" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+									</div>
+									<div class="btn-group" role="group">
+
+										<a class="btn btn-info btn-sm" id="regionDeleteButton" role="button" href="{{ urlFor("region.delete.form", {}) }}" title="{% trans "Delete region" %}"><span><i class="fa fa-minus" aria-hidden="true"></i> {% trans "" %}</span></a>
+										<!--
+										<a class="btn btn-info btn-sm" id="regionOptionsButton" role="button" href="{{ urlFor("region.edit.form", {}) }}" title="{% trans "Edit region" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+										<a class="btn btn-info btn-sm" id="regionPermissionButton" role="button" href="{{ urlFor("user.permissions.form", { entity: "Region" }) }}" title="{% trans "Edit region permission" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+										<a class="btn btn-info btn-sm" id="regionTimelineFormButton" role="button" href="{{ urlFor("region.timeline.form", {}) }}" title="{% trans "Edit region timeline" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
+-->
+
                                     </div>
                                 </div>
                             </div>
@@ -183,7 +193,21 @@
 		</div>
     </div>
 	<div class="region-toolbox row">
-		<input id="addwidget" type="button" value="Add Widget" title="Add Widget"></input>
+			<div class="btn-group regionInfo pull-right">
+				<button class="btn dropdown-toggle" data-toggle="dropdown">
+					<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
+				</button>				
+				<ul class="dropdown-menu">
+					<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
+					{% for module in extra['modules'] %}
+						{% if module.regionSpecific %}
+							<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("module.widget.add.form", {type: module.type}) }}" href="{{ urlFor("module.widget.add.form", {type: module.type}) }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+						{% else %}
+							<li class="storylineUploadLibraryMedia" href="#" data-playlist-id="" data-valid-ext="{{ module.validExtensions }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</div>
 		<input id="updatewidget" type="button" value="Update Widget" title="Update Widget"></input>
 		<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
 
@@ -347,10 +371,12 @@
 		// Click Handler for Library Upload Buttons (image, video, powerpoint, flash)
 		function libraryUploadClick(e) {
 			e.preventDefault();
-
+			console.log($(this).data());
+			console.log("here1 " + $(this).data().validExt);
 			var validExt = $(this).data().validExt.replace(/,/g, "|");
+			console.log("here2 " + $(this).data().playlistId);
 			var playlistId = $(this).data().playlistId;
-
+			console.log("playlistId:" + playlistId);
 			openUploadForm({
 				trans: {
 					addFiles: "{% trans "Add files" %}",
@@ -496,7 +522,24 @@
 					XiboSubmitResponse(xhr, form);
 
 					if (xhr.success)
+					{
+						// remove all data from allWidgets about this regionid
+						var widgetids = [];
+						var regionCode = "region-" + regionId;
+						widgetids = _allWidgets.getIds({
+								filter: function (item) {
+								return (item.group == regionId);
+								}
+							});
+						_allWidgets.remove(widgetids);
+
+						// remove groups
+						_allRegions.remove(regionId);
+
+						// remove region from layout
 						$("#region_" + regionId).remove();
+					}
+					_SelectedRegionID = -1;						
 				},
 				error: function (xhr, textStatus, errorThrown) {
 					SystemMessage(xhr.responseText, false);
@@ -590,7 +633,6 @@
 					dataType: "json",
 					success: function (xhr, textStatus, error) 
 					{
-
 						XiboSubmitResponse(xhr);
 
 						if (xhr.success) 
@@ -601,6 +643,23 @@
 							console.log("playlistid=" + playlistid);
 							var regionName = "region-" + xhr.id;
 							var colorName = "regioncolor-" + _pColorID;
+
+							var urlRegionDeleteForm = "{{ urlFor("region.delete.form") }}";
+							urlRegionDeleteForm = urlRegionDeleteForm.replace(":id", xhr.id.toString());
+							var urlRegionEditForm = "{{ urlFor("region.edit.form") }}";
+							urlRegionEditForm = urlRegionEditForm.replace(":id", xhr.id.toString());
+							var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
+							urlRegionTimeLineForm = urlRegionTimeLineForm.replace(":id", xhr.id.toString());
+							var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
+							urlUserPermissionForm = urlUserPermissionForm.replace(":id", xhr.id.toString()); 
+
+							var urltimelineform = "{{ urlFor("region.timeline.form") }}";
+							urltimelineform = urltimelineform.replace(":id", xhr.id.toString());
+							var urlPreview = "{{ urlFor("region.preview") }}";
+							urlPreview = urlPreview.replace(":id", xhr.id.toString());
+							var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
+							urlResetPlaylist = urlResetPlaylist.replace(":regionid", xhr.id.toString()); 
+							//urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());  
 
 							var obj = { id: xhr.id, 
 											content: regionName, 
@@ -616,6 +675,15 @@
 											duration: xhr.data.duration,
 											zindex: xhr.data.zIndex,
 											currentUserEditable: xhr.extra['currentUserEditable'],
+											regiondataChanged: false,
+
+											previewurl: urlPreview,
+											resetplaylisturl: urlResetPlaylist,
+											editregionoptionsurl: urlRegionEditForm,
+											editregionpermissionurl: urlUserPermissionForm,
+											editregiontimelineurl: urlRegionTimeLineForm,
+											deleteregionurl: urlRegionDeleteForm,
+
 											playlist: { 
 												id: playlistid,
 												description: xhr.data.playlists[0].description,
@@ -639,8 +707,7 @@
 							_regionID++;
 							_plID++;							
 
-
-							configureRegionHandler();
+							//configureRegionHandler();
 
 							//new Preview($(regionItem));                
 						}
@@ -656,14 +723,22 @@
 					}
 				});
 			});
-			//refreshplaylistCallback();
-			$('#addnewplaylisticon').off('click');
-			$('#addnewplaylisticon').on('click', function()
-			{
-				// here, we should add a new playlist to this 
-				XiboFormRender('{{ urlFor("playlist.add.form") }}');
-			});
 
+			// delete region button
+			$("#regionDeleteButton").click(function (e) {
+
+				e.preventDefault();
+
+				console.log("regionDeleteButton: " + _SelectedRegionID);
+				if (_SelectedRegionID != -1)
+				{
+
+					var actionurl = $(this).attr("href");
+					actionurl = actionurl.replace(":id", _SelectedRegionID);
+
+					XiboFormRender(actionurl);
+				}
+			});
 		});
 		/* end of document.ready() */
 		addNewRegionWithRegionId2 = function(regionId, playlistid, originalLeft, originalTop,
@@ -675,15 +750,8 @@
 			var newRegionHtml = "";
 			var currentUsercheckEditable = currentUsercheckEditable == 1 ? true : false;
 			var layoutid = "{{ layout.layoutId }}";
-			var layoutschemaVersion = {{ layout.schemaVersion}};
-			var urltimelineform = "{{ urlFor("region.timeline.form") }}";
-			urltimelineform = urltimelineform.replace(":id", regionId.toString());
-			var urlPreview = "{{ urlFor("region.preview") }}";
-			urlPreview = urlPreview.replace(":id", regionId.toString());
-			var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
-			urlResetPlaylist = urlResetPlaylist.replace(":regionid", regionId.toString()); 
-			urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());                
-			
+			var layoutschemaVersion = {{ layout.schemaVersion }};
+              
 			var regionWidth = originalWidth * designerScale;
 			var regionHeight = originalHeight * designerScale;
 			var regionLeft = originalLeft * designerScale;
@@ -696,7 +764,16 @@
 			var urlRegionTimeLineForm = "{{ urlFor("region.timeline.form") }}";
 			urlRegionTimeLineForm = urlRegionTimeLineForm.replace(":id", regionId.toString());
 			var urlUserPermissionForm = "{{ urlFor("user.permissions.form", {entity: "Region"}) }}";
-			urlUserPermissionForm = urlUserPermissionForm.replace(":id", regionId.toString());                                                
+			urlUserPermissionForm = urlUserPermissionForm.replace(":id", regionId.toString()); 
+
+			var urltimelineform = "{{ urlFor("region.timeline.form") }}";
+			urltimelineform = urltimelineform.replace(":id", regionId.toString());
+			var urlPreview = "{{ urlFor("region.preview") }}";
+			urlPreview = urlPreview.replace(":id", regionId.toString());
+			var urlResetPlaylist = "{{ urlFor("region.resetplaylist") }}";
+			urlResetPlaylist = urlResetPlaylist.replace(":regionid", regionId.toString()); 
+			//urlResetPlaylist = urlResetPlaylist.replace(":playlistid", playlistid.toString());  
+
 			var disabledCss = 'regionDis';
 			var transparencyCss = 'Disabled';
 			var previewCss = "regionPreview";                
@@ -731,6 +808,12 @@
 			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' ' + extraClassName + ' regionitem mediadroppable regionsnappableitem"'; 
 			newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
 			newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
+
+			newRegionHtml = newRegionHtml + ' data-edittimelineformurl="' + urlRegionTimeLineForm + '"';
+			newRegionHtml = newRegionHtml + ' data-deleteregionurl="' + urlRegionDeleteForm + '"';
+			newRegionHtml = newRegionHtml + ' data-editregionoptionsurl="' + urlRegionEditForm + '"';
+			newRegionHtml = newRegionHtml + ' data-regionpermissionurl="' + urlUserPermissionForm + '"';
+
 			newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
 
 			/*
@@ -883,11 +966,7 @@
 		$("[name='my-checkbox']").bootstrapSwitch();
 	</script>
 	<script type="text/javascript">
-		
-		var layoutcssWidth = 384;
-		var layoutcssHeight = 216;		
-
-		var _Scale = 1.0;//Math.min(x_Scale, y_Scale);
+		var _Scale = 1.0;
 		var _CtrlHold = false;
 		var _allRegions;
 		// Create a DataSet (allows two way data-binding)
@@ -904,7 +983,7 @@
 		var _pColorID = 6;
 		var _pWidgetID = 26;
 		var _SelectedRegionID = -1;
-
+		
 		// here, the content will be generate from server by twig
 		// however, we still update these data dynamically later.
 
@@ -964,11 +1043,16 @@
 				duration: {{ region.duration }},
 				href: "{{ urlFor("region.timeline.form", {id: region.regionId}) }}", 
                 {% if currentUser.checkEditable(region) %} ondblclick: "XiboFormRender($(this))"{% endif %},
-                previewurl: "{{ urlFor("region.preview", {id: region.regionId}) }}",
-                resetplaylisturl: "{{ urlFor("region.resetplaylist", {regionid: region.regionId}) }}",
+                previewurl: "{{ urlFor('region.preview', {id: region.regionId}) }}",
+                resetplaylisturl: "{{ urlFor('region.resetplaylist', {regionid: region.regionId}) }}",
+				editregionoptionsurl: "{{ urlFor("region.edit.form", {id: region.regionId}) }}",
+				editregionpermissionurl: '{{ urlFor("user.permissions.form", {entity: "Region", id: region.regionId}) }}',
+				editregiontimelineurl: '{{ urlFor("region.timeline.form", {id: region.regionId}) }}',
+				deleteregionurl: "{{ urlFor('region.delete.form', {id: region.regionId}) }}",
 				currentUserEditable: "{{ currentUser.checkEditable(region)}}",
 				currentUserViewable: "{{ currentUser.checkViewable(region)}}",
 				zindex: {{ region.zIndex }},
+				regiondataChanged : false,
 				{% if region.playlists|length > 0 %}
 				playlistid: {{ region.playlists[0].playlistId }},
 				playlist: { 
@@ -981,16 +1065,16 @@
 								widgetid: {{ wid.widgetId }}, 
 								type: "{{wid.type}}",
 								displayOrder: {{wid.displayOrder}},
-								{% if wid.medias|length > 0 %}
+							{% if wid.medias|length > 0 %}
 								mediaid: {{ wid.medias[0].mediaId }},
-								{% else %}
+							{% else %}
 								mediaid: -1,
-								{% endif %}
-								{% if wid.audio|length > 0 %}
+							{% endif %}
+							{% if wid.audio|length > 0 %}
 								audiomediaid: {{ wid.audio[0].mediaId }},
-								{% else %}
+							{% else %}
 								audiomediaid: -1,
-								{% endif %}
+							{% endif %}
 							},
 					{% endfor %}								
 							]}, 
@@ -1075,22 +1159,6 @@
   	function regionHTML(obj)
 	{
 		// here, we would like to generate region for every pl
-		/*
-		var html = "";
-		var regioncssLeft = obj.left * _Scale;
-		var regioncssTop = obj.top * _Scale;
-		var regioncssWidth = obj.width * _Scale;
-		var regioncssHeight = obj.height * _Scale;
-
-		html = '<div class="region ' + obj.className + ' ' + obj.regionareaClassName + ' ' + obj.regioncode + '" style="position:absolute;  width:' + regioncssWidth + "px; " +
-				'height: ' + regioncssHeight + "px; " +
-				'left: ' + regioncssLeft + "px;" +
-				'top: ' + regioncssTop + 'px;"' + 
-				' data-regioncode="' + obj.regioncode + '"' + 
-				' data-regionid="' + obj.id + '"' + 
-				' data-playlistid="' + obj.playlistid + '"' + 
-				'></div>';
-*/
 		return addNewRegionWithRegionId2(obj.id, obj.playlistid, obj.left, obj.top,
 											obj.width, obj.height, _Scale, obj.zindex,
 											obj.currentUserEditable,
@@ -1150,8 +1218,17 @@
 		var y_Scale = cssH / layoutinfo.height;
 		var x_Scale = cssW / layoutinfo.width;
 		_Scale = Math.min(x_Scale, y_Scale);		
-		var layouthtml = '<div tabindex="1" class="layout" ' + 
-							'style="position:relative;  ' + 
+		var layouthtml = '<div tabindex="0" id="layout" class="layout" ' + 
+								'layoutid="' + layoutinfo.id + '"' + 
+                                'width="' + layoutinfo.width + '"' + 
+                                'height ="' + layoutinfo.height  + '"' + 
+                                'reswidth="' + layoutinfo.width  + '"' + 
+                                'resheight ="' + layoutinfo.height  + '"' + 
+                                'data-background-color="' + layoutinfo.backgroundcolor + '"' +  
+                                'data-status-url="' + layoutinfo.statusurl  + '"' + 
+                                'data-position-all-url="' + layoutinfo.positionallurl  + '"' + 
+                                		
+							'style="outline: 0 solid; position:relative;  ' + 
 							'width: ' + cssW + 'px;  ' + 
 							'height: ' + cssH + 'px;  ' + 
 							'margin:0px;  ' + 
@@ -1337,37 +1414,7 @@
 			console.log("Selected RID=" + _SelectedRegionID + " regioncode=" + regionCode);
 		});			
 	}
-	$("#addregion").click(function() {
-		var regionName = "region-" + _regionID;
-		var colorName = "regioncolor-" + _pColorID;
 
-		var obj = { id: _regionID, 
-						content: regionName, 
-						title: regionName, 
-						className: "regionSelector " + regionName + " " + colorName, 
-						regionareaClassName : "",
-						playlistid: _plID,
-						left: 0, 
-						top: 880, 
-						width: 250, 
-						height: 250, 
-						regioncode: regionName};
-		_allRegions.add(obj);
-
-		// create a new region
-		var html = "";
-
-		html = regionHTML(obj);
-				
-		$(html).appendTo('.layout');
-
-		prepareRegionFunction();
-
-		_pColorID++;
-		_pColorID = _pColorID % 7;
-		_regionID++;
-		_plID++;		
-	});
 	$("#deleteregion").click(function() {
 		if (_SelectedRegionID != -1)
 		{
@@ -1650,6 +1697,147 @@
 		  moveWidget(_allWidgets, selW.group, selW.id, 1);
 		}
   	});
+
+	addwidgetCallback = function(xhr)
+	{
+		// in this function, it is called when a new widget (region specific) is created and added to 
+		// a playlist, then callback to page
+		console.log("addwidgetCallback");
+
+		// first clear all widgets of region in _SelectedRegionID
+		var playlists = {};
+
+		var widgetids = [];
+		var regionCode = "region-" + _SelectedRegionID;
+		widgetids = _allWidgets.getIds({
+				filter: function (item) {
+				return (item.group == _SelectedRegionID);
+				}
+			});
+		_allWidgets.remove(widgetids);		
+
+		if (xhr.extra['playlist'])
+		{
+			playlists['id'] = xhr.extra['playlist'].playlistId;
+			playlists['description'] = "";
+			playlists['widgets'] = [];
+
+			for (wid in xhr.extra['playlist'].widgets)
+			{
+				var widget = xhr.extra['playlist'].widgets[wid];
+				var mediaid = -1;
+				var audiomediaid = -1;
+				if (widget.medias)
+				{
+					if (widget.medias.length)
+					{
+						mediaid = widget.medias[0].mediaId;
+					}
+				}
+				if (widget.audio)
+				{
+					if (widget.audio.length)
+					{
+						audiomediaid = widget.audio[0].mediaId;
+					}
+				}
+				playlists['widgets'].push({
+					id: widget.widgetId,
+					widgetid: widget.widgetId,
+					duration: widget.duration,
+					type: widget.type,
+					displayOrder: widget.displayOrder,
+					mediaid: mediaid,
+					audiomediaid: audiomediaid,
+				});
+			}
+			addPlaylist(_allWidgets, playlists, _SelectedRegionID);		
+		}
+	}
+
+	libraryAssignCallback = function(xhr)
+	{
+		// in this function, it is called when lots of new widget (non-region specific) is created and added to 
+		// a playlist, then callback to page
+		// we need to re-create playlist of that specific region
+		console.log("libraryAssignCallback");
+
+		addwidgetCallback(xhr);
+	}
+
+	$(".storylineAddWidgetButton").click(function(e)
+	{
+		console.log("storylineAddWidgetButton " + _SelectedRegionID);
+		e.preventDefault();
+		// first, fix playlist id
+		if (_SelectedRegionID != -1)
+		{
+			// get playlistid
+			var region = _allRegions.get(_SelectedRegionID);
+			console.log("region: " + region);
+			if (region)
+			{
+				var pid = region.playlistid;
+				console.log("pid: " + pid);
+				var urltemplate = $(this).data("hreftemplate");
+				urltemplate = urltemplate.replace(":id", pid.toString());
+				console.log(urltemplate);
+				$(this).attr("href", urltemplate);
+        		XiboFormRender($(this));
+			}
+		}
+        return false;
+	});
+	$(".storylineUploadLibraryMedia").click(function(e)
+	{
+		console.log("storylineUploadLibraryMedia " + _SelectedRegionID);
+
+		//e.preventDefault();
+		// first, fix playlist id
+		if (_SelectedRegionID != -1)
+		{
+			// get playlistid
+			var region = _allRegions.get(_SelectedRegionID);
+			console.log("region: " + region);
+
+			if (region)
+			{
+				var pid = region.playlistid;				
+				$(this).data().playlistId = pid;
+
+				e.preventDefault();
+				var validExt = $(this).data().validExt.replace(/,/g, "|");
+				var playlistId = $(this).data().playlistId;
+				openUploadForm({
+					trans: {
+						addFiles: "{% trans "Add files" %}",
+						startUpload: "{% trans "Start upload" %}",
+						cancelUpload: "{% trans "Cancel upload" %}"
+					},
+					upload: {
+						maxSize: {{ libraryUpload.maxSize }},
+						maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+						validExt: validExt
+					},
+					playlistId: playlistId
+				}, {
+					library: {
+						label: "{% trans "View Library" %}",
+						callback: function () {
+							XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId.toString()));
+						}
+					},
+					main: {
+						label: "{% trans "Done" %}",
+						className: "btn-primary",
+						callback: function () {
+							XiboFormRender(timelineForm.url, timelineForm.value);
+						}
+					}
+				});
+			}
+		}
+	});	
 </script>
 	{% for module in modules %}
 		{% if module.layoutDesignerJavaScript() != "" %}

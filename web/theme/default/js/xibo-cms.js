@@ -990,6 +990,16 @@ function XiboSubmitResponse(response, form) {
         XiboRefreshAllGrids();
 
         if (!apply) {
+            if (response.extra['addwidgetCallback'])
+            {
+                //eval(response.extra['addwidgetCallback'])(response);
+                addwidgetCallback(response);
+            }
+            if (response.extra['libraryAssignCallback'])
+            {
+                //eval(response.extra['libraryAssignCallback'])(response);
+                libraryAssignCallback(response);
+            }
             // Next form URL is provided
             if ($(form).data("nextFormUrl") != undefined) {
                 XiboFormRender($(form).data().nextFormUrl.replace(":id", response.id));

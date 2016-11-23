@@ -420,7 +420,9 @@ abstract class ModuleWidget implements ModuleInterface
      */
     final public function getOption($name, $default = null)
     {
-        return $this->widget->getOptionValue($name, $default);
+        if ($this->widget)
+            return $this->widget->getOptionValue($name, $default);
+        return "";
     }
 
     /**

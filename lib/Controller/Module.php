@@ -405,10 +405,7 @@ class Module extends Base
 
         // Load some information about this playlist
         $playlist->setChildObjectDependencies($this->regionFactory);
-        $playlist->load([
-            'playlistIncludeRegionAssignments' => false,
-            'loadWidgets' => false
-        ]);
+
 
         // Create a module to use
         $module = $this->moduleFactory->createForWidget($type, null, $this->getUser()->userId, $playlistId);
@@ -419,6 +416,11 @@ class Module extends Base
         // Call module add
         $module->add();
 
+        $playlist->load([
+            'playlistIncludeRegionAssignments' => false,
+            'loadWidgets' => true
+        ]);
+        
         // Permissions
         if ($this->getConfig()->GetSetting('INHERIT_PARENT_PERMISSIONS') == 1) {
             // Apply permissions from the Parent
@@ -440,6 +442,10 @@ class Module extends Base
             'id' => $module->widget->widgetId,
             'data' => $module
         ]);
+        $this->getState()->extra = [
+            'addwidgetCallback' => "addWidgetCallback",
+            'playlist' => $playlist
+        ];        
     }
 
     /**

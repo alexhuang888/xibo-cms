@@ -577,7 +577,7 @@ function configureRegionHandler()
 {
     //console.log('configureRegionHandler');
     var thisLayout = $("#layout");
-
+/*
     // Hover functions for previews/info
     thisLayout.find(".region")
         .hover(function() {
@@ -636,7 +636,7 @@ function configureRegionHandler()
                         z_index = parseInt($(this).attr("zindex"));
                         //console.log($(this).attr('id') + ' ' + $(this).attr("zindex") + 'highest:' + zIndexHighest);
                         if (z_index > zIndexHighest)
-                        {
+                        {configureRegionHandler
                             zIndexHighest = z_index;
                             topElement = $(this);
                             //console.log('update higest' + z_index);;
@@ -674,7 +674,7 @@ function configureRegionHandler()
                 }                       
             }
         });
-
+*/
     // alex: region item
     /*
     $(".mediadroppable").off("click");

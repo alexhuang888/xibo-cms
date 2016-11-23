@@ -767,6 +767,10 @@ class Playlist extends Base
             'message' => __('Media Assigned to playlist'),
             'data' => $playlist
         ]);
+        $this->getState()->extra = [
+            'libraryAssignCallback' => "libraryAssignCallback",
+            'playlist' => $playlist
+        ];          
     }
 
     /**

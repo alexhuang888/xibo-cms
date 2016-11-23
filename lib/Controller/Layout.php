@@ -188,7 +188,10 @@ class Layout extends Base
             'isTemplate' => $layout->isTemplateLayout == 1 ? true : false,//hasTag('template'),
             'layouts' => $this->layoutFactory->query(null, $layout->isTemplateLayout != 1 ? null : array('excludeTemplates' => 0)),
             'zoom' => $this->getSanitizer()->getDouble('zoom', $this->getUser()->getOptionValue('defaultDesignerZoom', 1)),
-            'modules' => array_map(function($element) use ($moduleFactory) { return $moduleFactory->createForInstall($element->class); }, $moduleFactory->getAssignableModules())
+            'modules' => array_map(function($element) use ($moduleFactory) { return $moduleFactory->createForInstall($element->class); }, $moduleFactory->getAssignableModules()),
+            'extra' => [
+                'modules' => $this->moduleFactory->getAssignableModules()
+            ]
         ];
 
         // Call the render the template

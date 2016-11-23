@@ -1,14 +1,13 @@
 var text_callback = function(dialog, extra) {
-
     if (extra == null) {
         extra = $('.bootbox').data().extra;
     }
 
     // Set the text template based on the selected template id
-    if ($("#ta_text").val() == "" && !$("#overrideTemplate").is(":checked")) {
+    if (($("#ta_text").val() == "") && !$("#overrideTemplate").is(":checked")) {
         // Set something sensible based on the color of the layout background
         var color = $c.complement($("#layout").data().backgroundColor);
-        
+
         // Apply the complementary color and a not to small font-size to the first paragraph of the editor
         $("#ta_text").val('<p style="color:' + color + ';"></p>');
 
