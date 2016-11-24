@@ -843,6 +843,46 @@ class Playlist extends Base
             'data' => $playlist
         ]);
     }
+
+    function orderformultipleplaylists()
+    {
+        $playlists = $this->getSanitizer()->getParam('playlists', null);
+        foreach ($playlists as $playlistid => $widgets)
+        {
+            $playlist = $this->playlistFactory->getById($playlistid);
+
+            if (!$this->getUser()->checkEditable($playlist))
+                throw new AccessDeniedException();
+
+            // Load the widgets
+            $playlist->setChildObjectDependencies($this->regionFactory);
+            $playlist->load();
+
+            // Go through each one and move it
+            foreach ($widgets as $widgetId => $position) 
+            {
+                // Find this item in the existing list and add it to our new order
+                foreach ($playlist->widgets as $widget) 
+                {
+                    /* @var \Xibo\Entity\Widget $widget */
+                    if ($widget->getId() == $widgetId) 
+                    {
+                        $this->getLog()->debug('Setting Display Order ' . $position . ' on widgetId ' . $widgetId);
+                        $widget->displayOrder = $position;
+                        break;
+                    }
+                }
+            }
+
+            $playlist->save();            
+        }
+
+        // Success
+        $this->getState()->hydrate([
+            'message' => __('Multiple Playlist Order Changed'),
+            'data' => $playlists
+        ]);
+    }    
     /**
      * @return array
      */

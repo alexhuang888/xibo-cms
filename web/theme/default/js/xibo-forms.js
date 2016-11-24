@@ -966,7 +966,7 @@ var assignLayoutToCampaign = function(url, layout, unassignLayout) {
 function regionEditFormSubmit() {
     XiboFormSubmit($("#regionEditForm"), null, function(xhr, form) {
 
-        if (xhr.success)
-            window.location.reload();
+        //if (xhr.success)
+         //   window.location.reload();
     });
 }

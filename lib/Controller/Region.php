@@ -438,6 +438,9 @@ class Region extends Base
             'id' => $region->regionId,
             'data' => $region
         ]);
+        $this->getState()->extra = [
+            'editRegionCallback' => "editRegionCallback"
+        ];         
     }
 
     public function resetPlaylist($regionId, $playlistId)
@@ -594,6 +597,14 @@ class Region extends Base
             $region->left = $this->getSanitizer()->double($newCoordinates->left);
             $region->width = $this->getSanitizer()->double($newCoordinates->width);
             $region->height = $this->getSanitizer()->double($newCoordinates->height);
+            if (property_exists($newCoordinates, 'zindex'))
+            {
+                $region->zIndex = $newCoordinates->zindex;
+            }  
+            if (property_exists($newCoordinates, 'loop'))
+            {
+                $region->setOptionValue('loop', $newCoordinates->loop);
+            }            
             $this->getLog()->debug('Set ' . $region);
         }
 
@@ -609,6 +620,74 @@ class Region extends Base
         ]);
     }
 
+    function propertiesAll($layoutId)
+    {
+        // Create the layout
+        $layout = $this->layoutFactory->loadById($layoutId);
+
+        if (!$this->getUser()->checkEditable($layout))
+            throw new AccessDeniedException();
+
+        // Pull in the regions and convert them to stdObjects
+        $regions = $this->getSanitizer()->getParam('regions', null);
+
+        if ($regions == null)
+            throw new \InvalidArgumentException(__('No regions present'));
+
+        $regions = json_decode($regions);
+
+        // Go through each region and update the region in the layout we have
+        foreach ($regions as $newCoordinates) {
+
+            // Check that the properties we are expecting do actually exist
+            if (!property_exists($newCoordinates, 'regionid'))
+                throw new \InvalidArgumentException(__('Missing regionid property'));
+
+            if (!property_exists($newCoordinates, 'top'))
+                throw new \InvalidArgumentException(__('Missing top property'));
+
+            if (!property_exists($newCoordinates, 'left'))
+                throw new \InvalidArgumentException(__('Missing left property'));
+
+            if (!property_exists($newCoordinates, 'width'))
+                throw new \InvalidArgumentException(__('Missing width property'));
+
+            if (!property_exists($newCoordinates, 'height'))
+                throw new \InvalidArgumentException(__('Missing height property'));
+
+            if (!property_exists($newCoordinates, 'loop'))
+                throw new \InvalidArgumentException(__('Missing loop property'));
+
+            $regionId = $this->getSanitizer()->int($newCoordinates->regionid);
+
+            // Load the region
+            $region = $layout->getRegion($regionId);
+
+            // Check Permissions
+            if (!$this->getUser()->checkEditable($region))
+                throw new AccessDeniedException();
+
+            // New coordinates
+            $region->top = $this->getSanitizer()->double($newCoordinates->top);
+            $region->left = $this->getSanitizer()->double($newCoordinates->left);
+            $region->width = $this->getSanitizer()->double($newCoordinates->width);
+            $region->height = $this->getSanitizer()->double($newCoordinates->height);
+            $region->setOptionValue('loop', $this->getSanitizer()->int('loop'));
+            
+            $this->getLog()->debug('Set ' . $region);
+        }
+
+        // Mark the layout as having changed
+        $layout->status = 0;
+        $layout->save();
+
+        // Return
+        $this->getState()->hydrate([
+            'message' => sprintf(__('Edited layout positions: %s'), $layout->layout),
+            'id' => $layout->layoutId,
+            'data' => $layout
+        ]);
+    }
     /**
      * Represents the Preview inside the Layout Designer
      * @param int $regionId

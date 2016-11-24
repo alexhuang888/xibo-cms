@@ -136,7 +136,7 @@
                                         <i class="fa fa-undo" aria-hidden="true"></i> {% trans "" %}</button>
                                 </div>
                                 <div class="btn-group" role="group">
-                                    <button id="layout-save-all" class="btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Positions" %}">
+                                    <button id="layout-save-all" class="storylinelayout btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Positions" %}">
                                         <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Positions" %}
                                     </button>
                                 </div>
@@ -181,34 +181,41 @@
 
 		</div>
 		<div class="col-md-8 propertypanel" id="propertypanel">
-			<div class="layoutproperty row">
-				layout
+			<div class="layoutproperty row  col-md-12">
+			</div>
+			<div class="regionproperty row col-md-12">
+				<div id="regionpropertydimension" class="col-md-8"></div>
+				<div id="regionpropertyoptions" class="col-md-4">
+					<label><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
 				</div>
-			<div class="regionproperty row">
-				region
-				</div>
-			<div class="widgetproperty row">
-				widget
-				</div>								
+			</div>
+			<div class="widgetproperty row  col-md-12">
+			</div>								
 		</div>
     </div>
 	<div class="region-toolbox row">
-			<div class="btn-group regionInfo pull-right">
-				<button class="btn dropdown-toggle" data-toggle="dropdown">
-					<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
-				</button>				
-				<ul class="dropdown-menu">
-					<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
-					{% for module in extra['modules'] %}
-						{% if module.regionSpecific %}
-							<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("module.widget.add.form", {type: module.type}) }}" href="{{ urlFor("module.widget.add.form", {type: module.type}) }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
-						{% else %}
-							<li class="storylineUploadLibraryMedia" href="#" data-playlist-id="" data-valid-ext="{{ module.validExtensions }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
-						{% endif %}
-					{% endfor %}
-				</ul>
-			</div>
-		<input id="updatewidget" type="button" value="Update Widget" title="Update Widget"></input>
+		<div class="row">
+		<div class="btn-group regionInfo pull-left">
+			<button class="btn dropdown-toggle" data-toggle="dropdown">
+				<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
+			</button>				
+			<ul class="dropdown-menu">
+				<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
+				{% for module in extra['modules'] %}
+					{% if module.regionSpecific %}
+						<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("module.widget.add.form", {type: module.type}) }}" href="{{ urlFor("module.widget.add.form", {type: module.type}) }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+					{% else %}
+						<li class="storylineUploadLibraryMedia" href="#" data-playlist-id="" data-valid-ext="{{ module.validExtensions }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+					{% endif %}
+				{% endfor %}
+			</ul>
+		</div>
+		<input id="editregion" type="button" value="Edit Region" title="Edit Region"></input>
+		<input id="editregionTimeline" type="button" value="Edit Region Timeline" title="Edit Region Timeline"></input>
+		<input id="editregionPermission" type="button" value="Edit Region Permission" title="Edit Region Permission"></input>
+
+
+		<input id="updatewidget" type="button" value="Edit Widget" title="Edit Widget"></input>
 		<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
 
 		<input id="moveforward" type="button" value="Move Forward" title="Move Forward"></input>
@@ -218,7 +225,12 @@
 		<input id="movefront" type="button" value="Move to front" title="Move to front"></input>
 
 		<input id="moveend" type="button" value="Move to end" title="Move to End"></input>
+		<input id="saveplaylistorder" type="button" value="Save Playlist Order" title="Save Playlist Order"></input>
+		
+		</div>
+		<div class="row">
 		<div id="visualization"></div>
+		</div>
 	</div>	
 {% endblock %}
 
@@ -674,6 +686,7 @@
 											regioncode: regionName,
 											duration: xhr.data.duration,
 											zindex: xhr.data.zIndex,
+											loop: xhr.data.loop,
 											currentUserEditable: xhr.extra['currentUserEditable'],
 											regiondataChanged: false,
 
@@ -705,11 +718,7 @@
 							_pColorID++;
 							_pColorID = _pColorID % 7;
 							_regionID++;
-							_plID++;							
-
-							//configureRegionHandler();
-
-							//new Preview($(regionItem));                
+							_plID++;							       
 						}
 					}
 				})
@@ -739,6 +748,226 @@
 					XiboFormRender(actionurl);
 				}
 			});
+
+			// Bind to the save/revert buttons
+			$("#layout-save-all").off("click");
+			$("#layout-save-all").on("click", function () 
+			{
+				// Save positions for all layouts / regions
+				saveAllRegionPositions();
+				return false;
+			});	
+			$("#saveplaylistorder").click(function() {
+				saveMultiplePlaylistWidgetOrder();
+			});
+
+			$(".layout").keydown(function(event) {
+				if (event.which == 17)
+					_CtrlHold = true;
+				console.log("keydown: code=" + event.which + " " + _CtrlHold);
+			});
+			$(".layout").keyup(function(event) {
+				if (event.which == 17)
+					_CtrlHold = false;
+				console.log("keydown: code=" + event.which + " " + _CtrlHold);
+			});	
+			$('#regionpropertiesloop').click(function() {
+				if (_SelectedRegionID != -1)
+				{
+					var regionobj = _allRegions.get(_SelectedRegionID);
+
+					if (regionobj)
+					{
+						_allRegions.update({
+							id: _SelectedRegionID,
+							loop: $("#regionpropertiesloop").prop("checked") ? 1 : 0
+						})
+					}
+					{
+						$("#layout-save-all").removeClass("disabled");
+						$("#layout-revert").removeClass("disabled");
+					}			
+				}
+			});	
+
+			$(".storylineAddWidgetButton").click(function(e)
+			{
+				console.log("storylineAddWidgetButton " + _SelectedRegionID);
+				e.preventDefault();
+				// first, fix playlist id
+				if (_SelectedRegionID != -1)
+				{
+					// get playlistid
+					var region = _allRegions.get(_SelectedRegionID);
+					console.log("region: " + region);
+					if (region)
+					{
+						var pid = region.playlistid;
+						console.log("pid: " + pid);
+						var urltemplate = $(this).data("hreftemplate");
+						urltemplate = urltemplate.replace(":id", pid.toString());
+						console.log(urltemplate);
+						$(this).attr("href", urltemplate);
+						XiboFormRender($(this));
+					}
+				}
+				return false;
+			});
+			$(".storylineUploadLibraryMedia").click(function(e)
+			{
+				console.log("storylineUploadLibraryMedia " + _SelectedRegionID);
+
+				//e.preventDefault();
+				// first, fix playlist id
+				if (_SelectedRegionID != -1)
+				{
+					// get playlistid
+					var region = _allRegions.get(_SelectedRegionID);
+					console.log("region: " + region);
+
+					if (region)
+					{
+						var pid = region.playlistid;				
+						$(this).data().playlistId = pid;
+
+						e.preventDefault();
+						var validExt = $(this).data().validExt.replace(/,/g, "|");
+						var playlistId = $(this).data().playlistId;
+						openUploadForm({
+							trans: {
+								addFiles: "{% trans "Add files" %}",
+								startUpload: "{% trans "Start upload" %}",
+								cancelUpload: "{% trans "Cancel upload" %}"
+							},
+							upload: {
+								maxSize: {{ libraryUpload.maxSize }},
+								maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
+								validExt: validExt
+							},
+							playlistId: playlistId
+						}, {
+							library: {
+								label: "{% trans "View Library" %}",
+								callback: function () {
+									XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId.toString()));
+								}
+							},
+							main: {
+								label: "{% trans "Done" %}",
+								className: "btn-primary",
+								callback: function () {
+									XiboFormRender(timelineForm.url, timelineForm.value);
+								}
+							}
+						});
+					}
+				}
+			});	
+
+			$("#deleteregion").click(function() {
+				if (_SelectedRegionID != -1)
+				{
+					// remove all data from allWidgets about this regionid
+					var widgetids = [];
+					var regionCode = "region-" + _SelectedRegionID;
+					widgetids = _allWidgets.getIds({
+							filter: function (item) {
+							return (item.id == _SelectedRegionID);
+							}
+						});
+					_allWidgets.remove(widgetids);
+
+					// remove groups
+					_allRegions.remove(_SelectedRegionID);
+
+					// remove region from layout
+					$(".layout").find(".region." + regionCode).remove();
+				}
+				_SelectedRegionID = -1;
+			});	
+
+
+			$("#deletewidget").click(function() {
+				e.preventDefault();
+
+				selectedIds = _regionTimelines.getSelection();
+				var hrefurl = "{{urlFor('module.widget.delete.form', {})}}";
+
+				for (var wid in selectedIds)
+				{
+					var selW = _allWidgets.get(selectedIds[wid]);
+					console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+					//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
+					//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
+					var actionurl = hrefurl.replace(":id", selW.id);
+
+					XiboFormRender(actionurl);
+				}
+			});
+
+			$("#updatewidget").click(function(e) {
+				e.preventDefault();
+
+				selectedIds = _regionTimelines.getSelection();
+				var hrefurl = "{{urlFor('module.widget.edit.form', {})}}";
+
+				for (var wid in selectedIds)
+				{
+					var selW = _allWidgets.get(selectedIds[wid]);
+					console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+					//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
+					//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
+					var actionurl = hrefurl.replace(":id", selW.id);
+
+					XiboFormRender(actionurl);
+				}
+			});
+
+			$("#moveforward").click(function() {
+				moveWidgePositionHandler(3);
+			});
+			$("#movebackward").click(function() {
+				moveWidgePositionHandler(2);
+			});
+			$("#movefront").click(function() {
+				moveWidgePositionHandler(0);
+			});
+			$("#moveend").click(function() {
+				moveWidgePositionHandler(1);
+			});
+
+			$("#editregion").click(function(e) {
+				if (_SelectedRegionID != -1)
+				{
+					var href= "{{ urlFor("region.edit.form", {}) }}";
+
+					var actionurl = href.replace(":id", _SelectedRegionID);
+
+					XiboFormRender(actionurl);
+				}
+			});
+
+			$("#editregionPermission").click(function(e) {
+				if (_SelectedRegionID != -1)
+				{
+					var href= "{{ urlFor("user.permissions.form", { entity: "Region" }) }}";
+
+					var actionurl = href.replace(":id", _SelectedRegionID);
+
+					XiboFormRender(actionurl);
+				}
+			});
+
+			$("#editregionTimeline").click(function(e) {
+				if (_SelectedRegionID != -1)
+				{
+					var href= "{{ urlFor("region.timeline.form", {}) }}";
+
+					var actionurl = href.replace(":id", _SelectedRegionID);
+
+					XiboFormRender(actionurl);
+				}
+			});														
 		});
 		/* end of document.ready() */
 		addNewRegionWithRegionId2 = function(regionId, playlistid, originalLeft, originalTop,
@@ -805,7 +1034,7 @@
 			{
 				newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
 			} 
-			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' ' + extraClassName + ' regionitem mediadroppable regionsnappableitem"'; 
+			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' ' + extraClassName + ' regionitem regionsnappableitem"'; 
 			newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
 			newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
 
@@ -918,7 +1147,7 @@
 			{
 				newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
 			} 
-			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem mediadroppable regionsnappableitem"'; 
+			newRegionHtml = newRegionHtml + ' class="' + disabledCss + ' ' + previewCss + ' regionitem regionsnappableitem"'; 
 			newRegionHtml = newRegionHtml + ' data-preview-url="' + urlPreview + '"';
 			newRegionHtml = newRegionHtml + ' data-reset-playlist-url="' + urlResetPlaylist + '"';
 			newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
@@ -1034,7 +1263,7 @@
 				content: "{{ regioncode }}", 
 				title: "{{ regioncode }}", 
 				className: "regionSelector {{ regioncode }} {{ regionColorCode }} ", 
-				regionareaClassName: "{{ disabledCss }} {{ previewCss }} regionitem mediadroppable regionsnappableitem",
+				regionareaClassName: "{{ disabledCss }} {{ previewCss }} regionitem regionsnappableitem",
 				
 				left: {{ region.left }}, 
 				top: {{ region.top }}, 
@@ -1052,6 +1281,7 @@
 				currentUserEditable: "{{ currentUser.checkEditable(region)}}",
 				currentUserViewable: "{{ currentUser.checkViewable(region)}}",
 				zindex: {{ region.zIndex }},
+				loop: {{ region.loop }},
 				regiondataChanged : false,
 				{% if region.playlists|length > 0 %}
 				playlistid: {{ region.playlists[0].playlistId }},
@@ -1095,16 +1325,7 @@
 
 		updateLayoutInfo();
 
-		$(".layout").keydown(function(event) {
-			if (event.which == 17)
-				_CtrlHold = true;
-			console.log("keydown: code=" + event.which + " " + _CtrlHold);
-		});
-		$(".layout").keyup(function(event) {
-			if (event.which == 17)
-				_CtrlHold = false;
-			console.log("keydown: code=" + event.which + " " + _CtrlHold);
-		});
+		$("#regionpropertyoptions").hide();
 		function updateWidgetInfo(widgetid)
 		{
 			// get widget date from _allWidgets
@@ -1166,7 +1387,7 @@
 											obj.className);
 					
 	}
-	function addWidgets(all, wid, regionid, playlistid, starttime)
+	function addWidgets(all, wid, regionid, playlistid, starttime, displayOrder)
 	{
 		//console.log(wid);
 		var endtime = starttime + wid.duration;
@@ -1191,16 +1412,19 @@
 				widgettype: wid.type,
 				playlistid: playlistid,
 				mediaid: wid.mediaid,
-				audiomediaid: wid.audiomediaid });
+				audiomediaid: wid.audiomediaid,
+				displayOrder: displayOrder });
 	}
   // pl is the widget object list
 	function addPlaylist(all, playlist, regionid)
 	{
 		var starttime = 0;
+		var displayOrder = 1;
 		for (var w in playlist.widgets)
 		{
-			addWidgets(all, playlist.widgets[w], regionid, playlist.id, starttime);
+			addWidgets(all, playlist.widgets[w], regionid, playlist.id, starttime, displayOrder);
 			starttime += playlist.widgets[w].duration;
+			displayOrder++;
 		}
 	}
 
@@ -1232,7 +1456,7 @@
 							'width: ' + cssW + 'px;  ' + 
 							'height: ' + cssH + 'px;  ' + 
 							'margin:0px;  ' + 
-							'padding: 0px; background: #dddddd; border: 0px;"> ' + 
+							'padding: 0px; background: ' + layoutinfo.backgroundcolor + '; border: 0px;"> ' + 
 							'</div>';
 		$(".layoutwidget").html(layouthtml);
 				
@@ -1313,29 +1537,47 @@
 		$(".layout").html(rhtml);
 		prepareRegionFunction();		
 	}
+
 	function InitTimelineData()
 	{
 		newLayout(thislayoutinfo);
 	}
 
-	function updateRegionInfo(item) 
+	function updateRegionInfo(item, bSelectOnly) 
 	{
 		var pos = $(item).position();
 		var region = _allRegions.get(_SelectedRegionID);
 
 		var intext = "id:" + region.id + " playlist-id: " + region.playlistid;
-					
-		$('.regionproperty').html(intext + " Region size: " + Math.round($(item).width() / _Scale, 0) + 
+		var newLeft = Math.round(pos.left / _Scale, 0);
+		var newTop = Math.round(pos.top / _Scale, 0);
+		var newWidth = Math.round($(item).width() / _Scale, 0);
+		var newHeight = Math.round($(item).height() / _Scale, 0);
+		$('#regionpropertydimension').html("Region-" + region.id + ": " + 
+									newWidth + 
 									" x " + 
-									Math.round($(item).height() / _Scale, 0) + 
+									newHeight + 
 									" (" + 
-										Math.round(pos.left / _Scale, 0) + 
+										newLeft + 
 										"," + 
-										Math.round(pos.top / _Scale, 0) + ") ");
+										newTop + ") z-order:" + region.zindex);
+		$("#regionpropertyoptions").show();										
+		$('#regionpropertiesloop').prop('checked', (region.loop == 1));
+
+		$(item).attr("width", newWidth).attr("height", newHeight)
+				.attr("left", newLeft)
+				.attr("top", newTop);
+
+		// Expose a new button to save the positions
+		if (!bSelectOnly)
+		{
+			$("#layout-save-all").removeClass("disabled");
+			$("#layout-revert").removeClass("disabled");
+		}										
 	}
 	function updateLayoutInfo() 
 	{
-		$('.layoutproperty').html("Layout size: 1920 x 1080");
+		$('.layoutproperty').html("Layout size: " + thislayoutinfo.width + " x " + thislayoutinfo.height);
 	}	
 	function prepareRegionFunction()
 	{
@@ -1345,7 +1587,7 @@
 			containment: thisLayout,
             //stop: regionPositionUpdateNoRefreshPreview,
             drag: function(event, ui) {        
-                updateRegionInfo(ui.helper);
+                updateRegionInfo(ui.helper, false);
             },
             start: function(event, ui) {
             },
@@ -1358,7 +1600,7 @@
 			minHeight: 25,
 			//stop: regionPositionUpdate,
 			resize: function(event, ui) {        
-                updateRegionInfo(ui.helper);
+                updateRegionInfo(ui.helper, false);
             },
             grid: [ 5, 5 ],
             snap: ".region, .layout",
@@ -1367,7 +1609,7 @@
 		.selectable(
 			{
 				selected: function(event, ui) {        
-                					updateRegionInfo(ui.helper);
+                					updateRegionInfo(ui.helper, true);
             					}
 			}
 		);
@@ -1407,7 +1649,7 @@
 					$("." + regionCode).addClass("regionSelected");
 					_SelectedRegionID = selectedID;
 
-					updateRegionInfo($(".layout").find("." + regionCode));
+					updateRegionInfo($(".layout").find("." + regionCode), false);
 					DeSelecteAllRegion();					
 				}
 			}
@@ -1415,44 +1657,12 @@
 		});			
 	}
 
-	$("#deleteregion").click(function() {
-		if (_SelectedRegionID != -1)
-		{
-			// remove all data from allWidgets about this regionid
-			var widgetids = [];
-			var regionCode = "region-" + _SelectedRegionID;
-			widgetids = _allWidgets.getIds({
-					filter: function (item) {
-					return (item.id == _SelectedRegionID);
-					}
-				});
-			_allWidgets.remove(widgetids);
 
-			// remove groups
-			_allRegions.remove(_SelectedRegionID);
-
-			// remove region from layout
-			$(".layout").find(".region." + regionCode).remove();
-		}
-		_SelectedRegionID = -1;
-	});
-	$("#addwidget").click(function() {
-		if (_SelectedRegionID != -1)
-		{
-			insertWidget(_allWidgets, _SelectedRegionID,
-						{ duration: 30, widgetid: _pWidgetID, type: "image" },
-						new Date(1971, 3, 25, 0, 0, 0),
-						true, true);	// append
-
-			_regionTimelines.focus(_pWidgetID);						
-			_pWidgetID++;
-		}				
-	});
 
 	// widgetid: widget id
 	// starttime: starting time in second
 	// duration: in second
-	function updateWidgetStartEndTime(all, widgetid, starttime, duration)
+	function updateWidgetStartEndTime(all, widgetid, starttime, duration, displayOrder)
 	{
 		var endtime = starttime + duration;
 		var sh = Math.floor(starttime / 3600);
@@ -1461,8 +1671,11 @@
 		var eh = Math.floor(endtime / 3600);
 		var em = Math.floor((endtime - eh * 3600) / 60);
 		var es = endtime % 60;
-		all.update({id: widgetid, start: new Date(1971, 3, 25, sh, sm, ss),
-					end: new Date(1971, 3, 25, eh, em, es)});
+		all.update({
+					id: widgetid, 
+					start: new Date(1971, 3, 25, sh, sm, ss),
+					end: new Date(1971, 3, 25, eh, em, es),
+					displayOrder: displayOrder});
 	}
 	// update playlist widget time start at baseST
 	function updateWidgetTimeStartFrom(all, regionid, baseST)
@@ -1477,9 +1690,9 @@
 		});
 		for (var w in widgets)
 		{
-		updateWidgetStartEndTime(all, widgets[w].widgetid, starttime, widgets[w].duration);
+			updateWidgetStartEndTime(all, widgets[w].widgetid, starttime, widgets[w].duration, widgets[w].displayOrder);
 
-		starttime += widgets[w].duration;
+			starttime += widgets[w].duration;
 		}
 	}
 	// update duration of single widget, also, update all the followed widget starting/end time
@@ -1508,19 +1721,23 @@
 		updateWidgetTimeStartFrom(all, regionid, baseST);
 	}
 
-	// mode: 0: move to head, 1: move to end, 2: move before, 3: move next
+	// mode: 0: move to head, 1: move to end, 2: move forward, 3: move next
 	function moveWidget(all, regionid, widgetid, mode)
 	{
 		var anchorWidget = all.get(widgetid);
 		var toBeUpdate = [];
 		var starttime = 0;
+		var displayOrder = 1;
 		if (anchorWidget.length)
 			return;
+
 		if (mode == 0)
 		{
 			starttime = 0;
-			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration);
+			displayOrder = 1;
+			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration, displayOrder);
 			starttime += anchorWidget.duration;
+			displayOrder++;
 			toBeUpdate = all.get({
 						filter: function (item) {
 							return (item.group == regionid && item.id != widgetid);
@@ -1528,13 +1745,15 @@
 					});
 			for (var w in toBeUpdate)
 			{
-				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration, displayOrder);
 
 				starttime += toBeUpdate[w].duration;
+				displayOrder++;
 			}
 		} else if (mode == 1) // append
 		{
 			starttime = 0;
+			displayOrder = 1;
 			toBeUpdate = all.get({
 						filter: function (item) {
 							return (item.group == regionid && item.id != widgetid);
@@ -1542,12 +1761,13 @@
 					});
 			for (var w in toBeUpdate)
 			{
-				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+				updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration, displayOrder);
 
 				starttime += toBeUpdate[w].duration;
+				displayOrder++;
 			}
 
-			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration);
+			updateWidgetStartEndTime(all, widgetid, starttime, anchorWidget.duration, displayOrder);
 		} else if (mode == 2) // move forward
 		{
 			var targetWidget = all.get({
@@ -1560,10 +1780,12 @@
 			{
 				var baseST = targetWidget[0].start;
 				starttime = baseST.getHours() * 3600 + baseST.getMinutes() * 60 + baseST.getSeconds();
+				displayOrder = targetWidget[0].displayOrder;
 
-				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration);
+				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration, displayOrder);
 				starttime += anchorWidget.duration;
-				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration);
+				displayOrder++;
+				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration, displayOrder);
 			}
 		} else if (mode = 3) // move afterward
 		{
@@ -1576,14 +1798,16 @@
 			{
 				var baseST = anchorWidget.start;
 				starttime = baseST.getHours() * 3600 + baseST.getMinutes() * 60 + baseST.getSeconds();
-				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration);
+				displayOrder = anchorWidget.displayOrder;
+				updateWidgetStartEndTime(all, targetWidget[0].id, starttime, targetWidget[0].duration, displayOrder);
 				starttime += targetWidget[0].duration;
-				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration);
+				displayOrder++;
+				updateWidgetStartEndTime(all, anchorWidget.id, starttime, anchorWidget.duration, displayOrder);
 			}
 		}
 	}
 
-	function insertWidget(all, regionid, widget, startST, bAppend, bUpdateOthers)
+	function insertWidget(all, regionid, widget, startST, bAppend, bUpdateOthers, startDisplayOrder)
 	{
 		var toBeUpdate = [];
 
@@ -1608,14 +1832,18 @@
 		}
 
 		var starttime = startST.getHours() * 3600 + startST.getMinutes() * 60 + startST.getSeconds();
+		var displayOrder = startDisplayOrder;
+
 		if (bAppend)
 		{
 			starttime = 0;
+			displayOrder = 1;
 		}
 		if (!bAppend)
 		{
-			addWidgets(all, widget, regionid, starttime);
+			addWidgets(all, widget, regionid, starttime, displayOrder);
 			starttime += widget.duration;
+			displayOrder++;
 		}
 
 		if (bUpdateOthers || bAppend)
@@ -1623,82 +1851,108 @@
 			for (var w in toBeUpdate)
 			{
 				if (!bAppend)
-					updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration);
+					updateWidgetStartEndTime(all, toBeUpdate[w].widgetid, starttime, toBeUpdate[w].duration, displayOrder);
 
 				starttime += toBeUpdate[w].duration;
+				displayOrder++;
 			}
 		}
 		if (bAppend)
 		{
-			addWidgets(all, widget, regionid, starttime);
+			addWidgets(all, widget, regionid, starttime, displayOrder);
 		}		
 	}
 
-	$("#deletewidget").click(function() {
-			selectedIds = _regionTimelines.getSelection();
-			for (var wid in selectedIds)
-			{
+
+	function moveWidgePositionHandler(mode)
+	{
+		selectedIds = _regionTimelines.getSelection();
+		for (var wid in selectedIds)
+		{
 			var selW = _allWidgets.get(selectedIds[wid]);
-			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-			_allWidgets.remove(selW.id);
-			}
+			console.log("mode: " + mode + " " + selW.group + " " + selW.id + " " + selW.duration + " " + selW.start + " " + selW.displayOrder);
+			moveWidget(_allWidgets, selW.group, selW.id, mode);
+		}	
+	}
+	
+	function editLayoutCallback(xhr)
+	{
+		// try to update layout size and background color
+		var cssW = 384;
+		var cssH = 216;
+		var layoutobj = xhr.data;
+
+		if (layoutobj.width < layoutobj.height)
+		{
+			cssW = 216;
+			cssH = 384;
+		}
+
+		var y_Scale = cssH / layoutobj.height;
+		var x_Scale = cssW / layoutobj.width;
+		_Scale = Math.min(x_Scale, y_Scale);	
+		var thislayout = $(".layout");
+
+		$(thislayout).attr("width", layoutobj.width);	
+		$(thislayout).attr("height", layoutobj.height);	
+		$(thislayout).attr("reswidth", layoutobj.width);	
+		$(thislayout).attr("resheight", layoutobj.height);	
+		$(thislayout).data("backgroundColor", layoutobj.backgroundColor);	
+		$(thislayout).css("width", cssW + "px");
+		$(thislayout).css("height", cssH + "px");
+		$(thislayout).css("height", cssH + "px");
+		$(thislayout).css("background", layoutobj.backgroundColor);
+	}
+	function editWidgetCallback(xhr)
+	{
+		console.log("editWidgetCallback");
+
+		var widgetid = xhr.extra['widgetid'];
+		var module = xhr.data;	// module object
+		// find this widget from _allWidgets
+
+		var wid = _allWidgets.get({
+			filter: function(item) {
+					return (item.id == widgetid);
+				}
+		});
+		if (wid.length)
+		{
+			var widget = _allWidgets.get(wid[0]);
+			// widget.group is regionID
+			_allWidgets.update({
+								id: widgetid, 
+								duration: module.widget.duration
+								}
+							);
+			updateWidgetTimeStartFrom(_allWidgets, widget.group, widget.start);
+		}
+	}
+
+	function deleteWidgetCallback(xhr)
+	{
+		console.log("deleteWidgetCallback");
+
+		var widgetid = xhr.extra['widgetid'];
+		var module = xhr.data;	// module object
+		// find this widget from _allWidgets
+
+		var wid = _allWidgets.get({
+			filter: function(item) {
+					return (item.id == widgetid);
+				}
+		});
+		if (wid.length)
+		{
+			var widget = _allWidgets.get(wid[0]);
+			// widget.group is regionID
+			_allWidgets.remove(widgetid);
 			var baseST = new Date(1971, 3, 25, 0, 0, 0);
-			updateWidgetTimeStartFrom(_allWidgets, selW.group, baseST);
-
-	});
-
-	$("#updatewidget").click(function() {
-		//updateWidgetDuration(_allWidgets, 14, 31, 50);
-		selectedIds = _regionTimelines.getSelection();
-		for (var wid in selectedIds)
-		{
-			var selW = _allWidgets.get(selectedIds[wid]);
-			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-			_allWidgets.update({id: selW.id, duration: selW.duration + 5});
-			updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
+			updateWidgetTimeStartFrom(_allWidgets, widget.group, baseST);
 		}
-	});
+	}
 
-	$("#moveforward").click(function() {
-			selectedIds = _regionTimelines.getSelection();
-			for (var wid in selectedIds)
-			{
-			var selW = _allWidgets.get(selectedIds[wid]);
-			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-			moveWidget(_allWidgets, selW.group, selW.id, 2);
-			}
-
-	});
-	$("#movebackward").click(function() {
-		selectedIds = _regionTimelines.getSelection();
-		for (var wid in selectedIds)
-		{
-		var selW = _allWidgets.get(selectedIds[wid]);
-		console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-		moveWidget(_allWidgets, selW.group, selW.id, 3);
-		}
-	});
-	$("#movefront").click(function() {
-			selectedIds = _regionTimelines.getSelection();
-			for (var wid in selectedIds)
-			{
-			var selW = _allWidgets.get(selectedIds[wid]);
-			console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-			moveWidget(_allWidgets, selW.group, selW.id, 0);
-			}
-
-	});
-	$("#moveend").click(function() {
-		selectedIds = _regionTimelines.getSelection();
-		for (var wid in selectedIds)
-		{
-		  var selW = _allWidgets.get(selectedIds[wid]);
-		  console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-		  moveWidget(_allWidgets, selW.group, selW.id, 1);
-		}
-  	});
-
-	addwidgetCallback = function(xhr)
+	function addwidgetCallback(xhr)
 	{
 		// in this function, it is called when a new widget (region specific) is created and added to 
 		// a playlist, then callback to page
@@ -1755,7 +2009,7 @@
 		}
 	}
 
-	libraryAssignCallback = function(xhr)
+	function libraryAssignCallback(xhr)
 	{
 		// in this function, it is called when lots of new widget (non-region specific) is created and added to 
 		// a playlist, then callback to page
@@ -1765,79 +2019,131 @@
 		addwidgetCallback(xhr);
 	}
 
-	$(".storylineAddWidgetButton").click(function(e)
-	{
-		console.log("storylineAddWidgetButton " + _SelectedRegionID);
-		e.preventDefault();
-		// first, fix playlist id
-		if (_SelectedRegionID != -1)
+
+	function saveAllRegionPositions() {
+		console.log("saveAllRegionPositions");
+		// Update all layouts
+		var thisLayout = $(".layout");
+
 		{
-			// get playlistid
-			var region = _allRegions.get(_SelectedRegionID);
-			console.log("region: " + region);
-			if (region)
+			$("#layout-save-all").addClass("disabled");
+			$("#layout-revert").addClass("disabled");
+
+			// Store the Layout ID
+			var url = $(thisLayout).data().positionAllUrl;
+			// Build an array of
+			var regions = new Array();
+
+			$(thisLayout).find(".region").each(function()
 			{
-				var pid = region.playlistid;
-				console.log("pid: " + pid);
-				var urltemplate = $(this).data("hreftemplate");
-				urltemplate = urltemplate.replace(":id", pid.toString());
-				console.log(urltemplate);
-				$(this).attr("href", urltemplate);
-        		XiboFormRender($(this));
-			}
-		}
-        return false;
-	});
-	$(".storylineUploadLibraryMedia").click(function(e)
-	{
-		console.log("storylineUploadLibraryMedia " + _SelectedRegionID);
+				var position = $(this).position();
+				var regionid = $(this).attr("regionid");
+				var regionObj = _allRegions.get(regionid);
+				var region = {
+					width: $(this).width() / _Scale,
+					height: $(this).height() / _Scale,
+					top: position.top / _Scale,
+					left: position.left / _Scale,
+					regionid: regionid,
+					loop: regionObj.loop
+				};
 
-		//e.preventDefault();
-		// first, fix playlist id
-		if (_SelectedRegionID != -1)
-		{
-			// get playlistid
-			var region = _allRegions.get(_SelectedRegionID);
-			console.log("region: " + region);
+				// Update the region width / height attributes
+				$(this).attr("width", region.width).attr("height", region.height);
 
-			if (region)
-			{
-				var pid = region.playlistid;				
-				$(this).data().playlistId = pid;
+				// Add to the array
+				regions.push(region);
+			});
 
-				e.preventDefault();
-				var validExt = $(this).data().validExt.replace(/,/g, "|");
-				var playlistId = $(this).data().playlistId;
-				openUploadForm({
-					trans: {
-						addFiles: "{% trans "Add files" %}",
-						startUpload: "{% trans "Start upload" %}",
-						cancelUpload: "{% trans "Cancel upload" %}"
-					},
-					upload: {
-						maxSize: {{ libraryUpload.maxSize }},
-						maxSizeMessage: "{{ libraryUpload.maxSizeMessage }}",
-						validExt: validExt
-					},
-					playlistId: playlistId
-				}, {
-					library: {
-						label: "{% trans "View Library" %}",
-						callback: function () {
-							XiboFormRender("{{ urlFor("playlist.library.assign.form") }}".replace(":id", playlistId.toString()));
-						}
-					},
-					main: {
-						label: "{% trans "Done" %}",
-						className: "btn-primary",
-						callback: function () {
-							XiboFormRender(timelineForm.url, timelineForm.value);
-						}
-					}
+			$.ajax({
+					type: "put",
+					url: url,
+					cache: false,
+					dataType: "json",
+					data: {regions : JSON.stringify(regions) },
+					success: XiboSubmitResponse
 				});
-			}
 		}
-	});	
+	}	
+
+	// playlist save order from grid view (playlist editing)
+	function saveMultiplePlaylistWidgetOrder() 
+	{
+		var actionurl = "{{ urlFor("playlist.orderformultipleplaylists", {}) }}";
+		var i = 0;
+		var playlists = {};
+
+		_allRegions.forEach(function(regionobj) {
+			// here, we would like to generate region for every pl
+			
+			var widgets = {};
+			var wsets = _allWidgets.get({
+						filter: function (item) {
+							return (item.group == regionobj.id);
+						},
+						order: "start"
+						});
+			for (var w in wsets)
+			{
+				widgets[wsets[w].widgetid] = wsets[w].displayOrder;
+			}
+			playlists[regionobj.playlistid] = widgets;	
+		});	
+    
+
+		console.log('new multiple PL order: ');
+		console.log(playlists);
+		// Call the server to do the reorder
+		$.ajax({
+			type:"post",
+			url: actionurl,
+			cache:false,
+			dataType:"json",
+			data:{
+				"playlists": playlists
+			},
+			success: [
+				XiboSubmitResponse
+			]
+		});
+	};
+	function editRegionCallback(xhr) {
+		// we have to redraw region and _allRegions
+		// left, top, width, height, zindex, loop, background audio
+		var region = xhr.data;
+
+		_allRegions.update({
+			id: region.regionId,
+			width: region.width,
+			height: region.height,
+			left: region.left,
+			top: region.top,
+			zindex: region.zIndex,
+			loop: region.loop
+		});
+
+		var regionCode = "region_" + region.regionId;
+
+		var regionele = $("#" + regionCode);
+		var cssLeft = region.left * _Scale;
+		var cssTop = region.top * _Scale;
+		var cssWidth = region.width * _Scale;
+		var cssHeight = region.height * _Scale;
+
+		$(regionele).attr("width", region.width);
+		$(regionele).attr("height", region.height);
+		$(regionele).attr("left", region.left);
+		$(regionele).attr("top", region.top);
+		$(regionele).attr("zindex", region.zIndex);
+		$(regionele).attr("loop", region.loop);
+
+		$(regionele).css("z-index", region.zIndex);
+		$(regionele).css("left", cssLeft);
+		$(regionele).css("top", cssTop);
+		$(regionele).css("width", cssWidth);
+		$(regionele).css("top", cssTop);
+		updateRegionInfo();
+	}
 </script>
 	{% for module in modules %}
 		{% if module.layoutDesignerJavaScript() != "" %}

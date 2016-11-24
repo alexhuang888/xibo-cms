@@ -491,6 +491,10 @@ class Module extends Base
             'id' => $module->widget->widgetId,
             'data' => $module
         ]);
+        $this->getState()->extra = [
+            'editWidgetCallback' => "editWidgetCallback",
+            'widgetid' => $widgetId
+        ];          
     }
 
     /**
@@ -560,6 +564,10 @@ class Module extends Base
         $this->getState()->hydrate([
             'message' => sprintf(__('Deleted module: %s'), $moduleName)
         ]);
+        $this->getState()->extra = [
+            'deleteWidgetCallback' => "deleteWidgetCallback",
+            'widgetid' => $widgetId
+        ];         
     }
 
     /**

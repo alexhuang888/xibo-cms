@@ -422,6 +422,9 @@ class Layout extends Base
             'id' => $layout->layoutId,
             'data' => $layout
         ]);
+        $this->getState()->extra = [
+            'editLayoutCallback' => "editLayoutCallback",
+        ];          
     }
 
     /**

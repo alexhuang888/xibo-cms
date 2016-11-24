@@ -132,6 +132,7 @@ class Region implements \JsonSerializable
      */
     public $tempId = null;
 
+    public $loop = 0;
     /**
      * @var RegionFactory
      */
@@ -272,6 +273,8 @@ class Region implements \JsonSerializable
     {
         try {
             $this->getOption($option)->value = $value;
+            if ($option == "loop")
+                $this->loop = $value;
         }
         catch (NotFoundException $e) {
             $this->regionOptions[] = $this->regionOptionFactory->create($this->regionId, $option, $value);
@@ -348,9 +351,10 @@ class Region implements \JsonSerializable
 
         // Get region options
         $this->regionOptions = $this->regionOptionFactory->getByRegionId($this->regionId);
-
+        $this->loaded = true;        
+        $this->loop = $this->getOptionValue("loop", 0);
         $this->hash = $this->hash();
-        $this->loaded = true;
+
     }
 
     /**

@@ -286,9 +286,8 @@ $(document).ready(function(){
         $("input[name=lockPosition]").attr("disabled", true);
 
     // Hover functions for previews/info
-    configureRegionHandler();
+    configureRegionHandler(false);
 
-    
     // Initial Drag and Drop configuration
     configureDragAndDrop();
 
@@ -372,6 +371,7 @@ $(document).ready(function(){
         savePositions();
         return false;
     });
+
     $("#layout-revert").off("click");
     $("#layout-revert").on("click", function () 
     {
@@ -387,7 +387,7 @@ $(document).ready(function(){
         updateUserPref([{
             option: "defaultDesignerZoom",
             value: $(this).data().designerSize
-        }]);each
+        }]);
     });
 
     // Bind to the save size button
@@ -573,11 +573,12 @@ function configurePlaylistHandler()
         }
     }).disableSelection();
 }
-function configureRegionHandler()
+function configureRegionHandler(bFullLayoutEditingMode)
 {
     //console.log('configureRegionHandler');
     var thisLayout = $("#layout");
-/*
+    if (bFullLayoutEditingMode)
+    {
     // Hover functions for previews/info
     thisLayout.find(".region")
         .hover(function() {
@@ -636,7 +637,7 @@ function configureRegionHandler()
                         z_index = parseInt($(this).attr("zindex"));
                         //console.log($(this).attr('id') + ' ' + $(this).attr("zindex") + 'highest:' + zIndexHighest);
                         if (z_index > zIndexHighest)
-                        {configureRegionHandler
+                        {
                             zIndexHighest = z_index;
                             topElement = $(this);
                             //console.log('update higest' + z_index);;
@@ -674,9 +675,9 @@ function configureRegionHandler()
                 }                       
             }
         });
-*/
+    }
     // alex: region item
-    /*
+
     $(".mediadroppable").off("click");
     $(".mediadroppable").on('click', function(e)
     {
@@ -689,7 +690,7 @@ function configureRegionHandler()
             toggleRegionSelectedIcon($(this));     
         }   
     });
-    */
+
     $('.RegionOptionsMenuItem').off('click');
     $('.RegionOptionsMenuItem').on('click', function(e) 
     {

@@ -142,6 +142,7 @@ $app->delete('/playlist/delete/:id', '\Xibo\Controller\Playlist:delete')->name('
 $app->get('/playlist/widget', '\Xibo\Controller\Playlist:widgetGrid')->name('playlist.widget.search');
 $app->post('/playlist/order/:id', '\Xibo\Controller\Playlist:order')->name('playlist.order');
 $app->post('/playlist/library/assign/:id', '\Xibo\Controller\Playlist:libraryAssign')->name('playlist.library.assign');
+$app->post('/playlist/multipleorder', '\Xibo\Controller\Playlist:orderformultipleplaylists')->name('playlist.orderformultipleplaylists');
 
 
 // Widget Modules

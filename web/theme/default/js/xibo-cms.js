@@ -1000,6 +1000,26 @@ function XiboSubmitResponse(response, form) {
                 //eval(response.extra['libraryAssignCallback'])(response);
                 libraryAssignCallback(response);
             }
+            if (response.extra['editWidgetCallback'])
+            {
+                //eval(response.extra['editWidgetCallback'])(response);
+                editWidgetCallback(response);
+            }
+            if (response.extra['deleteWidgetCallback'])
+            {
+                //eval(response.extra['deleteWidgetCallback'])(response);
+                deleteWidgetCallback(response);
+            }      
+            if (response.extra['editLayoutCallback'])
+            {
+                //eval(response.extra['editLayoutCallback'])(response);
+                editLayoutCallback(response);
+            }
+            if (response.extra['editRegionCallback'])
+            {
+                //eval(response.extra['editLayoutCallback'])(response);
+                editRegionCallback(response);
+            }                                          
             // Next form URL is provided
             if ($(form).data("nextFormUrl") != undefined) {
                 XiboFormRender($(form).data().nextFormUrl.replace(":id", response.id));
