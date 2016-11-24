@@ -598,3 +598,19 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 			color: black;
 			box-shadow: 0 0 10px gray;
 		}
+
+.storylinepropertypanel {
+    height:72px; 
+    background:#dddddd; 
+    border:1px; 
+    border-radius:4px; 
+    border-color:#888888;
+    margin-bottom: 4px;
+}
+
+.storylinepropertypanelvisible {
+    visibility: visible;
+}
+.storylinepropertypanelinvisible {
+    visibility: hidden;
+}

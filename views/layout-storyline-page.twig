@@ -181,55 +181,61 @@
 
 		</div>
 		<div class="col-md-8 propertypanel" id="propertypanel">
-			<div class="layoutproperty row  col-md-12">
+			<div class="layoutproperty col-md-12 comment storylinepropertypanel">
 			</div>
-			<div class="regionproperty row col-md-12">
-				<div id="regionpropertydimension" class="col-md-8"></div>
-				<div id="regionpropertyoptions" class="col-md-4">
-					<label><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
+			<div class="regionproperty col-md-12 comment storylinepropertypanel storylinepropertypanelinvisible">
+				<div class="col-md-12 ">
+					<div id="regionpropertydimension" class="col-md-6"></div>
+					<div id="regionpropertyoptions" class="col-md-6">
+						<label><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
+					</div>
+				</div>
+				<div class="col-md-12 ">
+						<div class="btn-group regionInfo pull-left">
+							<button class="btn dropdown-toggle" data-toggle="dropdown">
+								<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
+							</button>				
+							<ul class="dropdown-menu">
+								<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
+								{% for module in extra['modules'] %}
+									{% if module.regionSpecific %}
+										<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("module.widget.add.form", {type: module.type}) }}" href="{{ urlFor("module.widget.add.form", {type: module.type}) }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+									{% else %}
+										<li class="storylineUploadLibraryMedia" href="#" data-playlist-id="" data-valid-ext="{{ module.validExtensions }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
+									{% endif %}
+								{% endfor %}
+							</ul>
+						</div>
+				
+					<input id="editregion" type="button" value="Edit Region" title="Edit Region"></input>
+					<input id="editregionTimeline" type="button" value="Edit Region Timeline" title="Edit Region Timeline"></input>
+					<input id="editregionPermission" type="button" value="Edit Region Permission" title="Edit Region Permission"></input>
 				</div>
 			</div>
-			<div class="widgetproperty row  col-md-12">
+			<div class="widgetproperty col-md-12 storylinepropertypanel storylinepropertypanelinvisible">
+				<div id="widgetpropertyoptions" class="col-md-12 ">
+				</div>
+				<div class="col-md-12 ">
+					
+						<input id="updatewidget" type="button" value="Edit Widget" title="Edit Widget"></input>
+						<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
+
+						<input id="moveforward" type="button" value="Move Forward" title="Move Forward"></input>
+
+						<input id="movebackward" type="button" value="Move Backward" title="Move Backward"></input>
+
+						<input id="movefront" type="button" value="Move to front" title="Move to front"></input>
+
+						<input id="moveend" type="button" value="Move to end" title="Move to End"></input>
+						<input id="saveplaylistorder" type="button" value="Save Playlist Order" title="Save Playlist Order"></input>
+				</div>				
 			</div>								
 		</div>
     </div>
 	<div class="region-toolbox row">
+
 		<div class="row">
-		<div class="btn-group regionInfo pull-left">
-			<button class="btn dropdown-toggle" data-toggle="dropdown">
-				<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
-			</button>				
-			<ul class="dropdown-menu">
-				<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
-				{% for module in extra['modules'] %}
-					{% if module.regionSpecific %}
-						<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("module.widget.add.form", {type: module.type}) }}" href="{{ urlFor("module.widget.add.form", {type: module.type}) }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
-					{% else %}
-						<li class="storylineUploadLibraryMedia" href="#" data-playlist-id="" data-valid-ext="{{ module.validExtensions }}"><a tabindex="-1" href="#">{{ module.name }}</a></li>
-					{% endif %}
-				{% endfor %}
-			</ul>
-		</div>
-		<input id="editregion" type="button" value="Edit Region" title="Edit Region"></input>
-		<input id="editregionTimeline" type="button" value="Edit Region Timeline" title="Edit Region Timeline"></input>
-		<input id="editregionPermission" type="button" value="Edit Region Permission" title="Edit Region Permission"></input>
-
-
-		<input id="updatewidget" type="button" value="Edit Widget" title="Edit Widget"></input>
-		<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
-
-		<input id="moveforward" type="button" value="Move Forward" title="Move Forward"></input>
-
-		<input id="movebackward" type="button" value="Move Backward" title="Move Backward"></input>
-
-		<input id="movefront" type="button" value="Move to front" title="Move to front"></input>
-
-		<input id="moveend" type="button" value="Move to end" title="Move to End"></input>
-		<input id="saveplaylistorder" type="button" value="Save Playlist Order" title="Save Playlist Order"></input>
-		
-		</div>
-		<div class="row">
-		<div id="visualization"></div>
+			<div id="visualization"></div>
 		</div>
 	</div>	
 {% endblock %}
@@ -383,12 +389,12 @@
 		// Click Handler for Library Upload Buttons (image, video, powerpoint, flash)
 		function libraryUploadClick(e) {
 			e.preventDefault();
-			console.log($(this).data());
-			console.log("here1 " + $(this).data().validExt);
+			//console.log($(this).data());
+			//console.log("here1 " + $(this).data().validExt);
 			var validExt = $(this).data().validExt.replace(/,/g, "|");
-			console.log("here2 " + $(this).data().playlistId);
+			//console.log("here2 " + $(this).data().playlistId);
 			var playlistId = $(this).data().playlistId;
-			console.log("playlistId:" + playlistId);
+			//console.log("playlistId:" + playlistId);
 			openUploadForm({
 				trans: {
 					addFiles: "{% trans "Add files" %}",
@@ -799,14 +805,14 @@
 				{
 					// get playlistid
 					var region = _allRegions.get(_SelectedRegionID);
-					console.log("region: " + region);
+					//console.log("region: " + region);
 					if (region)
 					{
 						var pid = region.playlistid;
-						console.log("pid: " + pid);
+						//console.log("pid: " + pid);
 						var urltemplate = $(this).data("hreftemplate");
 						urltemplate = urltemplate.replace(":id", pid.toString());
-						console.log(urltemplate);
+						//console.log(urltemplate);
 						$(this).attr("href", urltemplate);
 						XiboFormRender($(this));
 					}
@@ -823,7 +829,7 @@
 				{
 					// get playlistid
 					var region = _allRegions.get(_SelectedRegionID);
-					console.log("region: " + region);
+					//console.log("region: " + region);
 
 					if (region)
 					{
@@ -896,7 +902,7 @@
 				for (var wid in selectedIds)
 				{
 					var selW = _allWidgets.get(selectedIds[wid]);
-					console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+					//console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
 					//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
 					//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
 					var actionurl = hrefurl.replace(":id", selW.id);
@@ -914,7 +920,7 @@
 				for (var wid in selectedIds)
 				{
 					var selW = _allWidgets.get(selectedIds[wid]);
-					console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+					//console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
 					//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
 					//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
 					var actionurl = hrefurl.replace(":id", selW.id);
@@ -1092,10 +1098,10 @@
 											originalWidth, originalHeight, designerScale, regionZIndex,
 											currentUsercheckEditable)
 		{
-			console.log(regionId + ' ' + originalLeft + ' ' + originalTop + ' ' + originalWidth + ' ' + originalHeight + ' ' + designerScale + ' ' + regionZIndex + ' ' + currentUsercheckEditable);
+			//console.log(regionId + ' ' + originalLeft + ' ' + originalTop + ' ' + originalWidth + ' ' + originalHeight + ' ' + designerScale + ' ' + regionZIndex + ' ' + currentUsercheckEditable);
 			var newRegionHtml = "";
 			var currentUsercheckEditable = currentUsercheckEditable == 1 ? true : false;
-			console.log(currentUsercheckEditable);
+			//console.log(currentUsercheckEditable);
 			var layoutid = "{{ layout.layoutId }}";
 			var layoutschemaVersion = {{ layout.schemaVersion}};
 			var urltimelineform = "{{ urlFor("region.timeline.form") }}";
@@ -1227,7 +1233,7 @@
                                 reswidth: "{{resolution.designerWidth}}",
                                 resheight: "{{resolution.designerHeight}}", 
                                 backgroundcolor: "{{ layout.backgroundColor }}", 
-                                statusurl: "{{ urlFor("layout.status", {id: layout.layoutId}) }}", 
+                                statusurl: '{{ urlFor("layout.status", {id: layout.layoutId}) }}', 
                                 positionallurl: "{{ urlFor("region.position.all", {id: layout.layoutId}) }}", 
 								backgroundcss: "{{ backgroundCss }}",
 								schemaVersion: "{{ layout.schemaVersion }}",
@@ -1325,22 +1331,27 @@
 
 		updateLayoutInfo();
 
-		$("#regionpropertyoptions").hide();
 		function updateWidgetInfo(widgetid)
 		{
 			// get widget date from _allWidgets
 			var widget = _allWidgets.get(widgetid);
 			if (widget.length)
 			{
-				var intext = "widgetid: " + widget[0].id + " type: " + widget[0].widgettype + " duration: " + widget[0].duration;
+				var intext = "<div class='col-md-6'>Widget-" + widget[0].id + ": [" + widget[0].widgettype + "] duration: " + widget[0].duration + " seconds </div>";
 
-				$(".widgetproperty").html(intext);
+				$("#widgetpropertyoptions").html(intext);
+			
+				$(".widgetproperty").removeClass("storylinepropertypanelinvisible");
+			}
+			else
+			{
+				$(".widgetproperty").addClass("storylinepropertypanelinvisible");
 			}
 		}
 		function onWidgetSelectedHandler(properties)
 		{
 			// properties.items: selected item id
-			//console.log("selected:" + properties.items);
+			console.log("selected:" + properties.items);
 			updateWidgetInfo(properties.items);
 		}
 
@@ -1547,6 +1558,8 @@
 	{
 		var pos = $(item).position();
 		var region = _allRegions.get(_SelectedRegionID);
+		if (!region)
+			return;
 
 		var intext = "id:" + region.id + " playlist-id: " + region.playlistid;
 		var newLeft = Math.round(pos.left / _Scale, 0);
@@ -1561,7 +1574,7 @@
 										newLeft + 
 										"," + 
 										newTop + ") z-order:" + region.zindex);
-		$("#regionpropertyoptions").show();										
+		$(".regionproperty").removeClass("storylinepropertypanelinvisible");										
 		$('#regionpropertiesloop').prop('checked', (region.loop == 1));
 
 		$(item).attr("width", newWidth).attr("height", newHeight)
@@ -1577,7 +1590,7 @@
 	}
 	function updateLayoutInfo() 
 	{
-		$('.layoutproperty').html("Layout size: " + thislayoutinfo.width + " x " + thislayoutinfo.height);
+		$('.layoutproperty').html("<div class='col-md-6'>Layout size: " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
 	}	
 	function prepareRegionFunction()
 	{
@@ -1653,7 +1666,7 @@
 					DeSelecteAllRegion();					
 				}
 			}
-			console.log("Selected RID=" + _SelectedRegionID + " regioncode=" + regionCode);
+			//console.log("Selected RID=" + _SelectedRegionID + " regioncode=" + regionCode);
 		});			
 	}
 
@@ -1870,7 +1883,7 @@
 		for (var wid in selectedIds)
 		{
 			var selW = _allWidgets.get(selectedIds[wid]);
-			console.log("mode: " + mode + " " + selW.group + " " + selW.id + " " + selW.duration + " " + selW.start + " " + selW.displayOrder);
+			//console.log("mode: " + mode + " " + selW.group + " " + selW.id + " " + selW.duration + " " + selW.start + " " + selW.displayOrder);
 			moveWidget(_allWidgets, selW.group, selW.id, mode);
 		}	
 	}
@@ -2092,7 +2105,6 @@
     
 
 		console.log('new multiple PL order: ');
-		console.log(playlists);
 		// Call the server to do the reorder
 		$.ajax({
 			type:"post",
