@@ -57,27 +57,6 @@
                 <div class="panel-body">
                     <div class="tab-content">
                         <div class="tab-pane no-pad fade in active" id="tab1primary">
-                            <div class="col-md-2 text-center">
-
-                                <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                    <div class="btn-group" role="group">
-                                        <a class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o" aria-hidden="true"></i> {% trans "" %}</span></a>
-                                    </div>
-                                    <div class="btn-group" role="group">
-                                        <a class="btn btn-info btn-sm" id="regionAddButton" role="button" href="{{ urlFor("region.add", {id: layout.layoutId}) }}" title="{% trans "Add a new region" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
-									</div>
-									<div class="btn-group" role="group">
-
-										<a class="btn btn-info btn-sm" id="regionDeleteButton" role="button" href="{{ urlFor("region.delete.form", {}) }}" title="{% trans "Delete region" %}"><span><i class="fa fa-minus" aria-hidden="true"></i> {% trans "" %}</span></a>
-										<!--
-										<a class="btn btn-info btn-sm" id="regionOptionsButton" role="button" href="{{ urlFor("region.edit.form", {}) }}" title="{% trans "Edit region" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
-										<a class="btn btn-info btn-sm" id="regionPermissionButton" role="button" href="{{ urlFor("user.permissions.form", { entity: "Region" }) }}" title="{% trans "Edit region permission" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
-										<a class="btn btn-info btn-sm" id="regionTimelineFormButton" role="button" href="{{ urlFor("region.timeline.form", {}) }}" title="{% trans "Edit region timeline" %}"><span><i class="fa fa-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
--->
-
-                                    </div>
-                                </div>
-                            </div>
 
                             <div class="col-md-2 text-center">
                                 {% if currentUser.routeViewable("/user") %}
@@ -87,92 +66,63 @@
                                 </div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-2 text-center">
-                                {% if currentUser.routeViewable("/user") %}
-                                <div class="designer-control-panel-checkbox override-layout">
-                                    <input type="checkbox"  data-size="small" data-off-color="danger" data-on-color="success" class="switch-check-box" data-label-text="{% trans "Hide Controls" %}" data-label-width="100" name="hideControls" {% if currentUser.getOptionValue("hideControls", "false") == "true" %}checked="checked"{% endif %}
-                                           data-on-text="{% trans "On" %}" data-off-text="{% trans "Off" %}"/>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-2 text-center">
+
+                            <div class="col-md-1 text-center">
                                 <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                    <div class="btn-group" role="group">
 
-                                        <a id="layoutzoomout" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Decrease the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom - 0.3 }}" ><span><i class="fa fa-search-minus"  aria-hidden="true"></i>{% trans "" %}</span> </a>
-                                    </div>
-                                    <div class="btn-group" role="group">
-
-                                        <a id="layoutzoomin" class="btn btn-default btn-sm" data-toggle="" data-placement="bottom" title="{% trans "Increase the canvas size" %}" role="button" xxxhref="{{ urlFor("layout.designer", {id: layout.layoutId}) }}?zoom={{ zoom + 0.3 }}"><span><i class="fa fa-search-plus" aria-hidden="true"></i> {% trans "" %}</span></a>
-                                    </div>
                                     <div class="btn-group" role="group">
                                         <button id="saveDesignerSize" data-toggle="" data-placement="bottom" title="{% trans "Save canvas size as default" %}" class="btn btn-success btn-sm " role="button" data-designer-size="{{ zoom }}">
                                             <i class="fa fa-floppy-o" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             </div>
-                            {% set alignposinfo = {'Align Top': 0, 'Align Bottom': 1, 'Align Left': 2, 'Align Right': 3, 'Align V-Center': 4, 'Align H-Center': 5, 'Same Width':11, 'Same Height': 12, 'Same Size': 13, "Canvas V Center": 21, "Canvas H Center": 22, "Canvas Center": 23, "Same Canvas Width" : 24, "Same Canvas Height": 25, "Same Canvas Size" : 26, "Vertical Distribution": 31, "Horizontal Distriution": 32} %}                            
-                            <div class="col-md-2 text-center">
-                                <div class="btn-group regionAligmentDropdown pull-right">
-                                    <button class="btn dropdown-toggle" data-toggle="dropdown">
-                                        <span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size" %}">{% trans "Region alignment" %}</span> <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                    <li>
-                                            <a href="javascript:void(0)" onclick="DeSelecteAllRegion()">{% trans "Select None" %}</a>
-                                    </li>
-                                    {% for key,value in alignposinfo %}
-                                        <li>
-                                            <a href="javascript:void(0)" onclick="AdjustSelectedRegionPosition({{value}})">{% trans key %}</a>
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>   
-                            </div>                         
-                            <div class="col-md-2 text-center">
-                                <div class="btn-group" role="group" aria-label="...">
+                       
+                            <div class="col-md-4 text-center">
                                 <div class="btn-group" role="group">
                                     <button id="layout-revert" class="btn btn-warning btn-sm disabled btn-block"  title="{% trans "Undo position change" %}">
                                         <i class="fa fa-undo" aria-hidden="true"></i> {% trans "" %}</button>
                                 </div>
                                 <div class="btn-group" role="group">
-                                    <button id="layout-save-all" class="storylinelayout btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Positions" %}">
-                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Positions" %}
+                                    <button id="layout-save-all" class="storylinelayout btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Regions" %}">
+                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Regions" %}
                                     </button>
                                 </div>
+
+                                <div class="btn-group" role="group">
+                                    <button id="saveplaylistorder" class="storylinelayout btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Widgets" %}">
+                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Widgets" %}
+                                    </button>
+                                </div>								
                             </div>
                         </div>
-
-                    </div>
-                    <div class="tab-pane no-pad fade" id="tab2primary">
-                        <div class="col-md-6">
-                            <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                <div class="btn-group" role="group">
-                                    <a class="btn btn-success btn-sm" role="button" href="{{ urlFor("layout.preview", {id: layout.layoutId}) }}" target="_blank"><span><i class="fa fa-eye" aria-hidden="true"></i> {% trans "Preview Layout" %}</span></a>
-                                </div>
-                                <div class="btn-group" role="group">
-                                    <a class="XiboFormButton btn btn-info btn-sm" id="schedule-btn" role="button" href="{{ urlFor("schedule.now.form", {id: layout.campaignId, from: "Campaign"}) }}"><span><i class="fa fa-clock-o" aria-hidden="true"></i> {% trans "Schedule Now" %}</span></a>
-                                </div>
-                                <div class="btn-group" role="group">
-                                    <a class="XiboFormButton btn btn-warning btn-sm" role="button" href="{{ urlFor("template.from.layout.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Template" %}</span></a>
-                                    {% if layout.schemaVersion < 2 %}
-                                        <a class="XiboFormButton btn btn-warning" role="button" href="{{ urlFor("layout.upgrade.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Upgrade Layout" %}</span></a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            {% if isTemplate %}
-                                <div class="alert no-pad alert-info text-right">{% trans "Editing a Template will only affect future Layouts." %}</div>
-                            {% else %}
-                                <div id="layout-status" class="alert no-pad text-center" style="margin-bottom: 0px;"></div>
-                            {% endif %}
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
+						<div class="tab-pane no-pad fade" id="tab2primary">
+							<div class="col-md-6">
+								<div class="btn-group btn-group-justified" role="group" aria-label="...">
+									<div class="btn-group" role="group">
+										<a class="btn btn-success btn-sm" role="button" href="{{ urlFor("layout.preview", {id: layout.layoutId}) }}" target="_blank"><span><i class="fa fa-eye" aria-hidden="true"></i> {% trans "Preview Layout" %}</span></a>
+									</div>
+									<div class="btn-group" role="group">
+										<a class="XiboFormButton btn btn-info btn-sm" id="schedule-btn" role="button" href="{{ urlFor("schedule.now.form", {id: layout.campaignId, from: "Campaign"}) }}"><span><i class="fa fa-clock-o" aria-hidden="true"></i> {% trans "Schedule Now" %}</span></a>
+									</div>
+									<div class="btn-group" role="group">
+										<a class="XiboFormButton btn btn-warning btn-sm" role="button" href="{{ urlFor("template.from.layout.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Template" %}</span></a>
+										{% if layout.schemaVersion < 2 %}
+											<a class="XiboFormButton btn btn-warning" role="button" href="{{ urlFor("layout.upgrade.form", {id: layout.layoutId}) }}"><span><i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Upgrade Layout" %}</span></a>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								{% if isTemplate %}
+									<div class="alert no-pad alert-info text-right">{% trans "Editing a Template will only affect future Layouts." %}</div>
+								{% else %}
+									<div id="layout-status" class="alert no-pad text-center" style="margin-bottom: 0px;"></div>
+								{% endif %}
+							</div>
+						</div>
+                	</div>
+            	</div>
+        	</div>
         </div>
     </div>
     <!-- layout start -->
@@ -181,19 +131,23 @@
 
 		</div>
 		<div class="col-md-8 propertypanel" id="propertypanel">
-			<div class="layoutproperty col-md-12 comment storylinepropertypanel">
+			<div class="layoutproperty comment storylinepropertypanel">
+				<div class="layoutpropertyoptions comment row"></div>
+				<div class="row">
+					<div id="regionAddButton" class="btn btn-default btn-sm" role="button" value="Add Region" title="Add Region" class="fa fa-clone fa-fw"><span><i class="fa fa-clone" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o" aria-hidden="true"></i> {% trans "" %}</span></div>
+
+				</div>
 			</div>
-			<div class="regionproperty col-md-12 comment storylinepropertypanel storylinepropertypanelinvisible">
-				<div class="col-md-12 ">
+			<div class="regionproperty comment storylinepropertypanel storylinepropertypanelinvisible">
 					<div id="regionpropertydimension" class="col-md-6"></div>
 					<div id="regionpropertyoptions" class="col-md-6">
 						<label><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
 					</div>
-				</div>
-				<div class="col-md-12 ">
-						<div class="btn-group regionInfo pull-left">
+				<div class="row">
+						<div class="btn-group ">
 							<button class="btn dropdown-toggle" data-toggle="dropdown">
-								<span class="regionAligmentDropdown-tip" title="{% trans "Add regions" %}">{% trans "Add regions" %}</span> <span class="caret"></span>
+								<span class="regionAligmentDropdown-tip" title="{% trans "Add widgets" %}">{% trans "Add widgets" %}</span> <span class="caret"></span>
 							</button>				
 							<ul class="dropdown-menu">
 								<li class="storylineAddWidgetButton" data-hreftemplate="{{ urlFor("playlist.library.assign.form", {}) }}" href="{{ urlFor("playlist.library.assign.form", {}) }}"><a tabindex="-1" href="#">{% trans "Library" %}</a></li>
@@ -206,28 +160,47 @@
 								{% endfor %}
 							</ul>
 						</div>
-				
-					<input id="editregion" type="button" value="Edit Region" title="Edit Region"></input>
-					<input id="editregionTimeline" type="button" value="Edit Region Timeline" title="Edit Region Timeline"></input>
-					<input id="editregionPermission" type="button" value="Edit Region Permission" title="Edit Region Permission"></input>
+						{% set alignposinfo = {'Align Top': 0, 'Align Bottom': 1, 'Align Left': 2, 'Align Right': 3, 'Align V-Center': 4, 'Align H-Center': 5, 'Same Width':11, 'Same Height': 12, 'Same Size': 13, "Canvas V Center": 21, "Canvas H Center": 22, "Canvas Center": 23, "Same Canvas Width" : 24, "Same Canvas Height": 25, "Same Canvas Size" : 26, "Vertical Distribution": 31, "Horizontal Distriution": 32} %}                            
+						<div class="btn-group ">
+							<button class="btn dropdown-toggle" data-toggle="dropdown">
+								<span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size" %}">{% trans "Region alignment" %}</span> <span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								<li>
+										<a href="javascript:void(0)" onclick="DeSelecteAllRegion()">{% trans "Select None" %}</a>
+								</li>
+							{% for key,value in alignposinfo %}
+								<li>
+									<a href="javascript:void(0)" onclick="AdjustSelectedRegionPosition({{value}})">{% trans key %}</a>
+								</li>
+							{% endfor %}
+							</ul>
+						</div>   
+					<div id="regionDeleteButton" class="btn btn-default btn-sm" role="button" value="Delete Region" title="Delete Region" class="fa fa-remove fa-fw"><span><i class="fa fa-remove" aria-hidden="true"></i> {% trans "" %}</span></div>
+						
+					<div id="editregion" class="btn btn-default btn-sm" role="button" value="Edit Region" title="Edit Region" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="editregionTimeline" class="btn btn-default btn-sm" role="button" value="Edit Region Timeline" title="Edit Region Timeline" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="editregionPermission" class="btn btn-default btn-sm" role="button" value="Edit Region Permission" title="Edit Region Permission" class="fa fa-exclamation-circle fa-fw"><span><i class="fa fa-exclamation-circle" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindextop" class="btn btn-default btn-sm" role="button" value="Send to top" title="Send to top" class="fa fa-level-up fa-fw"><span><i class="fa fa-level-up" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindexbottom" class="btn btn-default btn-sm" role="button" value="Send to bottom" title="Send to bottom" class="fa fa-level-down fa-fw"><span><i class="fa fa-level-down" aria-hidden="true"></i> {% trans "" %}</span></div>
 				</div>
 			</div>
-			<div class="widgetproperty col-md-12 storylinepropertypanel storylinepropertypanelinvisible">
-				<div id="widgetpropertyoptions" class="col-md-12 ">
+			<div class="widgetproperty storylinepropertypanel storylinepropertypanelinvisible">
+				<div id="widgetpropertyoptions" class="row">
 				</div>
-				<div class="col-md-12 ">
+				<div class="row">
 					
-						<input id="updatewidget" type="button" value="Edit Widget" title="Edit Widget"></input>
-						<input id="deletewidget" type="button" value="Delete Widget" title="Delete Widget"></input>
+						<div id="updatewidget" class="btn btn-default btn-sm" role="button" value="Edit Widget" title="Edit Widget" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="deletewidget" class="btn btn-default btn-sm" role="button" value="Delete Widget" title="Delete Widget" class="fa fa-remove fa-fw"><span><i class="fa fa-remove" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<input id="moveforward" type="button" value="Move Forward" title="Move Forward"></input>
+						<div id="moveforward" class="btn btn-default btn-sm" role="button" value="Move Forward" title="Move Forward" class="fa fa-angle-right fa-fw"><span><i class="fa fa-angle-right" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<input id="movebackward" type="button" value="Move Backward" title="Move Backward"></input>
+						<div id="movebackward" class="btn btn-default btn-sm" role="button" value="Move Backward" title="Move Backward" class="fa fa-angle-left fa-fw"><span><i class="fa fa-angle-left" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<input id="movefront" type="button" value="Move to front" title="Move to front"></input>
+						<div id="movefront" class="btn btn-default btn-sm" role="button" value="Move to front" title="Move to front" class="fa fa-angle-double-left fa-fw"><span><i class="fa fa-angle-double-left" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<input id="moveend" type="button" value="Move to end" title="Move to End"></input>
-						<input id="saveplaylistorder" type="button" value="Save Playlist Order" title="Save Playlist Order"></input>
+						<div id="moveend" class="btn btn-default btn-sm" role="button" value="Move to end" title="Move to End" class="fa fa-angle-double-right fa-fw"><span><i class="fa fa-angle-double-right" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="saveplaylistorder" class="btn btn-default btn-sm" role="button" value="Save Playlist Order" title="Save Playlist Order" class="fa fa-save fa-fw"><span><i class="fa fa-save" aria-hidden="true"></i> {% trans "" %}</span></div>
 				</div>				
 			</div>								
 		</div>
@@ -973,7 +946,14 @@
 
 					XiboFormRender(actionurl);
 				}
-			});														
+			});
+
+			$("#regionzindextop").click(function(e) {
+				adjustZorder(0);
+			});
+			$("#regionzindexbottom").click(function(e) {
+				adjustZorder(1);
+			});										
 		});
 		/* end of document.ready() */
 		addNewRegionWithRegionId2 = function(regionId, playlistid, originalLeft, originalTop,
@@ -1337,7 +1317,7 @@
 			var widget = _allWidgets.get(widgetid);
 			if (widget.length)
 			{
-				var intext = "<div class='col-md-6'>Widget-" + widget[0].id + ": [" + widget[0].widgettype + "] duration: " + widget[0].duration + " seconds </div>";
+				var intext = "<div class='col-md-6'><label>Widget-" + widget[0].id + ":</label> [" + widget[0].widgettype + "], duration: " + widget[0].duration + " seconds </div>";
 
 				$("#widgetpropertyoptions").html(intext);
 			
@@ -1438,7 +1418,93 @@
 			displayOrder++;
 		}
 	}
+	function groupTimelineTemplate(group)
+	{
+		var gfaclass = "";
 
+		if (group.loop)
+		{
+			gfaclass = "<i class='fa fa-repeat fa-fw'/>";
+		}
+		var html = '<div class="regionLabel ' + 
+						group.className + ' ' + 
+						group.regioncode + ' ' + 
+						'" data-regioncode="' + group.regioncode + '"' + 
+						'  data-regionid="' + group.id + '"' + 
+						'> region-' + group.id + gfaclass + '</div>';
+		return html;		
+	}
+	function timelineWidgetTemplate(widget)
+	{
+		var faclass = "";
+		var gtype = widget.widgettype.toLowerCase();
+		switch (gtype)
+		{
+			case 'image':
+			case 'aiimage':
+				faclass = "fa-picture-o";
+				break;
+			case 'audio':
+				faclass = 'fa-music';
+				break;
+			case 'clock':
+				faclass = 'fa-clock-o';
+				break;
+			case 'datasetview':
+				faclass = 'fa-list-ol';
+				break;
+			case 'embedded':
+				faclass = 'fa-code';
+				break;
+			case 'finance':
+				faclass = 'fa-usd';
+				break;
+			case 'forecastio':
+				faclass = 'fa-sun-o';
+				break;
+			case 'genericfile':
+				faclass = 'fa-file-text';
+				break;
+			case 'localvideo':
+				faclass = 'fa-film';
+				break;
+			case 'powerpoint':
+				faclass = 'fa-file-powerpoint-o';
+				break;
+			case 'shellcommand':
+				faclass = 'fa-terminal';
+				break;
+			case 'text':
+				faclass = 'fa-text-width';
+				break;
+			case 'ticker':
+				faclass = 'fa-rss-square';
+				break;
+			case 'twitter':
+				faclass = 'fa-twitter-square';
+				break;
+			case 'video':
+				faclass = 'fa-youtube-play';
+				break;
+			case 'webpage':
+				faclass = 'fa-link';
+				break;	
+			case 'googletraffic':
+				faclass = 'fa-car';
+				break;																																																										
+		}
+		if (widget.audiomediaid != -1)
+		{
+			faclass += ' fa-music';
+		}
+		var html = '<div class=" ' + 
+						widget.className + ' ' + 
+						'fa ' + faclass + ' fa-fw' +
+						'" data-regioncode="' + widget.regioncode + '"' + 
+						'  data-regionid="' + widget.id + '"' + 
+						'> region-' + widget.id + '</div>';
+		return html;		
+	}
 	function newLayout(layoutinfo)
 	{
 		var cssW = 384;
@@ -1467,7 +1533,7 @@
 							'width: ' + cssW + 'px;  ' + 
 							'height: ' + cssH + 'px;  ' + 
 							'margin:0px;  ' + 
-							'padding: 0px; background: ' + layoutinfo.backgroundcolor + '; border: 0px;"> ' + 
+							'padding: 0px; background: ' + layoutinfo.backgroundcolor + '; border: 0px; box-shadow:0px 0px 0px 1px #ddddff inset"> ' + 
 							'</div>';
 		$(".layoutwidget").html(layouthtml);
 				
@@ -1506,20 +1572,26 @@
 			clickToUse: false,
 			showCurrentTime: false,
 			zoomable: true,
+			template: timelineWidgetTemplate,
+			/*
 			template: function (widget) {
 				var html = "widget-" + widget.widgetid;
 				return html;
 			},
+			*/
+			groupTemplate: groupTimelineTemplate,
+			/*
 			groupTemplate: function(group) {
 				var html = '<div class="regionLabel ' + 
 								group.className + ' ' + 
 								group.regioncode + 
 								'" data-regioncode="' + group.regioncode + '"' + 
 								'  data-regionid="' + group.id + '"' + 
-								'>region-' + group.id + "</div>";
+								'> region-' + group.id + "</div>";
 				return html;
 			},
-			dataAttributes: ['tooltip', 'id', 'title', 'duration', 'widgetid', 'type', "regionid"],
+			*/
+			dataAttributes: ['tooltip', 'id', 'title', 'duration', 'widgetid', 'widgettype', "regionid"],
 			margin: { axis: 5 },	// important, to get rid of top space between axis and the first timeline
 		};
 		// Create a Timeline
@@ -1566,14 +1638,14 @@
 		var newTop = Math.round(pos.top / _Scale, 0);
 		var newWidth = Math.round($(item).width() / _Scale, 0);
 		var newHeight = Math.round($(item).height() / _Scale, 0);
-		$('#regionpropertydimension').html("Region-" + region.id + ": " + 
+		$('#regionpropertydimension').html("<label>Region-" + region.id + ":</label> " + 
 									newWidth + 
 									" x " + 
 									newHeight + 
 									" (" + 
 										newLeft + 
-										"," + 
-										newTop + ") z-order:" + region.zindex);
+										", " + 
+										newTop + "), z-order:" + region.zindex);
 		$(".regionproperty").removeClass("storylinepropertypanelinvisible");										
 		$('#regionpropertiesloop').prop('checked', (region.loop == 1));
 
@@ -1590,7 +1662,7 @@
 	}
 	function updateLayoutInfo() 
 	{
-		$('.layoutproperty').html("<div class='col-md-6'>Layout size: " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
+		$('.layoutpropertyoptions').html("<div class='col-md-6'><label>Layout:</label> " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
 	}	
 	function prepareRegionFunction()
 	{
@@ -1885,7 +1957,8 @@
 			var selW = _allWidgets.get(selectedIds[wid]);
 			//console.log("mode: " + mode + " " + selW.group + " " + selW.id + " " + selW.duration + " " + selW.start + " " + selW.displayOrder);
 			moveWidget(_allWidgets, selW.group, selW.id, mode);
-		}	
+		}
+		$("#saveplaylistorder").removeClass("disabled");
 	}
 	
 	function editLayoutCallback(xhr)
@@ -2058,7 +2131,8 @@
 					top: position.top / _Scale,
 					left: position.left / _Scale,
 					regionid: regionid,
-					loop: regionObj.loop
+					loop: regionObj.loop,
+					zindex: regionObj.zindex
 				};
 
 				// Update the region width / height attributes
@@ -2118,6 +2192,8 @@
 				XiboSubmitResponse
 			]
 		});
+		$("#saveplaylistorder").addClass("disabled");	
+		
 	};
 	function editRegionCallback(xhr) {
 		// we have to redraw region and _allRegions
@@ -2154,7 +2230,56 @@
 		$(regionele).css("top", cssTop);
 		$(regionele).css("width", cssWidth);
 		$(regionele).css("top", cssTop);
-		updateRegionInfo();
+		updateRegionInfo($(regionele), false);
+	}
+
+	function adjustZorder(mode)
+	{
+		// mode: 0: bring to front, 1: send to bottom
+		if (_SelectedRegionID != -1)	
+		{
+			var allRegions = _allRegions.get({
+					filter: function (item) {
+						return (item.id != _SelectedRegionID);
+					},
+					order: 'zindex'
+					});
+			var newZOrder = 1;
+			var zo = 1;
+			if (mode == 0)
+			{
+				newZOrder = allRegions.length + 1;
+			}
+			else
+			{
+				zo = 2;
+			}
+			
+			for (var w in allRegions)
+			{
+				_allRegions.update({
+					id: allRegions[w].id,
+					zindex: zo
+				});
+
+				// update screen region zorder
+				var regionobj = $("." + allRegions[w].regioncode);
+				$(regionobj).css("z-index", zo);
+				$(regionobj).attr("zindex", zo);
+
+				zo++;
+			}
+			_allRegions.update({
+					id: _SelectedRegionID,
+					zindex: newZOrder
+				});	
+			// update screen region zorder
+			var regionobj = $(".region-" + _SelectedRegionID);
+			$(regionobj).css("z-index", newZOrder);
+			$(regionobj).attr("zindex", newZOrder);
+
+			updateRegionInfo($(".region-" + _SelectedRegionID));
+		}
 	}
 </script>
 	{% for module in modules %}

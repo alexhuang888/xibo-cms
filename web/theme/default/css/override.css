@@ -543,7 +543,7 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 		}
 		/* custom styles for individual items, load this after vis.css/vis-timeline-graph2d.min.css */
 
-		.vis-item.image-widget {
+		.vis-item.image-widget:before {
 			background-color: greenyellow;
 			border-color: green;
 		}
@@ -601,7 +601,7 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 
 .storylinepropertypanel {
     height:72px; 
-    background:#dddddd; 
+    background:#eeeeee; 
     border:1px; 
     border-radius:4px; 
     border-color:#888888;
