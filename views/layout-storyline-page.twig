@@ -89,8 +89,8 @@
                                 </div>
 
                                 <div class="btn-group" role="group">
-                                    <button id="saveplaylistorder" class="storylinelayout btn btn-success btn-sm disabled btn-block"  title="{% trans "Save Widgets" %}">
-                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Widgets" %}
+                                    <button id="" class="saveplaylistorder storylinelayout btn btn-success btn-sm disabled btn-block disabled"  title="{% trans "Save Widgets Order" %}">
+                                        <i class="fa fa-floppy-o" aria-hidden="true"></i> {% trans "Save Widgets Order" %}
                                     </button>
                                 </div>								
                             </div>
@@ -132,10 +132,13 @@
 		</div>
 		<div class="col-md-8 propertypanel" id="propertypanel">
 			<div class="layoutproperty comment storylinepropertypanel">
-				<div class="layoutpropertyoptions comment row"></div>
 				<div class="row">
-					<div id="regionAddButton" class="btn btn-default btn-sm" role="button" value="Add Region" title="Add Region" class="fa fa-clone fa-fw"><span><i class="fa fa-clone" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o" aria-hidden="true"></i> {% trans "" %}</span></div>
+				<div class="layoutpropertyoptions comment col-md-6"></div>
+				<div class="layoutpropertyselectedregions comment col-md-6"></div>
+				</div>
+				<div class="row">
+					<div id="regionAddButton" href="{{ urlFor("region.add", {id: layout.layoutId}) }}" class="btn btn-default btn-sm" role="button" value="Add Region" title="Add Region" ><span><i class="fa fa-clone fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
 				</div>
 			</div>
@@ -163,26 +166,26 @@
 						{% set alignposinfo = {'Align Top': 0, 'Align Bottom': 1, 'Align Left': 2, 'Align Right': 3, 'Align V-Center': 4, 'Align H-Center': 5, 'Same Width':11, 'Same Height': 12, 'Same Size': 13, "Canvas V Center": 21, "Canvas H Center": 22, "Canvas Center": 23, "Same Canvas Width" : 24, "Same Canvas Height": 25, "Same Canvas Size" : 26, "Vertical Distribution": 31, "Horizontal Distriution": 32} %}                            
 						<div class="btn-group ">
 							<button class="btn dropdown-toggle" data-toggle="dropdown">
-								<span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size" %}">{% trans "Region alignment" %}</span> <span class="caret"></span>
+								<span class="regionAligmentDropdown-tip" title="{% trans "Align region position/size, press Ctrl-key to select multiple regions." %}">{% trans "Region alignment" %}</span> <span class="caret"></span>
 							</button>
 							<ul class="dropdown-menu">
 								<li>
-										<a href="javascript:void(0)" onclick="DeSelecteAllRegion()">{% trans "Select None" %}</a>
+									<a href="javascript:void(0)" onclick="DeSelectAllRegionHelper()">{% trans "Select None" %}</a>
 								</li>
 							{% for key,value in alignposinfo %}
 								<li>
-									<a href="javascript:void(0)" onclick="AdjustSelectedRegionPosition({{value}})">{% trans key %}</a>
+									<a href="javascript:void(0)" onclick="AdjustSelectedRegionPositionHelper({{value}})">{% trans key %}</a>
 								</li>
 							{% endfor %}
 							</ul>
 						</div>   
-					<div id="regionDeleteButton" class="btn btn-default btn-sm" role="button" value="Delete Region" title="Delete Region" class="fa fa-remove fa-fw"><span><i class="fa fa-remove" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionDeleteButton" class="btn btn-default btn-sm" role="button" value="Delete Region" title="Delete Region" ><span><i class="fa fa-remove fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 						
-					<div id="editregion" class="btn btn-default btn-sm" role="button" value="Edit Region" title="Edit Region" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="editregionTimeline" class="btn btn-default btn-sm" role="button" value="Edit Region Timeline" title="Edit Region Timeline" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="editregionPermission" class="btn btn-default btn-sm" role="button" value="Edit Region Permission" title="Edit Region Permission" class="fa fa-exclamation-circle fa-fw"><span><i class="fa fa-exclamation-circle" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="regionzindextop" class="btn btn-default btn-sm" role="button" value="Send to top" title="Send to top" class="fa fa-level-up fa-fw"><span><i class="fa fa-level-up" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="regionzindexbottom" class="btn btn-default btn-sm" role="button" value="Send to bottom" title="Send to bottom" class="fa fa-level-down fa-fw"><span><i class="fa fa-level-down" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="editregion" class="btn btn-default btn-sm" role="button" value="Edit Region" title="Edit Region" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="editregionTimeline" class="btn btn-default btn-sm" role="button" value="Edit Region Timeline" title="Edit Region Timeline" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="editregionPermission" class="btn btn-default btn-sm" role="button" value="Edit Region Permission" title="Edit Region Permission" ><span><i class="fa fa-exclamation-circle fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindextop" class="btn btn-default btn-sm" role="button" value="Send to top" title="Send to top" ><span><i class="fa fa-level-up fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindexbottom" class="btn btn-default btn-sm" role="button" value="Send to bottom" title="Send to bottom" ><span><i class="fa fa-level-down fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 				</div>
 			</div>
 			<div class="widgetproperty storylinepropertypanel storylinepropertypanelinvisible">
@@ -190,17 +193,19 @@
 				</div>
 				<div class="row">
 					
-						<div id="updatewidget" class="btn btn-default btn-sm" role="button" value="Edit Widget" title="Edit Widget" class="fa fa-edit fa-fw"><span><i class="fa fa-edit" aria-hidden="true"></i> {% trans "" %}</span></div>
-						<div id="deletewidget" class="btn btn-default btn-sm" role="button" value="Delete Widget" title="Delete Widget" class="fa fa-remove fa-fw"><span><i class="fa fa-remove" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="updatewidget" class="btn btn-default btn-sm" role="button" value="Edit Widget" title="Edit Widget" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="deletewidget" class="btn btn-default btn-sm" role="button" value="Delete Widget" title="Delete Widget" ><span><i class="fa fa-remove fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="moveforward" class="btn btn-default btn-sm" role="button" value="Move Forward" title="Move Forward" class="fa fa-angle-right fa-fw"><span><i class="fa fa-angle-right" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="moveforward" class="btn btn-default btn-sm" role="button" value="Move Forward" title="Move Forward" ><span><i class="fa fa-angle-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="movebackward" class="btn btn-default btn-sm" role="button" value="Move Backward" title="Move Backward" class="fa fa-angle-left fa-fw"><span><i class="fa fa-angle-left" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="movebackward" class="btn btn-default btn-sm" role="button" value="Move Backward" title="Move Backward" ><span><i class="fa fa-angle-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="movefront" class="btn btn-default btn-sm" role="button" value="Move to front" title="Move to front" class="fa fa-angle-double-left fa-fw"><span><i class="fa fa-angle-double-left" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="movefront" class="btn btn-default btn-sm" role="button" value="Move to front" title="Move to front" ><span><i class="fa fa-angle-double-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="moveend" class="btn btn-default btn-sm" role="button" value="Move to end" title="Move to End" class="fa fa-angle-double-right fa-fw"><span><i class="fa fa-angle-double-right" aria-hidden="true"></i> {% trans "" %}</span></div>
-						<div id="saveplaylistorder" class="btn btn-default btn-sm" role="button" value="Save Playlist Order" title="Save Playlist Order" class="fa fa-save fa-fw"><span><i class="fa fa-save" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<div id="moveend" class="btn btn-default btn-sm" role="button" value="Move to end" title="Move to End" ><span><i class="fa fa-angle-double-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+						<!--
+						<div id="" class="saveplaylistorder btn btn-default btn-sm disabled" role="button" value="Save Widgets Order" title="Save Widgets Order" ><span><i class="fa fa-save fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+						-->
 				</div>				
 			</div>								
 		</div>
@@ -720,8 +725,8 @@
 				console.log("regionDeleteButton: " + _SelectedRegionID);
 				if (_SelectedRegionID != -1)
 				{
-
-					var actionurl = $(this).attr("href");
+					
+					var actionurl = "{{ urlFor('region.delete.form', {}) }}";
 					actionurl = actionurl.replace(":id", _SelectedRegionID);
 
 					XiboFormRender(actionurl);
@@ -736,7 +741,7 @@
 				saveAllRegionPositions();
 				return false;
 			});	
-			$("#saveplaylistorder").click(function() {
+			$(".saveplaylistorder").click(function() {
 				saveMultiplePlaylistWidgetOrder();
 			});
 
@@ -956,6 +961,19 @@
 			});										
 		});
 		/* end of document.ready() */
+		function DeSelectAllRegionHelper()
+		{
+			DeSelecteAllRegion();
+			updateSelectedRegionCountInfo();
+		}
+		function AdjustSelectedRegionPositionHelper(mode)
+		{
+			if ($("input[name=lockPosition]")[0].checked == false)
+			{
+				AdjustSelectedRegionPosition(mode, false);
+				updateRegionInfo($(".region-" + _SelectedRegionID), false);
+			}
+		}
 		addNewRegionWithRegionId2 = function(regionId, playlistid, originalLeft, originalTop,
 											originalWidth, originalHeight, designerScale, regionZIndex,
 											currentUsercheckEditable,
@@ -1016,6 +1034,8 @@
 			newRegionHtml = newRegionHtml + ' data-regioncode="' + regioncode + '"';
 			newRegionHtml = newRegionHtml + ' data-regionid="' + regionId + '"';
 			newRegionHtml = newRegionHtml + ' data-playlistid="' + playlistid + '"';
+			newRegionHtml = newRegionHtml + ' title="region-' + regionId + '"';
+			
 			if (currentUsercheckEditable)
 			{
 				newRegionHtml = newRegionHtml + ' ondblclick="XiboFormRender($(this))"';
@@ -1031,46 +1051,6 @@
 
 			newRegionHtml = newRegionHtml + ' style="position:absolute; width:' + regionWidth + 'px; height:' + regionHeight + 'px; top:' + regionTop + 'px; left:' + regionLeft + 'px; z-index:' + regionZIndex + ';margin:0px;padding:0px;">';
 
-			/*
-			newRegionHtml = newRegionHtml + ' <i class="fa fa-check fa-fw regionitemselectedicon regionselectediconOff"></i>';
-				//<!-- region transparency background -->                            
-			newRegionHtml = newRegionHtml + ' <div class="regionTransparency ' + transparencyCss + ' " style="width:100%; height:100%;"></div>';
-			if (currentUsercheckEditable)
-			{ 
-				newRegionHtml = newRegionHtml + ' <div class="btn-group regionInfo pull-right">';
-				newRegionHtml = newRegionHtml + ' <button class="btn dropdown-toggle" data-toggle="dropdown">';
-				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
-				newRegionHtml = newRegionHtml + ' </button>';
-				newRegionHtml = newRegionHtml + ' <ul class="dropdown-menu">';
-				newRegionHtml = newRegionHtml + ' <li>';
-				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionTimeLineForm + '">{% trans "Edit Timeline" %}</a>';
-				newRegionHtml = newRegionHtml + ' </li>';
-				newRegionHtml = newRegionHtml + ' <li>';
-				newRegionHtml = newRegionHtml + ' <a class="RegionOptionsMenuItem" href="' + urlRegionEditForm + '">{% trans "Options" %}</a>';
-				newRegionHtml = newRegionHtml + ' </li>';
-				newRegionHtml = newRegionHtml + ' <li>';
-				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlRegionDeleteForm + '">{% trans "Delete" %}</a>';
-				newRegionHtml = newRegionHtml + ' </li>';
-				newRegionHtml = newRegionHtml + ' <li>';
-				newRegionHtml = newRegionHtml + ' <a class="XiboFormButton" href="' + urlUserPermissionForm + '">{% trans "Permissions" %}</a>';
-				newRegionHtml = newRegionHtml + ' </li>';
-				newRegionHtml = newRegionHtml + ' </ul>';
-				newRegionHtml = newRegionHtml + ' </div>';
-			}
-			else if (currentUsercheckEditable && (layoutschemaVersion >= 2) )
-			{
-				newRegionHtml = newRegionHtml + ' <div class="regionInfo">';
-				newRegionHtml = newRegionHtml + ' <span class="region-tip">' + originalWidth + ' x ' + originalHeight + ' (' + originalLeft + ' ,' + originalTop + ')</span> <span class="caret"></span>';
-				newRegionHtml = newRegionHtml + ' </div>';                            
-			}
-			//<!-- region preview panel -->
-			newRegionHtml = newRegionHtml + ' <div class="preview">';
-			newRegionHtml = newRegionHtml + ' <div class="previewContent">';
-
-			newRegionHtml = newRegionHtml + ' </div>';
-			newRegionHtml = newRegionHtml + ' <div class="previewNav label label-info"></div>';
-			newRegionHtml = newRegionHtml + ' </div>';
-			*/
 			newRegionHtml = newRegionHtml + ' </div>';
 			return newRegionHtml;
 		};
@@ -1195,7 +1175,7 @@
 
 		var _regionID = 15;
 		var _plID = 25;
-		var _pColorID = 6;
+		var _pColorID = 0;
 		var _pWidgetID = 26;
 		var _SelectedRegionID = -1;
 		
@@ -1395,8 +1375,8 @@
 				duration: wid.duration,
 				start: new Date(1971, 3, 25, sh, sm, ss),
 				end: new Date(1971, 3, 25, eh, em, es),
-				title: "widget-" + wid.widgetid,
-				tooltip: "widget-" + wid.widgetid,
+				title: "widget-" + wid.widgetid + " [" + wid.type + "] " + wid.duration + " sec.",
+				tooltip: "widget-" + wid.widgetid + " [" + wid.type + "] " + wid.duration + " sec.",
 				className: wid.type,
 				group: regionid,
 				regionid: regionid,
@@ -1502,7 +1482,7 @@
 						'fa ' + faclass + ' fa-fw' +
 						'" data-regioncode="' + widget.regioncode + '"' + 
 						'  data-regionid="' + widget.id + '"' + 
-						'> region-' + widget.id + '</div>';
+						'> widget-' + widget.id + '</div>';
 		return html;		
 	}
 	function newLayout(layoutinfo)
@@ -1573,24 +1553,7 @@
 			showCurrentTime: false,
 			zoomable: true,
 			template: timelineWidgetTemplate,
-			/*
-			template: function (widget) {
-				var html = "widget-" + widget.widgetid;
-				return html;
-			},
-			*/
 			groupTemplate: groupTimelineTemplate,
-			/*
-			groupTemplate: function(group) {
-				var html = '<div class="regionLabel ' + 
-								group.className + ' ' + 
-								group.regioncode + 
-								'" data-regioncode="' + group.regioncode + '"' + 
-								'  data-regionid="' + group.id + '"' + 
-								'> region-' + group.id + "</div>";
-				return html;
-			},
-			*/
 			dataAttributes: ['tooltip', 'id', 'title', 'duration', 'widgetid', 'widgettype', "regionid"],
 			margin: { axis: 5 },	// important, to get rid of top space between axis and the first timeline
 		};
@@ -1625,7 +1588,10 @@
 	{
 		newLayout(thislayoutinfo);
 	}
-
+	function updateSelectedRegionCountInfo()
+	{
+		$('.layoutpropertyselectedregions').html("<div class=''><label>Selected Regions:</label> " + $('.regionitem.ui-selected').length + "</div>");
+	}
 	function updateRegionInfo(item, bSelectOnly) 
 	{
 		var pos = $(item).position();
@@ -1652,7 +1618,8 @@
 		$(item).attr("width", newWidth).attr("height", newHeight)
 				.attr("left", newLeft)
 				.attr("top", newTop);
-
+		
+		updateSelectedRegionCountInfo();
 		// Expose a new button to save the positions
 		if (!bSelectOnly)
 		{
@@ -1662,7 +1629,7 @@
 	}
 	function updateLayoutInfo() 
 	{
-		$('.layoutpropertyoptions').html("<div class='col-md-6'><label>Layout:</label> " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
+		$('.layoutpropertyoptions').html("<div class=''><label>Layout:</label> " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
 	}	
 	function prepareRegionFunction()
 	{
@@ -1671,6 +1638,9 @@
 		.draggable({
 			containment: thisLayout,
             //stop: regionPositionUpdateNoRefreshPreview,
+			stop: function(event, ui) {
+				updateRegionInfo(ui.helper, true);
+			},
             drag: function(event, ui) {        
                 updateRegionInfo(ui.helper, false);
             },
@@ -1683,7 +1653,9 @@
 			containment: thisLayout,
 			minWidth: 25,
 			minHeight: 25,
-			//stop: regionPositionUpdate,
+			stop: function(event, ui) {
+				updateRegionInfo(ui.helper, true);
+			},
 			resize: function(event, ui) {        
                 updateRegionInfo(ui.helper, false);
             },
@@ -1698,8 +1670,8 @@
             					}
 			}
 		);
-
-		$(".regionSelector").click(function() {
+		$(".regionSelector").off("click");
+		$(".regionSelector").on("click", function() {
 			var regionCode;
 			var selectedID = -1;
 
@@ -1731,12 +1703,18 @@
 				if (_CtrlHold == false || _SelectedRegionID == -1)
 				{
 					$(".regionSelector").removeClass("regionSelected");
+					
 					$("." + regionCode).addClass("regionSelected");
-					_SelectedRegionID = selectedID;
 
-					updateRegionInfo($(".layout").find("." + regionCode), false);
+					$(".region.regionSelector").removeClass("ui-selected");					
+					$(".region." + regionCode).addClass("ui-selected");
+
+					_SelectedRegionID = selectedID;
+					updateRegionInfo($(".layout").find("." + regionCode), true);
+
 					DeSelecteAllRegion();					
 				}
+				updateSelectedRegionCountInfo();
 			}
 			//console.log("Selected RID=" + _SelectedRegionID + " regioncode=" + regionCode);
 		});			
@@ -1958,7 +1936,7 @@
 			//console.log("mode: " + mode + " " + selW.group + " " + selW.id + " " + selW.duration + " " + selW.start + " " + selW.displayOrder);
 			moveWidget(_allWidgets, selW.group, selW.id, mode);
 		}
-		$("#saveplaylistorder").removeClass("disabled");
+		$(".saveplaylistorder").removeClass("disabled");
 	}
 	
 	function editLayoutCallback(xhr)
@@ -2192,7 +2170,7 @@
 				XiboSubmitResponse
 			]
 		});
-		$("#saveplaylistorder").addClass("disabled");	
+		$(".saveplaylistorder").addClass("disabled");	
 		
 	};
 	function editRegionCallback(xhr) {
@@ -2230,7 +2208,7 @@
 		$(regionele).css("top", cssTop);
 		$(regionele).css("width", cssWidth);
 		$(regionele).css("top", cssTop);
-		updateRegionInfo($(regionele), false);
+		updateRegionInfo($(regionele), true);
 	}
 
 	function adjustZorder(mode)
@@ -2278,7 +2256,7 @@
 			$(regionobj).css("z-index", newZOrder);
 			$(regionobj).attr("zindex", newZOrder);
 
-			updateRegionInfo($(".region-" + _SelectedRegionID));
+			updateRegionInfo($(".region-" + _SelectedRegionID), true);
 		}
 	}
 </script>

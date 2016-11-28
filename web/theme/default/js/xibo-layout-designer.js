@@ -85,7 +85,7 @@ DeSelecteAllRegion = function() {
         toggleRegionSelectedIcon($(this));
     });
 };
-AdjustSelectedRegionPosition = function(postype)
+AdjustSelectedRegionPosition = function(postype, oldstyle)
 {
     //console.log('adjustpos: type=' + postype);
     var canvasItem = $(".layout");
@@ -93,20 +93,31 @@ AdjustSelectedRegionPosition = function(postype)
     var anchoritem = undefined;
     var minselectedIdx = 99999999;
     var totalitems = 0;
-    $('.regionitem.ui-selected').each(function()
+    if (oldstyle)
     {
-        /*
-        var thisselectedidx = parseInt($(this).attr('selectedindex'));
-        if (thisselectedidx < minselectedIdx)
+        $('.regionitem.ui-selected').each(function()
         {
-            minselectedIdx = thisselectedidx;
-            anchoritem = $(this);
-        }
-        */
-        if ($(this).hasClass('regionSelected'))
-            anchoritem = $(this);
-        totalitems++;
-    });
+            
+            var thisselectedidx = parseInt($(this).attr('selectedindex'));
+            if (thisselectedidx < minselectedIdx)
+            {
+                minselectedIdx = thisselectedidx;
+                anchoritem = $(this);
+            }
+
+            totalitems++;
+        });
+    }
+    else
+    {
+        $('.regionitem.ui-selected').each(function()
+        {
+            if ($(this).hasClass('regionSelected'))
+                anchoritem = $(this);
+            totalitems++;
+        });
+    }
+
     console.log('totalitems: ' + totalitems);
     if (anchoritem != undefined && postype < 10 && totalitems > 1)
     {
@@ -155,11 +166,14 @@ AdjustSelectedRegionPosition = function(postype)
                 $(this).css('left', h_center - $(this).width() / 2);
             });
         }
-        $('.regionitem.ui-selected').each(function()
-        {           
-            regionPositionUpdateBase($(this), false);
-            updateRegionInfoBase($(this));
-        });            
+        //if (oldstyle)
+        {
+            $('.regionitem.ui-selected').each(function()
+            {           
+                regionPositionUpdateBase($(this), oldstyle && false);
+                updateRegionInfoBase($(this));
+            });  
+        }          
     }
     if (anchoritem != undefined && (postype > 10 && postype < 20) && totalitems > 1)
     {
@@ -184,12 +198,15 @@ AdjustSelectedRegionPosition = function(postype)
                 $(this).css('height', $(anchoritem).css('height'));
                 $(this).css('width', $(anchoritem).css('width'));
             });
-        }              
-        $('.regionitem.ui-selected').each(function()
-        {           
-            regionPositionUpdateBase($(this), true);
-            updateRegionInfoBase($(this));
-        });        
+        }
+
+        {                  
+            $('.regionitem.ui-selected').each(function()
+            {           
+                regionPositionUpdateBase($(this), oldstyle && true);
+                updateRegionInfoBase($(this));
+            });
+        }     
     }
 
     if (anchoritem != undefined && (postype > 20 && postype < 30) && totalitems > 0)
@@ -241,13 +258,146 @@ AdjustSelectedRegionPosition = function(postype)
                 $(this).css('height', canvasH);
                 $(this).css('width', canvasW);
             });
-        }                   
-        $('.regionitem.ui-selected').each(function()
-        {           
-            regionPositionUpdateBase($(this), true);
-            updateRegionInfoBase($(this));
-        });        
-    }    
+        }
+        {         
+            $('.regionitem.ui-selected').each(function()
+            {           
+                regionPositionUpdateBase($(this), oldstyle && true);
+                updateRegionInfoBase($(this));
+            });
+        }
+    }
+    if (anchoritem != undefined && (postype > 30 && postype < 40) && totalitems > 0)
+    {
+        var canvasW = parseFloat(canvasItem.css("width"));
+        var canvasH = parseFloat(canvasItem.css("height"));  
+
+        // Build an array of
+        var regions = new Array();
+        var totalCSSHeight = 0;
+        var totalCSSWidth = 0;
+        $(".regionitem.ui-selected").each(function() {
+            var designer_scale = $(this).attr("designer_scale");
+            var position = $(this).position();
+            var region = {
+                csswidth: $(this).width(),
+                cssheight: $(this).height(),
+                csstop: position.top,
+                cssleft: position.left,                
+                width: $(this).width() / designer_scale,
+                height: $(this).height() / designer_scale,
+                top: position.top / designer_scale,
+                left: position.left / designer_scale,
+                regionid: $(this).attr("regionid"),
+                regioncode: $(this).data("regioncode")
+            };
+
+            totalCSSHeight += region.cssheight;
+            totalCSSWidth += region.csswidth;
+            // Add to the array
+            regions.push(region);
+        });
+
+        if (postype == 31) // vertical distribution
+        {
+            // find all selected region, sort by their top position
+            regions.sort(function(a, b) {
+                if (a.csstop == b.csstop)
+                    return 0;
+                if (a.csstop > b.csstop)
+                    return 1;
+                else
+                    return -1;
+            });
+            var gap = 0;
+            if (totalCSSHeight >= canvasH)
+            {
+                // no gap possible
+            }
+            else
+            {
+                var totalVGaps = canvasH - totalCSSHeight;
+                gap = totalVGaps / (regions.length + 1);
+            }
+            if (gap >= 1)
+            {
+                //we have gap
+                var startTop = gap;
+                for (var r in regions)
+                {
+                    $('.regionitem.ui-selected.' + regions[r].regioncode).css("top", startTop);
+                    startTop += (regions[r].cssheight + gap);
+                }
+            }
+            /*
+            else
+            {
+                // no gap, aligned by center axie
+                gap = canvasH / (regions.length + 1);
+                var startTop = gap;
+                for (var r in regions)
+                {
+                    $('.regionitem.ui-selected.' + regions[r].regioncode).css("top", startTop - regions[r].cssheight / 2);
+                    startTop += gap;
+                }                
+            }
+            */
+        }
+
+        if (postype == 32) // horizontal distribution
+        {
+            // find all selected region, sort by their top position
+            regions.sort(function(a, b) {
+                if (a.cssleft == b.cssleft)
+                    return 0;
+                if (a.cssleft > b.cssleft)
+                    return 1;
+                else
+                    return -1;
+            });
+            var gap = 0;
+            if (totalCSSWidth >= canvasW)
+            {
+                // no gap possible
+            }
+            else
+            {
+                var totalHGaps = canvasW - totalCSSWidth;
+                gap = totalHGaps / (regions.length + 1);
+            }
+            if (gap >= 1)
+            {
+                //we have gap
+                var startLeft = gap;
+                for (var r in regions)
+                {
+                    $('.regionitem.ui-selected.' + regions[r].regioncode).css("left", startLeft);
+                    startLeft += (regions[r].csswidth + gap);
+                }
+            }
+            /*
+            else
+            {
+                // no gap, aligned by center axie
+                gap = canvasW / (regions.length + 1);
+                var startLeft = gap;
+                for (var r in regions)
+                {
+                    $('.regionitem.ui-selected.' + regions[r].regioncode).css("left", startLeft - regions[r].csswidth / 2);
+                    startLeft += gap;
+                }                
+            }
+            */
+        }   
+
+        {         
+            $('.regionitem.ui-selected').each(function()
+            {           
+                regionPositionUpdateBase($(this), oldstyle && true);
+                updateRegionInfoBase($(this));
+            });
+        }             
+    } 
 };
 $(document).ready(function(){
     $('.regionitem').each(function()
