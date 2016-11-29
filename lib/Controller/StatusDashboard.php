@@ -71,6 +71,11 @@ class StatusDashboard extends Base
     private $mediaFactory;
 
     /**
+     * @var LayoutFactory
+     */
+    private $layoutFactory;
+
+    /**
      * Set common dependencies.
      * @param LogServiceInterface $log
      * @param SanitizerServiceInterface $sanitizerService
@@ -85,8 +90,9 @@ class StatusDashboard extends Base
      * @param DisplayFactory $displayFactory
      * @param DisplayGroupFactory $displayGroupFactory
      * @param MediaFactory $mediaFactory
+     * @param LayoutFactory $layoutFactory
      */
-    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $displayFactory, $displayGroupFactory, $mediaFactory)
+    public function __construct($log, $sanitizerService, $state, $user, $help, $date, $config, $store, $pool, $userFactory, $displayFactory, $displayGroupFactory, $mediaFactory, $layoutFactory)
     {
         $this->setCommonDependencies($log, $sanitizerService, $state, $user, $help, $date, $config);
 
@@ -96,6 +102,7 @@ class StatusDashboard extends Base
         $this->displayFactory = $displayFactory;
         $this->displayGroupFactory = $displayGroupFactory;
         $this->mediaFactory = $mediaFactory;
+        $this->layoutFactory = $layoutFactory;
     }
 
     /**
@@ -332,6 +339,9 @@ class StatusDashboard extends Base
             else {
                 $data['latestNews'] = array(array('title' => __('Latest news not enabled.'), 'description' => '', 'link' => ''));
             }
+
+            $layout = $this->layoutFactory->query();
+            $data['layouts'] = $layout;
         }
         catch (Exception $e) {
 
@@ -346,7 +356,7 @@ class StatusDashboard extends Base
         $data['embedded-widget'] = html_entity_decode($this->getConfig()->GetSetting('EMBEDDED_STATUS_WIDGET'));
 
         // Render the Theme and output
-        $this->getState()->template = 'dashboard-status-page';
+        $this->getState()->template = 'dashboard-status-page-icon';
         $this->getState()->setData($data);
     }
 }

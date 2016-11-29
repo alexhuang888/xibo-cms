@@ -61,7 +61,7 @@
                             <div class="col-md-2 text-center">
                                 {% if currentUser.routeViewable("/user") %}
                                 <div class="designer-control-panel-checkbox override-layout">
-                                    <input type="checkbox" class="switch-check-box" name="lockPosition"  data-size="small" data-off-color="danger" data-on-color="success" data-label-width="100" data-label-text="{% trans "Lock Positions" %}" {% if currentUser.getOptionValue("lockPosition", "false") == "true" %}checked="checked"{% endif %}
+                                    <input type="checkbox" class="switch-check-box" name="lockPosition"  data-size="small" data-off-color="danger" data-on-color="success" data-label-width="100" data-label-text="{% trans "Lock positions" %}" {% if currentUser.getOptionValue("lockPosition", "false") == "true" %}checked="checked"{% endif %}
                                            data-on-text="{% trans "On" %}" data-off-text="{% trans "Off" %}"/>
                                 </div>
                                 {% endif %}
@@ -133,21 +133,22 @@
 		<div class="col-md-8 propertypanel" id="propertypanel">
 			<div class="layoutproperty comment storylinepropertypanel">
 				<div class="row">
-				<div class="layoutpropertyoptions comment col-md-6"></div>
-				<div class="layoutpropertyselectedregions comment col-md-6"></div>
+					<div class="layoutpropertyoptions comment col-md-6"></div>
+					<div class="layoutpropertyselectedregions comment col-md-6"></div>
 				</div>
-				<div class="row">
+				<div id="layoutedittools" class="layoutleveleditingtool col-md-12">
 					<div id="regionAddButton" href="{{ urlFor("region.add", {id: layout.layoutId}) }}" class="btn btn-default btn-sm" role="button" value="Add Region" title="Add Region" ><span><i class="fa fa-clone fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-picture-o fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-
+					<div class="XiboFormButton btn btn-default btn-sm" role="button" href="{{ urlFor("layout.edit.form", {id: layout.layoutId}) }}" title="{% trans "Edit the Layout Properties" %}"><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 				</div>
 			</div>
 			<div class="regionproperty comment storylinepropertypanel storylinepropertypanelinvisible">
+				<div class="row">
 					<div id="regionpropertydimension" class="col-md-6"></div>
 					<div id="regionpropertyoptions" class="col-md-6">
-						<label><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
+						<label class="" ><input type="checkbox" id="regionpropertiesloop" name="regionpropertiesloop">loop?</label>
 					</div>
-				<div class="row">
+				</div>
+				<div id="regionedittools" class="layoutleveleditingtool regionleveleditingtool col-md-12">
 						<div class="btn-group ">
 							<button class="btn dropdown-toggle" data-toggle="dropdown">
 								<span class="regionAligmentDropdown-tip" title="{% trans "Add widgets" %}">{% trans "Add widgets" %}</span> <span class="caret"></span>
@@ -179,34 +180,37 @@
 							{% endfor %}
 							</ul>
 						</div>   
-					<div id="regionDeleteButton" class="btn btn-default btn-sm" role="button" value="Delete Region" title="Delete Region" ><span><i class="fa fa-remove fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionDeleteButton" class="btn btn-default btn-sm" role="button" value="Delete Region" title="Delete Region" ><span><i class="fa fa-trash-o fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 						
 					<div id="editregion" class="btn btn-default btn-sm" role="button" value="Edit Region" title="Edit Region" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 					<div id="editregionTimeline" class="btn btn-default btn-sm" role="button" value="Edit Region Timeline" title="Edit Region Timeline" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 					<div id="editregionPermission" class="btn btn-default btn-sm" role="button" value="Edit Region Permission" title="Edit Region Permission" ><span><i class="fa fa-exclamation-circle fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="regionzindextop" class="btn btn-default btn-sm" role="button" value="Send to top" title="Send to top" ><span><i class="fa fa-level-up fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-					<div id="regionzindexbottom" class="btn btn-default btn-sm" role="button" value="Send to bottom" title="Send to bottom" ><span><i class="fa fa-level-down fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindextop" class="btn btn-default btn-sm" role="button" value="Send region to top" title="Send region to top" ><span><i class="fa fa-level-up fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+					<div id="regionzindexbottom" class="btn btn-default btn-sm" role="button" value="Send region to bottom" title="Send region to bottom" ><span><i class="fa fa-level-down fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 				</div>
 			</div>
 			<div class="widgetproperty storylinepropertypanel storylinepropertypanelinvisible">
-				<div id="widgetpropertyoptions" class="row">
-				</div>
-				<div class="row">
-					
-						<div id="updatewidget" class="btn btn-default btn-sm" role="button" value="Edit Widget" title="Edit Widget" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-						<div id="deletewidget" class="btn btn-default btn-sm" role="button" value="Delete Widget" title="Delete Widget" ><span><i class="fa fa-remove fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+				<div id="widgetpropertyleftpanel" class="col-md-8">
+					<div id="widgetpropertyoptions" class="row">
+					</div>
+					<div id="widgetedittools" class="layoutleveleditingtool regionleveleditingtool widgetleveleditingtool">
+							<div id="updatewidget" class="btn btn-default btn-sm" role="button" value="Edit Widget" title="Edit Widget" ><span><i class="fa fa-edit fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							<div id="deletewidget" class="btn btn-default btn-sm" role="button" value="Delete Widget" title="Delete Widget" ><span><i class="fa fa-trash-o fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="moveforward" class="btn btn-default btn-sm" role="button" value="Move Forward" title="Move Forward" ><span><i class="fa fa-angle-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							<div id="moveforward" class="btn btn-default btn-sm" role="button" value="Move widget forward" title="Move widget forward" ><span><i class="fa fa-angle-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="movebackward" class="btn btn-default btn-sm" role="button" value="Move Backward" title="Move Backward" ><span><i class="fa fa-angle-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							<div id="movebackward" class="btn btn-default btn-sm" role="button" value="Move widget backward" title="Move widget backward" ><span><i class="fa fa-angle-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="movefront" class="btn btn-default btn-sm" role="button" value="Move to front" title="Move to front" ><span><i class="fa fa-angle-double-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							<div id="movefront" class="btn btn-default btn-sm" role="button" value="Move widget to front" title="Move widget to front" ><span><i class="fa fa-angle-double-left fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
 
-						<div id="moveend" class="btn btn-default btn-sm" role="button" value="Move to end" title="Move to End" ><span><i class="fa fa-angle-double-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-						<!--
-						<div id="" class="saveplaylistorder btn btn-default btn-sm disabled" role="button" value="Save Widgets Order" title="Save Widgets Order" ><span><i class="fa fa-save fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
-						-->
-				</div>				
+							<div id="moveend" class="btn btn-default btn-sm" role="button" value="Move widget to end" title="Move widget to end" ><span><i class="fa fa-angle-double-right fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							<!--
+							<div id="" class="saveplaylistorder btn btn-default btn-sm disabled" role="button" value="Save Widgets Order" title="Save Widgets Order" ><span><i class="fa fa-save fa-fw" aria-hidden="true"></i> {% trans "" %}</span></div>
+							-->
+					</div>	
+				</div>	
+				<div id="widgetpropertyleftpanel" class="col-md-4"></div>
+						
 			</div>								
 		</div>
     </div>
@@ -700,7 +704,7 @@
 							prepareRegionFunction();
 
 							_pColorID++;
-							_pColorID = _pColorID % 7;
+							_pColorID = _pColorID % 5;
 							_regionID++;
 							_plID++;							       
 						}
@@ -1193,10 +1197,13 @@
                                 reswidth: "{{resolution.designerWidth}}",
                                 resheight: "{{resolution.designerHeight}}", 
                                 backgroundcolor: "{{ layout.backgroundColor }}", 
+								backgroundImageId: "{{layout.backgroundImageId}}",
                                 statusurl: '{{ urlFor("layout.status", {id: layout.layoutId}) }}', 
                                 positionallurl: "{{ urlFor("region.position.all", {id: layout.layoutId}) }}", 
 								backgroundcss: "{{ backgroundCss }}",
 								schemaVersion: "{{ layout.schemaVersion }}",
+								layoutname: "{{ layout.layout }}",
+								layoutdescription: "{{ layout.description }}",
 		 regions: [
 			 		{% set regioncolor = 0  %}
                     {% for region in layout.regions %}
@@ -1297,7 +1304,7 @@
 			var widget = _allWidgets.get(widgetid);
 			if (widget.length)
 			{
-				var intext = "<div class='col-md-6'><label>Widget-" + widget[0].id + ":</label> [" + widget[0].widgettype + "], duration: " + widget[0].duration + " seconds </div>";
+				var intext = "<div class=''><label>Widget-" + widget[0].id + ":</label> [" + widget[0].widgettype + "], duration: " + widget[0].duration + " seconds </div>";
 
 				$("#widgetpropertyoptions").html(intext);
 			
@@ -1318,6 +1325,19 @@
 		function onWidgetDoubleClickedHandler(properties)
 		{
 			console.log("double clicked:" + properties.item);
+			selectedIds = _regionTimelines.getSelection();
+			var hrefurl = "{{urlFor('module.widget.edit.form', {})}}";
+
+			for (var wid in selectedIds)
+			{
+				var selW = _allWidgets.get(selectedIds[wid]);
+				//console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
+				//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
+				//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
+				var actionurl = hrefurl.replace(":id", selW.id);
+
+				XiboFormRender(actionurl);
+			}			
 		}
 
 		function onWidgetMouseOverHandler(properties)
@@ -1404,7 +1424,7 @@
 
 		if (group.loop)
 		{
-			gfaclass = "<i class='fa fa-repeat fa-fw'/>";
+			gfaclass = "<i class='fa fa-retweet fa-fw'/>";
 		}
 		var html = '<div class="regionLabel ' + 
 						group.className + ' ' + 
@@ -1480,8 +1500,8 @@
 		var html = '<div class=" ' + 
 						widget.className + ' ' + 
 						'fa ' + faclass + ' fa-fw' +
-						'" data-regioncode="' + widget.regioncode + '"' + 
-						'  data-regionid="' + widget.id + '"' + 
+						'" data-duration="' + widget.duration + '"' + 
+						'  data-widgetid="' + widget.id + '"' + 
 						'> widget-' + widget.id + '</div>';
 		return html;		
 	}
@@ -1498,7 +1518,21 @@
 
 		var y_Scale = cssH / layoutinfo.height;
 		var x_Scale = cssW / layoutinfo.width;
-		_Scale = Math.min(x_Scale, y_Scale);		
+		_Scale = Math.min(x_Scale, y_Scale);
+		var layoutbkgndurltmpl = "{{ urlFor("library.download", {}) }}";
+		var cssurl = "";
+
+		if (layoutinfo.backgroundImageId == 0 || layoutinfo.backgroundImageId == null || layoutinfo.backgroundImageId == "")
+		{
+			cssurl = layoutinfo.backgroundcolor;
+		}
+		else
+		{
+			cssurl = layoutbkgndurltmpl.replace(":id", layoutinfo.backgroundImageId);
+			cssurl = cssurl + '?preview=1&width=' + cssW + '&height=' + cssH;
+			cssurl = "url('" + cssurl + "')" + ' top center no-repeat; background-color: ' + layoutinfo.backgroundcolor;//{{ layout.backgroundColor }};
+		}
+
 		var layouthtml = '<div tabindex="0" id="layout" class="layout" ' + 
 								'layoutid="' + layoutinfo.id + '"' + 
                                 'width="' + layoutinfo.width + '"' + 
@@ -1508,12 +1542,12 @@
                                 'data-background-color="' + layoutinfo.backgroundcolor + '"' +  
                                 'data-status-url="' + layoutinfo.statusurl  + '"' + 
                                 'data-position-all-url="' + layoutinfo.positionallurl  + '"' + 
-                                		
+                                'title="' + layoutinfo.layoutname + '"' + 		
 							'style="outline: 0 solid; position:relative;  ' + 
 							'width: ' + cssW + 'px;  ' + 
 							'height: ' + cssH + 'px;  ' + 
 							'margin:0px;  ' + 
-							'padding: 0px; background: ' + layoutinfo.backgroundcolor + '; border: 0px; box-shadow:0px 0px 0px 1px #ddddff inset"> ' + 
+							'padding: 0px; background: ' + cssurl + '; border: 0px; box-shadow:0px 0px 0px 1px #ddddff inset"> ' + 
 							'</div>';
 		$(".layoutwidget").html(layouthtml);
 				
@@ -1596,6 +1630,7 @@
 	{
 		var pos = $(item).position();
 		var region = _allRegions.get(_SelectedRegionID);
+
 		if (!region)
 			return;
 
@@ -1604,6 +1639,7 @@
 		var newTop = Math.round(pos.top / _Scale, 0);
 		var newWidth = Math.round($(item).width() / _Scale, 0);
 		var newHeight = Math.round($(item).height() / _Scale, 0);
+
 		$('#regionpropertydimension').html("<label>Region-" + region.id + ":</label> " + 
 									newWidth + 
 									" x " + 
@@ -1612,6 +1648,7 @@
 										newLeft + 
 										", " + 
 										newTop + "), z-order:" + region.zindex);
+
 		$(".regionproperty").removeClass("storylinepropertypanelinvisible");										
 		$('#regionpropertiesloop').prop('checked', (region.loop == 1));
 
@@ -1625,11 +1662,23 @@
 		{
 			$("#layout-save-all").removeClass("disabled");
 			$("#layout-revert").removeClass("disabled");
-		}										
+		}
+
+		if (region.currentUserEditable == true)
+		{
+			$(".regionleveleditingtool").removeClass("disableRegionTools");
+			$('#regionpropertiesloop').removeProp('disabled');
+
+		}	
+		else
+		{
+			$(".regionleveleditingtool").addClass("disableRegionTools");
+			$('#regionpropertiesloop').prop('disabled', true);
+		}									
 	}
 	function updateLayoutInfo() 
 	{
-		$('.layoutpropertyoptions').html("<div class=''><label>Layout:</label> " + thislayoutinfo.width + " x " + thislayoutinfo.height + "</div>");
+		$('.layoutpropertyoptions').html("<div class=''><label>Layout:</label> " + thislayoutinfo.layoutname + ' (' + thislayoutinfo.width + " x " + thislayoutinfo.height + ")</div>");
 	}	
 	function prepareRegionFunction()
 	{

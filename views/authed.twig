@@ -36,7 +36,6 @@
                         </li>                        
                     {% endif %}                
 
-
                     <!-- Design dropdown -->
                     {% if currentUser.routeViewable("/campaign") or currentUser.routeViewable("/layout") or currentUser.routeViewable("/template") or currentUser.routeViewable("/resolution") %}
                         <li class="dropdown">
@@ -64,6 +63,7 @@
                             </ul>
                         </li>                        
                     {% endif %}
+
                     <!-- Media dropdown -->
                     {% if currentUser.routeViewable("/library") or currentUser.routeViewable("/dataset") %}
                         <li class="dropdown">
@@ -79,6 +79,8 @@
                             </ul>
                         </li>                             
                     {% endif %}
+
+                    <!-- Display dropdown -->
                     {% if currentUser.routeViewable("/display") or currentUser.routeViewable("/displaygroup") or currentUser.routeViewable("/stats") or currentUser.routeViewable("/displayprofile") %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Displays" %}<span class="caret"></span></a>
@@ -106,6 +108,7 @@
                         </li>                         
                     {% endif %}
 
+                    <!-- Administration dropdown -->
                     {% if currentUser.routeViewable("/user") or currentUser.routeViewable("/usergroup") or currentUser.routeViewable("/admin") or currentUser.routeViewable("/application") or currentUser.routeViewable("/module") or currentUser.routeViewable("/transition") %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Administration" %}<span class="caret"></span></a>
@@ -136,10 +139,21 @@
                         {% if currentUser.routeViewable("/task") %}
                         <li class="sidebar-list"><a href="{{ urlFor("task.view") }}">{% trans "Tasks" %}</a></li>
                         {% endif %}
+
+                        {% if currentUser.routeViewable("/dashboard") %}
+                        <li class="sidebar-list"><a href="{{ urlFor("statusdashboard.view") }}">{% trans "Dashboard views" %}</a></li>
+                        {% endif %}
+                        {% if currentUser.routeViewable("/dashboard") %}
+                        <li class="sidebar-list"><a href="{{ urlFor("dashboard.view") }}">{% trans "Icon views" %}</a></li>
+                        {% endif %}
+                        {% if currentUser.routeViewable("/dashboard") %}
+                        <li class="sidebar-list"><a href="{{ urlFor("mediamanager.view") }}">{% trans "Media Manager views" %}</a></li>
+                        {% endif %}                                         
                             </ul>
                         </li>                         
                     {% endif %}
 
+                    <!-- Log dropdown -->
                     {% if currentUser.routeViewable("/log") or currentUser.routeViewable("/sessions") or currentUser.routeViewable("/auditlog") or currentUser.routeViewable("/fault") or currentUser.routeViewable("/help") %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans "Advanced" %}<span class="caret"></span></a>

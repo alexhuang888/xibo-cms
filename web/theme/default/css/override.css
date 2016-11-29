@@ -495,35 +495,75 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 
 			box-shadow:0px 0px 0px 2px black inset;
 		}
-
+/*
 		.regioncolor-0{
-			background: #cccccc;
+			background: #C6C1D6;
 		}
 		.regioncolor-1 {
-			background: #ff8888;
+			background: #E3DBFF;
 		}
 
 		.regioncolor-2 {
-			background: #88ff88;
+			background: #F8F8FA;
 		}
 
 		.regioncolor-3 {
-			background: #8888ff;
+			background: #B4B08A;
 		}
 
 		.regioncolor-4 {
-			background: #cc8888;
+			background: #C2C0AE;
+		}
+*/
+/*
+		.regioncolor-0{
+			background: #65BDFF;
+		}
+		.regioncolor-1 {
+			background: #5CD0E8;
 		}
 
+		.regioncolor-2 {
+			background: #72FFF1;
+		}
+
+		.regioncolor-3 {
+			background: #5CE8B2;
+		}
+
+		.regioncolor-4 {
+			background: #65FF98;
+		}
+*/
+
+		.regioncolor-0{
+			background: #E6E2AF;
+		}
+		.regioncolor-1 {
+			background: #A7A37E;
+		}
+
+		.regioncolor-2 {
+			background: #EFECCA;
+		}
+
+		.regioncolor-3 {
+			background: #046380;
+		}
+
+		.regioncolor-4 {
+			background: #002F2F;
+		}
+        
 		.regioncolor-5 {
-			background: #88cc88;
+			background: #65BDFF;
 		}
 
 		.regioncolor-6 {
-			background: #8888cc;
+			background: #5CD0E8;
 		}
 		.regioncolor-7 {
-			background: #888888;
+			background: #72FFF1;
 		}		
 		/* alternating column backgrounds */
 
@@ -541,54 +581,8 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 		.vis-time-axis .vis-text.vis-sunday {
 			color: white;
 		}
-		/* custom styles for individual items, load this after vis.css/vis-timeline-graph2d.min.css */
 
-		.vis-item.image-widget:before {
-			background-color: greenyellow;
-			border-color: green;
-		}
-		/* create a custom sized dot at the bottom of the red item */
 
-		.vis-item.red {
-			background-color: red;
-			border-color: darkred;
-			color: white;
-			font-family: monospace;
-			box-shadow: 0 0 10px gray;
-		}
-
-		.vis-item.vis-dot.red {
-			border-radius: 10px;
-			border-width: 10px;
-		}timelineLabel
-
-		.vis-item.vis-line.red {
-			border-width: 5px;
-		}
-
-		.vis-item.vis-box.red {
-			border-radius: 0;
-			border-width: 2px;
-			font-size: 24pt;
-			font-weight: bold;
-		}
-
-		.vis-item.orange {
-			background-color: gold;
-			border-color: orange;
-		}
-
-		.vis-item.vis-selected.orange {
-			/* custom colors for selected orange items */
-			background-color: orange;
-			border-color: orangered;
-		}
-
-		.vis-item.magenta {
-			background-color: magenta;
-			border-color: purple;
-			color: white;
-		}
 		/* our custom classes overrule the styles for selected events,
 	   so lets define a new style for the selected events */
 
@@ -612,5 +606,9 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
     visibility: visible;
 }
 .storylinepropertypanelinvisible {
+    visibility: hidden;
+}
+
+.disableRegionTools {
     visibility: hidden;
 }

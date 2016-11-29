@@ -36,6 +36,6 @@ class IconDashboard extends Base
 
     public function displayPage()
     {
-        $this->getState()->template = 'dashboard-icon-page';
+        $this->getState()->template = 'dashboard-icon-page-simple';
     }
 }

@@ -416,7 +416,7 @@ class Stats extends Base
         foreach ($rows as $row) {
             $output[] = array(
                 'label' => $this->getSanitizer()->string($row['display']),
-                'value' => $this->getSanitizer()->double($row['duration']) / $divisor
+                'value' => round($this->getSanitizer()->double($row['duration']) / $divisor, 1)
             );
         }
 

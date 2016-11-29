@@ -289,8 +289,13 @@ ul.sidebar .sidebar-list a:hover .menu-icon {
 .widget .widget-title i {
   margin-right: 5px;
 }
-
+/*
 .widget .widget-title a {
+  font-size: initial;
+  font-weight:initial;
+}
+*/
+.widget .widget-title .widget-title-link {
   font-size: initial;
   font-weight:initial;
 }
