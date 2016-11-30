@@ -535,7 +535,7 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 			background: #65FF98;
 		}
 */
-
+/*
 		.regioncolor-0{
 			background: #E6E2AF;
 		}
@@ -554,7 +554,25 @@ table.dataTable tbody tr.selected a, table.dataTable tbody th.selected a, table.
 		.regioncolor-4 {
 			background: #002F2F;
 		}
-        
+*/
+		.regioncolor-0{
+			background: #E6DDAF;
+		}
+		.regioncolor-1 {
+			background: #AAB376;
+		}
+
+		.regioncolor-2 {
+			background: #73802E;
+		}
+
+		.regioncolor-3 {
+			background: #8196E9;
+		}
+
+		.regioncolor-4 {
+			background: #7692B3;
+		}
 		.regioncolor-5 {
 			background: #65BDFF;
 		}

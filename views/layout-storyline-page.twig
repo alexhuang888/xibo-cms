@@ -42,9 +42,13 @@
                             <a class="text-center" id="action-tab" href="#tab2primary" data-toggle="tab"><i class="fa fa-bell" aria-hidden="true"></i>   {% trans "Action" %}s</a>
                         </li>
                         <div class="pull-right">
+							<span>
+								<i id="workingspinner"  aria-hidden="true" class="fa fa-spinner fa-spin" style="visibility:hidden;"></i>
+							<span>
                             <span class="text-center" data-toggle="tooltip" data-placement="bottom" data-title="{% trans "Layout Duration: Duration may change depending on the exact number of items in ticker/twitter media items." %}">
                                 <i class="fa fa-clock-o" aria-hidden="true"></i> {% trans "" %}
-                                <span id="layout-duration" class="label label-success big-duration"></span></span>
+                                <span id="layout-duration" class="label label-success big-duration"></span>
+							</span>
                             <span>| <b>Currently Editing</b></span>
                             <select id="layoutJumpList" data-live-search="true">
                                 {% for item in layouts %}
@@ -539,11 +543,18 @@
 						// remove region from layout
 						$("#region_" + regionId).remove();
 					}
-					_SelectedRegionID = -1;						
+					_SelectedRegionID = -1;
+					$(".regionproperty").addClass("storylinepropertypanelinvisible");										
 				},
 				error: function (xhr, textStatus, errorThrown) {
 					SystemMessage(xhr.responseText, false);
-				}
+				},
+				beforeSend: function(xhr, settings) {
+					onoffworkingspinner(1);
+				},
+				complete: function(xhr, settings) {
+					onoffworkingspinner(0);
+				},				
 			});
 		}
 		refreshplaylistCallback = function() {
@@ -551,7 +562,13 @@
 				type: "get",
 				url: "{{ urlFor("playlist.search") }}",
 				cache: false,
-				dataType: "json"                        
+				dataType: "json",
+				beforeSend: function(xhr, settings) {
+					onoffworkingspinner(1);
+				},
+				complete: function(xhr, settings) {
+					onoffworkingspinner(0);
+				},				
 			})
 			.success(function(data) 
 			{                 
@@ -616,7 +633,13 @@
 							// Reload the designer
 							XiboFormRender(urlFormRedirect.replace(":id", xhr.id.toString()));
 						}
-					}
+					},
+					beforeSend: function(xhr, settings) {
+						onoffworkingspinner(1);
+					},
+					complete: function(xhr, settings) {
+						onoffworkingspinner(0);
+					},					
 				});
 			});
 		}
@@ -631,6 +654,12 @@
 					url: $(this).attr("href"),
 					cache: false,
 					dataType: "json",
+					beforeSend: function(xhr, settings) {
+						onoffworkingspinner(1);
+					},
+					complete: function(xhr, settings) {
+						onoffworkingspinner(0);
+					},					
 					success: function (xhr, textStatus, error) 
 					{
 						XiboSubmitResponse(xhr);
@@ -851,47 +880,6 @@
 					}
 				}
 			});	
-
-			$("#deleteregion").click(function() {
-				if (_SelectedRegionID != -1)
-				{
-					// remove all data from allWidgets about this regionid
-					var widgetids = [];
-					var regionCode = "region-" + _SelectedRegionID;
-					widgetids = _allWidgets.getIds({
-							filter: function (item) {
-							return (item.id == _SelectedRegionID);
-							}
-						});
-					_allWidgets.remove(widgetids);
-
-					// remove groups
-					_allRegions.remove(_SelectedRegionID);
-
-					// remove region from layout
-					$(".layout").find(".region." + regionCode).remove();
-				}
-				_SelectedRegionID = -1;
-			});	
-
-
-			$("#deletewidget").click(function() {
-				e.preventDefault();
-
-				selectedIds = _regionTimelines.getSelection();
-				var hrefurl = "{{urlFor('module.widget.delete.form', {})}}";
-
-				for (var wid in selectedIds)
-				{
-					var selW = _allWidgets.get(selectedIds[wid]);
-					//console.log(selW.group + " " + selW.id + " " + selW.duration + " " + selW.start);
-					//_allWidgets.update({id: selW.id, duration: selW.duration + 5});
-					//updateWidgetTimeStartFrom(_allWidgets, selW.group, selW.start);
-					var actionurl = hrefurl.replace(":id", selW.id);
-
-					XiboFormRender(actionurl);
-				}
-			});
 
 			$("#updatewidget").click(function(e) {
 				e.preventDefault();
@@ -1298,6 +1286,19 @@
 
 		updateLayoutInfo();
 
+		function onoffworkingspinner(mode)
+		{
+			if (mode == 0)
+			{
+				$("#workingspinner").css("visibility", 'hidden');
+				$("#workingspinner").removeClass("fa-spin");
+			}
+			else
+			{
+				$("#workingspinner").css("visibility", 'visible');
+				$("#workingspinner").addClass("fa-spin");
+			}
+		}
 		function updateWidgetInfo(widgetid)
 		{
 			// get widget date from _allWidgets
@@ -2175,6 +2176,12 @@
 					cache: false,
 					dataType: "json",
 					data: {regions : JSON.stringify(regions) },
+					beforeSend: function(xhr, settings) {
+						onoffworkingspinner(1);
+					},
+					complete: function(xhr, settings) {
+						onoffworkingspinner(0);
+					},
 					success: XiboSubmitResponse
 				});
 		}
@@ -2215,6 +2222,12 @@
 			data:{
 				"playlists": playlists
 			},
+			beforeSend: function(xhr, settings) {
+				onoffworkingspinner(1);
+			},
+			complete: function(xhr, settings) {
+				onoffworkingspinner(0);
+			},			
 			success: [
 				XiboSubmitResponse
 			]

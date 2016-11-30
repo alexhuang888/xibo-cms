@@ -257,7 +257,7 @@ class Region extends Base
         // Add a new region
         $region = $this->regionFactory->create($this->getUser()->userId, $layout->layout . '-r' . (count($layout->regions) + 1),
             $this->getSanitizer()->getInt('width', 250), $this->getSanitizer()->getInt('height', 250), $this->getSanitizer()->getInt('top', 50), $this->getSanitizer()->getInt('left', 50));
-
+        $region->zIndex = count($layout->regions) + 1;
         $layout->regions[] = $region;
         $layout->save([
             'saveTags' => false
